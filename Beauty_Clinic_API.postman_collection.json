@@ -1,0 +1,672 @@
+{
+  "info": {
+    "name": "Beauty Clinic API - Mock Responses",
+    "description": "Mock API collection for Beauty Clinic System - Chuẩn cho Frontend integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.beautyclinic.com/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "1|mockToken123456789abcdefghijklmnopqrstuvwxyz",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\",\n  \"device_name\": \"Chrome Browser\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"user\": {\n      \"id\": 1,\n      \"name\": \"Nguyễn Văn A\",\n      \"email\": \"user@example.com\",\n      \"phone\": \"+84901234567\",\n      \"avatar\": \"https://via.placeholder.com/150\",\n      \"language_preference\": \"vi\"\n    },\n    \"token\": \"1|mockToken123456789abcdefghijklmnopqrstuvwxyz\",\n    \"token_type\": \"Bearer\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-login-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Trần Thị B\",\n  \"email\": \"newuser@example.com\",\n  \"phone\": \"+84987654321\",\n  \"password\": \"SecurePass123!\",\n  \"password_confirmation\": \"SecurePass123!\",\n  \"language_preference\": \"vi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Get Services List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/services?page=1&per_page=15&locale=vi",
+              "host": ["{{base_url}}"],
+              "path": ["services"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "locale",
+                  "value": "vi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Service Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": ["{{base_url}}"],
+              "path": ["services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Service Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/service-categories?locale=vi",
+              "host": ["{{base_url}}"],
+              "path": ["service-categories"],
+              "query": [
+                {
+                  "key": "locale",
+                  "value": "vi"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Branches",
+      "item": [
+        {
+          "name": "Get Branches List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/branches?locale=vi",
+              "host": ["{{base_url}}"],
+              "path": ["branches"],
+              "query": [
+                {
+                  "key": "locale",
+                  "value": "vi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Branch Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/branches/:id",
+              "host": ["{{base_url}}"],
+              "path": ["branches", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Available Slots",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/branches/:id/available-slots?date=2025-10-28&service_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["branches", ":id", "available-slots"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2025-10-28"
+                },
+                {
+                  "key": "service_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branch_id\": 1,\n  \"service_id\": 1,\n  \"staff_id\": 1,\n  \"booking_date\": \"2025-10-28\",\n  \"booking_time\": \"10:00\",\n  \"notes\": \"Tôi muốn tư vấn thêm về sản phẩm sau điều trị\",\n  \"promotion_code\": \"WELCOME10\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Get Booking Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/bookings/:id",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/my-bookings?page=1&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["my-bookings"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellation_reason\": \"Tôi có việc đột xuất\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/:id/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":id", "cancel"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Get Reviews List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reviews?service_id=1&page=1&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["reviews"],
+              "query": [
+                {
+                  "key": "service_id",
+                  "value": "1"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 123,\n  \"service_id\": 1,\n  \"rating\": 5,\n  \"title\": \"Dịch vụ tuyệt vời!\",\n  \"comment\": \"Tôi rất hài lòng với dịch vụ\",\n  \"service_quality_rating\": 5,\n  \"staff_rating\": 5,\n  \"cleanliness_rating\": 5,\n  \"value_rating\": 4,\n  \"images\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reviews",
+              "host": ["{{base_url}}"],
+              "path": ["reviews"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Payment Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 123\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/create-intent",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "create-intent"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": 123,\n  \"payment_intent_id\": \"pi_mock_123456789\",\n  \"payment_method\": \"stripe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "confirm"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Posts (Blog)",
+      "item": [
+        {
+          "name": "Get Posts List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts?page=1&per_page=15&locale=vi",
+              "host": ["{{base_url}}"],
+              "path": ["posts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "locale",
+                  "value": "vi"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Post Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/:slug",
+              "host": ["{{base_url}}"],
+              "path": ["posts", ":slug"],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "10-bi-quyet-cham-soc-da-mua-he"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Featured Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/posts/featured?locale=vi",
+              "host": ["{{base_url}}"],
+              "path": ["posts", "featured"],
+              "query": [
+                {
+                  "key": "locale",
+                  "value": "vi"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "Submit Contact Form",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn C\",\n  \"email\": \"contact@example.com\",\n  \"phone\": \"+84987654321\",\n  \"subject\": \"Tư vấn dịch vụ\",\n  \"message\": \"Tôi muốn được tư vấn về dịch vụ điều trị mụn\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/contact",
+              "host": ["{{base_url}}"],
+              "path": ["contact"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chatbot",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": \"sess_abc123xyz\",\n  \"message\": \"Tôi muốn đặt lịch hẹn\",\n  \"context\": {\n    \"page\": \"booking\",\n    \"service_id\": 1\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/chatbot/message",
+              "host": ["{{base_url}}"],
+              "path": ["chatbot", "message"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": ["{{base_url}}"],
+              "path": ["profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nguyễn Văn A\",\n  \"phone\": \"+84901234567\",\n  \"date_of_birth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"address\": \"123 Đường ABC\",\n  \"language_preference\": \"vi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": ["{{base_url}}"],
+              "path": ["profile"]
+            }
+          }
+        },
+        {
+          "name": "Get My Promotions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profile/promotions",
+              "host": ["{{base_url}}"],
+              "path": ["profile", "promotions"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+
