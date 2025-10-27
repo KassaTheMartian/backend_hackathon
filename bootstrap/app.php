@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'log.api' => \App\Http\Middleware\LogApiRequests::class,
             'rate.limit' => \App\Http\Middleware\RateLimitMiddleware::class,
             'request.id' => \App\Http\Middleware\RequestId::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
 
         // Add middleware to API group
