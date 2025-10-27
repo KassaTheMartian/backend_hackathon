@@ -113,7 +113,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'avatar' => $user->avatar,
-            'date_of_birth' => $user->date_of_birth?->format('Y-m-d'),
+            'date_of_birth' => $user->date_of_birth ? ($user->date_of_birth instanceof \Carbon\Carbon ? $user->date_of_birth->format('Y-m-d') : $user->date_of_birth) : null,
             'gender' => $user->gender,
             'address' => $user->address,
             'language_preference' => $user->language_preference ?? 'vi',

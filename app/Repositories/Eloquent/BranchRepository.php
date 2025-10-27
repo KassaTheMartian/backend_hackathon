@@ -6,12 +6,26 @@ use App\Models\Branch;
 use App\Repositories\Contracts\BranchRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class BranchRepository extends BaseRepository implements BranchRepositoryInterface
 {
     public function __construct(Branch $model)
     {
         parent::__construct($model);
+    }
+
+    public function paginateWithFilters(Request $request)
+    {
+        return $this->paginateWithRequest($request, sortable: ['id', 'name', 'created_at'], filterable: ['is_active']);
+    }
+
+    protected function allowedIncludes(): array
+    {
+        // Whitelist relations that can be eager loaded via ?include=rel1,rel2
+        return [
+            'staff', 'services', 'bookings'
+        ];
     }
 
     /**

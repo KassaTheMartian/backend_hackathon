@@ -2,16 +2,23 @@
 
 namespace App\Services\Contracts;
 
-use App\Models\Branch;
-use Illuminate\Database\Eloquent\Collection;
+use App\Data\Branch\BranchData;
+use App\Data\Branch\UpdateBranchData;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 interface BranchServiceInterface
 {
-    public function getBranches(array $filters = []): Collection;
-    public function getBranchById(int $id): ?Branch;
-    public function createBranch(array $data): Branch;
-    public function updateBranch(int $id, array $data): ?Branch;
-    public function deleteBranch(int $id): bool;
+    public function list(Request $request): LengthAwarePaginator;
+
+    public function create(BranchData $data): Model;
+
+    public function find(int $id): ?Model;
+
+    public function update(int $id, UpdateBranchData $data): ?Model;
+
+    public function delete(int $id): bool;
+
     public function getAvailableSlots(int $branchId, string $date, int $serviceId, ?int $staffId = null): array;
-    public function getNearbyBranches(float $latitude, float $longitude, float $radiusKm = 10): Collection;
 }

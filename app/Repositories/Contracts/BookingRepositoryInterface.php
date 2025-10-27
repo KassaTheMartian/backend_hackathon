@@ -14,6 +14,11 @@ interface BookingRepositoryInterface extends BaseRepositoryInterface
     public function getWithFilters(array $filters): LengthAwarePaginator;
 
     /**
+     * Paginate with request filters.
+     */
+    public function paginateWithFilters(\Illuminate\Http\Request $request);
+
+    /**
      * Get booking by code.
      */
     public function getByCode(string $code): ?Booking;

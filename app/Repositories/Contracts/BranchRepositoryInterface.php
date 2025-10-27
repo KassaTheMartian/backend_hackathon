@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Collection;
 interface BranchRepositoryInterface extends BaseRepositoryInterface
 {
     /**
+     * Paginate with request filters.
+     */
+    public function paginateWithFilters(\Illuminate\Http\Request $request);
+
+    /**
      * Get all active branches.
      */
     public function getActive(): Collection;

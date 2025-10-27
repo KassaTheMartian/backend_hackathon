@@ -2,20 +2,23 @@
 
 namespace App\Services\Contracts;
 
-use App\Models\Booking;
-use App\Models\User;
+use App\Data\Booking\BookingData;
+use App\Data\Booking\UpdateBookingData;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 interface BookingServiceInterface
 {
-    public function getBookings(array $filters = []): LengthAwarePaginator;
-    public function getBookingById(int $id): ?Booking;
-    public function getBookingByCode(string $code): ?Booking;
-    public function getBookingWithDetails(Booking $booking): Booking;
-    public function createBooking(array $data): Booking;
-    public function updateBooking(int $id, array $data): ?Booking;
-    public function cancelBooking(int $id, string $reason): ?Booking;
-    public function getUserBookings(User $user, array $filters = []): LengthAwarePaginator;
-    public function isTimeSlotAvailable(int $branchId, string $date, string $time, ?int $staffId = null): bool;
-    public function getBookingStats(array $filters = []): array;
+    public function list(Request $request): LengthAwarePaginator;
+
+    public function create(BookingData $data): Model;
+
+    public function find(int $id): ?Model;
+
+    public function update(int $id, UpdateBookingData $data): ?Model;
+
+    public function cancel(int $id, string $reason): ?Model;
+
+    public function myBookings(Request $request): LengthAwarePaginator;
 }

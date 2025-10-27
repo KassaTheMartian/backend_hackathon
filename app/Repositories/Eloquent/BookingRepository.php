@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BookingRepository extends BaseRepository implements BookingRepositoryInterface
@@ -14,6 +15,19 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
     public function __construct(Booking $model)
     {
         parent::__construct($model);
+    }
+
+    public function paginateWithFilters(Request $request)
+    {
+        return $this->paginateWithRequest($request, sortable: ['id', 'booking_date', 'created_at'], filterable: ['status', 'branch_id', 'service_id', 'user_id']);
+    }
+
+    protected function allowedIncludes(): array
+    {
+        // Whitelist relations that can be eager loaded via ?include=rel1,rel2
+        return [
+            'user', 'branch', 'service', 'staff', 'payment', 'review'
+        ];
     }
 
     /**

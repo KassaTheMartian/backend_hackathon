@@ -10,8 +10,14 @@ use App\Repositories\Eloquent\AuthRepository as EloquentAuthRepository;
 use App\Repositories\Eloquent\DemoRepository as EloquentDemoRepository;
 use App\Services\Contracts\AuthServiceInterface;
 use App\Services\Contracts\DemoServiceInterface;
+use App\Services\Contracts\BookingServiceInterface;
+use App\Services\Contracts\ServiceServiceInterface;
+use App\Services\Contracts\BranchServiceInterface;
 use App\Services\AuthService;
 use App\Services\DemoService;
+use App\Services\BookingService;
+use App\Services\ServiceService;
+use App\Services\BranchService;
 use App\Exceptions\Handler;
 
 class AppServiceProvider extends ServiceProvider
@@ -84,6 +90,9 @@ class AppServiceProvider extends ServiceProvider
         // Service bindings
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(DemoServiceInterface::class, DemoService::class);
+        $this->app->bind(BookingServiceInterface::class, BookingService::class);
+        $this->app->bind(ServiceServiceInterface::class, ServiceService::class);
+        $this->app->bind(BranchServiceInterface::class, BranchService::class);
         
         // Register custom exception handler
         $this->app->singleton(ExceptionHandler::class, Handler::class);

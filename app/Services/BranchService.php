@@ -2,78 +2,107 @@
 
 namespace App\Services;
 
-use App\Models\Branch;
+use App\Data\Branch\BranchData;
+use App\Data\Branch\UpdateBranchData;
 use App\Repositories\Contracts\BranchRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
+use App\Services\Contracts\BranchServiceInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
-class BranchService
+class BranchService implements BranchServiceInterface
 {
-    public function __construct(
-        private BranchRepositoryInterface $branchRepository
-    ) {}
-
     /**
-     * Get all active branches.
+     * Create a new BranchService instance.
+     *
+     * @param BranchRepositoryInterface $branches The branch repository
      */
-    public function getBranches(array $filters = []): Collection
+    public function __construct(private readonly BranchRepositoryInterface $branches)
     {
-        $query = $this->branchRepository->getActive();
-        
-        // Apply filters
-        if (isset($filters['latitude']) && isset($filters['longitude'])) {
-            $query = $query->sortBy(function ($branch) use ($filters) {
-                return $branch->distanceFrom($filters['latitude'], $filters['longitude']);
-            });
-        }
-        
-        return $query;
     }
 
     /**
-     * Get branch by ID.
+     * Get a paginated list of branches.
+     *
+     * @param Request $request The HTTP request
+     * @return LengthAwarePaginator The paginated branches
      */
-    public function getBranchById(int $id): ?Branch
+    public function list(Request $request): LengthAwarePaginator
     {
-        return $this->branchRepository->getById($id);
+        return $this->branches->paginateWithFilters($request);
     }
 
     /**
      * Create a new branch.
+     *
+     * @param BranchData $data The branch data
+     * @return Model The created branch
      */
-    public function createBranch(array $data): Branch
+    public function create(BranchData $data): Model
     {
-        return $this->branchRepository->create($data);
+        $payload = $data->toArray();
+        
+        // Set default values
+        if (!array_key_exists('is_active', $payload)) {
+            $payload['is_active'] = true;
+        }
+        
+        return $this->branches->create($payload);
+    }
+
+    /**
+     * Find a branch by ID.
+     *
+     * @param int $id The branch ID
+     * @return Model|null The branch if found, null otherwise
+     */
+    public function find(int $id): ?Model
+    {
+        return $this->branches->find($id);
     }
 
     /**
      * Update a branch.
+     *
+     * @param int $id The branch ID
+     * @param UpdateBranchData $data The branch data
+     * @return Model|null The updated branch if found, null otherwise
      */
-    public function updateBranch(int $id, array $data): ?Branch
+    public function update(int $id, UpdateBranchData $data): ?Model
     {
-        return $this->branchRepository->update($id, $data);
+        return $this->branches->update($id, $data->toArray());
     }
 
     /**
      * Delete a branch.
+     *
+     * @param int $id The branch ID
+     * @return bool True if deleted, false otherwise
      */
-    public function deleteBranch(int $id): bool
+    public function delete(int $id): bool
     {
-        return $this->branchRepository->delete($id);
+        return $this->branches->delete($id);
     }
 
     /**
      * Get available time slots for a branch.
+     *
+     * @param int $branchId The branch ID
+     * @param string $date The date
+     * @param int $serviceId The service ID
+     * @param int|null $staffId The staff ID
+     * @return array The available slots
      */
     public function getAvailableSlots(int $branchId, string $date, int $serviceId, ?int $staffId = null): array
     {
-        $branch = $this->getBranchById($branchId);
+        $branch = $this->find($branchId);
         
         if (!$branch) {
             throw new \Exception('Branch not found');
         }
         
         // Get existing bookings for the date
-        $existingBookings = $this->branchRepository->getBookingsForDate($branchId, $date, $staffId);
+        $existingBookings = $this->branches->getBookingsForDate($branchId, $date, $staffId);
         
         // Generate time slots (9:00 AM to 6:00 PM, 30-minute intervals)
         $slots = [];
@@ -91,7 +120,7 @@ class BranchService
             
             if ($isAvailable) {
                 // Get available staff for this time slot
-                $availableStaff = $this->branchRepository->getAvailableStaff($branchId, $serviceId, $startTime);
+                $availableStaff = $this->branches->getAvailableStaff($branchId, $serviceId, $startTime);
                 $slot['staff'] = $availableStaff;
             } else {
                 $slot['reason'] = 'Fully booked';

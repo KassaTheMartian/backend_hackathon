@@ -2,20 +2,23 @@
 
 namespace App\Services\Contracts;
 
-use App\Models\Service;
+use App\Data\Service\ServiceData;
+use App\Data\Service\UpdateServiceData;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 interface ServiceServiceInterface
 {
-    public function getServices(array $filters = []): LengthAwarePaginator;
-    public function getServiceById(int $id): ?Service;
-    public function getServiceBySlug(string $slug): ?Service;
-    public function createService(array $data): Service;
-    public function updateService(int $id, array $data): ?Service;
-    public function deleteService(int $id): bool;
-    public function getFeaturedServices(int $limit = 6): Collection;
-    public function getRelatedServices(Service $service, int $limit = 4): Collection;
-    public function incrementViews(Service $service): void;
-    public function getCategories(string $locale = 'vi'): Collection;
+    public function list(Request $request): LengthAwarePaginator;
+
+    public function create(ServiceData $data): Model;
+
+    public function find(int $id): ?Model;
+
+    public function update(int $id, UpdateServiceData $data): ?Model;
+
+    public function delete(int $id): bool;
+
+    public function categories(string $locale = 'vi'): array;
 }

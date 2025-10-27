@@ -6,12 +6,26 @@ use App\Models\Service;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 class ServiceRepository extends BaseRepository implements ServiceRepositoryInterface
 {
     public function __construct(Service $model)
     {
         parent::__construct($model);
+    }
+
+    public function paginateWithFilters(Request $request)
+    {
+        return $this->paginateWithRequest($request, sortable: ['id', 'name', 'price', 'display_order', 'created_at'], filterable: ['category_id', 'is_active', 'is_featured']);
+    }
+
+    protected function allowedIncludes(): array
+    {
+        // Whitelist relations that can be eager loaded via ?include=rel1,rel2
+        return [
+            'category', 'branches', 'reviews', 'staff'
+        ];
     }
 
     /**

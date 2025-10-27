@@ -14,6 +14,11 @@ interface ServiceRepositoryInterface extends BaseRepositoryInterface
     public function getWithFilters(array $filters): LengthAwarePaginator;
 
     /**
+     * Paginate with request filters.
+     */
+    public function paginateWithFilters(\Illuminate\Http\Request $request);
+
+    /**
      * Get service by slug.
      */
     public function getBySlug(string $slug): ?Service;

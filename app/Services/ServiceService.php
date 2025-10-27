@@ -2,102 +2,96 @@
 
 namespace App\Services;
 
-use App\Models\Service;
+use App\Data\Service\ServiceData;
+use App\Data\Service\UpdateServiceData;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
+use App\Services\Contracts\ServiceServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
-class ServiceService
+class ServiceService implements ServiceServiceInterface
 {
-    public function __construct(
-        private ServiceRepositoryInterface $serviceRepository
-    ) {}
-
     /**
-     * Get services with filters.
+     * Create a new ServiceService instance.
+     *
+     * @param ServiceRepositoryInterface $services The service repository
      */
-    public function getServices(array $filters = []): LengthAwarePaginator
+    public function __construct(private readonly ServiceRepositoryInterface $services)
     {
-        return $this->serviceRepository->getWithFilters($filters);
     }
 
     /**
-     * Get service by ID.
+     * Get a paginated list of services.
+     *
+     * @param Request $request The HTTP request
+     * @return LengthAwarePaginator The paginated services
      */
-    public function getServiceById(int $id): ?Service
+    public function list(Request $request): LengthAwarePaginator
     {
-        return $this->serviceRepository->getById($id);
-    }
-
-    /**
-     * Get service by slug.
-     */
-    public function getServiceBySlug(string $slug): ?Service
-    {
-        return $this->serviceRepository->getBySlug($slug);
-    }
-
-    /**
-     * Get service with details (relationships loaded).
-     */
-    public function getServiceWithDetails(Service $service, string $locale = 'vi'): Service
-    {
-        return $service->load(['category', 'branches']);
+        return $this->services->paginateWithFilters($request);
     }
 
     /**
      * Create a new service.
+     *
+     * @param ServiceData $data The service data
+     * @return Model The created service
      */
-    public function createService(array $data): Service
+    public function create(ServiceData $data): Model
     {
-        return $this->serviceRepository->create($data);
+        $payload = $data->toArray();
+        
+        // Set default values
+        if (!array_key_exists('is_active', $payload)) {
+            $payload['is_active'] = true;
+        }
+        
+        return $this->services->create($payload);
+    }
+
+    /**
+     * Find a service by ID.
+     *
+     * @param int $id The service ID
+     * @return Model|null The service if found, null otherwise
+     */
+    public function find(int $id): ?Model
+    {
+        return $this->services->find($id);
     }
 
     /**
      * Update a service.
+     *
+     * @param int $id The service ID
+     * @param UpdateServiceData $data The service data
+     * @return Model|null The updated service if found, null otherwise
      */
-    public function updateService(int $id, array $data): ?Service
+    public function update(int $id, UpdateServiceData $data): ?Model
     {
-        return $this->serviceRepository->update($id, $data);
+        return $this->services->update($id, $data->toArray());
     }
 
     /**
      * Delete a service.
+     *
+     * @param int $id The service ID
+     * @return bool True if deleted, false otherwise
      */
-    public function deleteService(int $id): bool
+    public function delete(int $id): bool
     {
-        return $this->serviceRepository->delete($id);
-    }
-
-    /**
-     * Get featured services.
-     */
-    public function getFeaturedServices(int $limit = 6): Collection
-    {
-        return $this->serviceRepository->getFeatured($limit);
-    }
-
-    /**
-     * Get related services.
-     */
-    public function getRelatedServices(Service $service, int $limit = 4): Collection
-    {
-        return $this->serviceRepository->getRelated($service, $limit);
-    }
-
-    /**
-     * Increment service views.
-     */
-    public function incrementViews(Service $service): void
-    {
-        $this->serviceRepository->incrementViews($service);
+        return $this->services->delete($id);
     }
 
     /**
      * Get service categories.
+     *
+     * @param string $locale The locale
+     * @return array The categories
      */
-    public function getCategories(string $locale = 'vi'): Collection
+    public function categories(string $locale = 'vi'): array
     {
-        return $this->serviceRepository->getCategories($locale);
+        return $this->services->getCategories($locale)->toArray();
     }
 }
