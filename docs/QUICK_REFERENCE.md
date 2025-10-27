@@ -20,8 +20,8 @@ Quick reference guide cho developers.
 
 ### 1. Authentication (5 endpoints)
 ```
-POST /auth/register
-POST /auth/login  
+POST /auth/register -> OK
+POST /auth/login -> OK
 POST /auth/logout
 GET  /auth/me
 POST /auth/forgot-password

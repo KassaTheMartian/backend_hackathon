@@ -36,16 +36,27 @@ class AuthService implements AuthServiceInterface
             throw new \Exception('Invalid credentials');
         }
 
+        // Check if user is active
+        if (!$user->is_active) {
+            throw new \Exception('Account is inactive. Please contact support.');
+        }
+
         $token = $this->authRepository->createToken($user);
+        
+        // Update last login timestamp
+        $user->update(['last_login_at' => now()]);
 
         return [
-            'token' => $token,
-            'token_type' => 'Bearer',
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone,
+                'avatar' => $user->avatar,
+                'language_preference' => $user->language_preference ?? 'vi',
             ],
+            'token' => $token,
+            'token_type' => 'Bearer',
         ];
     }
 
@@ -57,17 +68,28 @@ class AuthService implements AuthServiceInterface
      */
     public function register(array $userData): array
     {
+        // Hash password if not already hashed
+        if (isset($userData['password'])) {
+            $userData['password'] = Hash::make($userData['password']);
+        }
+        
+        // Set defaults
+        $userData['is_active'] = true;
+        $userData['language_preference'] = $userData['language_preference'] ?? 'vi';
+        
         $user = $this->authRepository->create($userData);
         $token = $this->authRepository->createToken($user);
 
         return [
-            'token' => $token,
-            'token_type' => 'Bearer',
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'phone' => $user->phone,
+                'language_preference' => $user->language_preference,
+                'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toISOString() : null,
             ],
+            'token' => $token,
         ];
     }
 

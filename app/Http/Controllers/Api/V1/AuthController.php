@@ -47,7 +47,7 @@ class AuthController extends Controller
         try {
             $credentials = $request->validated();
             $result = $this->authService->login($credentials['email'], $credentials['password']);
-            return $this->ok($result);
+            return $this->ok($result, 'Login successful');
         } catch (\Exception $e) {
             return ApiResponse::unauthorized($e->getMessage());
         }
@@ -80,7 +80,7 @@ class AuthController extends Controller
         try {
             $validated = $request->validated();
             $result = $this->authService->register($validated);
-            return $this->created($result, 'User registered successfully');
+            return $this->created($result, 'Registration successful. Please verify your email.');
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 'Registration failed', 'REGISTRATION_ERROR', 422);
         }
@@ -105,10 +105,19 @@ class AuthController extends Controller
         if (!$user) {
             return ApiResponse::unauthorized();
         }
+        
         return $this->ok([
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'phone' => $user->phone,
+            'avatar' => $user->avatar,
+            'date_of_birth' => $user->date_of_birth ? $user->date_of_birth->format('Y-m-d') : null,
+            'gender' => $user->gender,
+            'address' => $user->address,
+            'language_preference' => $user->language_preference ?? 'vi',
+            'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toISOString() : null,
+            'created_at' => $user->created_at->toISOString(),
         ]);
     }
 
@@ -127,7 +136,7 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout();
-        return $this->noContent('Logged out');
+        return $this->ok(null, 'Logged out successfully');
     }
 
     /**
