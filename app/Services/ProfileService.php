@@ -3,17 +3,22 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\Promotion;
-use Illuminate\Support\Facades\Hash;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileService
 {
+    public function __construct(
+        private UserRepositoryInterface $userRepository
+    ) {}
+
     /**
-     * Get user profile with statistics.
+     * Get user profile.
      */
-    public function getUserProfile(User $user): User
+    public function getProfile(int $userId): ?User
     {
-        return $user->load(['bookings', 'reviews']);
+        return $this->userRepository->getById($userId);
     }
 
     /**
@@ -21,59 +26,88 @@ class ProfileService
      */
     public function updateProfile(User $user, array $data): User
     {
-        $user->update($data);
-        return $user->fresh();
+        return $this->userRepository->update($user, $data);
     }
 
     /**
-     * Change user password.
+     * Update user avatar.
      */
-    public function changePassword(User $user, array $data): void
+    public function updateAvatar(User $user, UploadedFile $file): User
     {
-        if (!Hash::check($data['current_password'], $user->password)) {
-            throw new \Exception('Current password is incorrect');
+        // Delete old avatar if exists
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
         }
 
-        $user->update([
-            'password' => Hash::make($data['new_password']),
-        ]);
+        // Store new avatar
+        $path = $file->store('avatars', 'public');
+        
+        return $this->userRepository->update($user, ['avatar' => $path]);
     }
 
     /**
-     * Get user's available promotions.
+     * Delete user avatar.
      */
-    public function getUserPromotions(User $user): array
+    public function deleteAvatar(User $user): User
     {
-        return Promotion::active()
-            ->valid()
-            ->where(function ($query) use ($user) {
-                $query->where('max_uses_per_user', '>', function ($subQuery) use ($user) {
-                    $subQuery->selectRaw('COUNT(*)')
-                        ->from('promotion_usages')
-                        ->whereColumn('promotion_usages.promotion_id', 'promotions.id')
-                        ->where('promotion_usages.user_id', $user->id);
-                })
-                ->orWhereNull('max_uses_per_user');
-            })
-            ->get()
-            ->map(function ($promotion) use ($user) {
-                $usedCount = $promotion->usages()
-                    ->where('user_id', $user->id)
-                    ->count();
-                
-                return [
-                    'id' => $promotion->id,
-                    'code' => $promotion->code,
-                    'name' => $promotion->name['vi'] ?? $promotion->name['en'] ?? '',
-                    'discount_type' => $promotion->discount_type,
-                    'discount_value' => $promotion->discount_value,
-                    'min_amount' => $promotion->min_amount,
-                    'valid_from' => $promotion->valid_from->toISOString(),
-                    'valid_to' => $promotion->valid_to->toISOString(),
-                    'remaining_uses' => $promotion->max_uses_per_user ? 
-                        max(0, $promotion->max_uses_per_user - $usedCount) : null,
-                ];
-            })
-            ->toArray();
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+        
+        return $this->userRepository->update($user, ['avatar' => null]);
+    }
+
+    /**
+     * Change password.
+     */
+    public function changePassword(User $user, string $currentPassword, string $newPassword): bool
+    {
+        if (!password_verify($currentPassword, $user->password)) {
+            return false;
+        }
+
+        $this->userRepository->update($user, [
+            'password' => bcrypt($newPassword)
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Update language preference.
+     */
+    public function updateLanguagePreference(User $user, string $language): User
+    {
+        return $this->userRepository->update($user, ['language_preference' => $language]);
+    }
+
+    /**
+     * Deactivate account.
+     */
+    public function deactivateAccount(User $user): User
+    {
+        return $this->userRepository->update($user, ['is_active' => false]);
+    }
+
+    /**
+     * Reactivate account.
+     */
+    public function reactivateAccount(User $user): User
+    {
+        return $this->userRepository->update($user, ['is_active' => true]);
+    }
+
+    /**
+     * Get user statistics.
+     */
+    public function getUserStats(User $user): array
+    {
+        return [
+            'total_bookings' => $user->bookings()->count(),
+            'completed_bookings' => $user->bookings()->where('status', 'completed')->count(),
+            'total_reviews' => $user->reviews()->count(),
+            'member_since' => $user->created_at->format('Y-m-d'),
+            'last_login' => $user->last_login_at?->format('Y-m-d H:i:s'),
+        ];
     }
 }

@@ -39,15 +39,15 @@ class Setting extends Model
     }
 
     /**
-     * Get the value with proper type casting.
+     * Get setting value with proper casting.
      */
     public function getValueAttribute($value)
     {
         switch ($this->type) {
             case 'boolean':
-                return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                return (bool) $value;
             case 'number':
-                return is_numeric($value) ? (float) $value : 0;
+                return is_numeric($value) ? (float) $value : $value;
             case 'json':
                 return json_decode($value, true);
             default:
@@ -56,16 +56,16 @@ class Setting extends Model
     }
 
     /**
-     * Set the value with proper type conversion.
+     * Set setting value with proper formatting.
      */
     public function setValueAttribute($value)
     {
         switch ($this->type) {
-            case 'boolean':
-                $this->attributes['value'] = $value ? '1' : '0';
-                break;
             case 'json':
                 $this->attributes['value'] = json_encode($value);
+                break;
+            case 'boolean':
+                $this->attributes['value'] = $value ? '1' : '0';
                 break;
             default:
                 $this->attributes['value'] = (string) $value;
@@ -84,14 +84,13 @@ class Setting extends Model
     /**
      * Set a setting value by key.
      */
-    public static function setValue(string $key, $value, string $type = 'string', string $group = null): void
+    public static function setValue(string $key, $value, string $type = 'string'): void
     {
         static::updateOrCreate(
             ['key' => $key],
             [
                 'value' => $value,
                 'type' => $type,
-                'group_name' => $group,
             ]
         );
     }

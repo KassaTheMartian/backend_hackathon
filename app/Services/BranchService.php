@@ -3,121 +3,105 @@
 namespace App\Services;
 
 use App\Models\Branch;
-use App\Models\Booking;
-use App\Models\Service;
+use App\Repositories\Contracts\BranchRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Carbon;
 
 class BranchService
 {
+    public function __construct(
+        private BranchRepositoryInterface $branchRepository
+    ) {}
+
     /**
-     * Get branches with filters.
+     * Get all active branches.
      */
     public function getBranches(array $filters = []): Collection
     {
-        $query = Branch::with(['services', 'staff'])
-            ->active()
-            ->ordered();
-
+        $query = $this->branchRepository->getActive();
+        
         // Apply filters
         if (isset($filters['latitude']) && isset($filters['longitude'])) {
-            // Sort by distance
-            $query->get()->sortBy(function ($branch) use ($filters) {
+            $query = $query->sortBy(function ($branch) use ($filters) {
                 return $branch->distanceFrom($filters['latitude'], $filters['longitude']);
             });
         }
-
-        return $query->get();
+        
+        return $query;
     }
 
     /**
-     * Get branch with details.
+     * Get branch by ID.
      */
-    public function getBranchWithDetails(Branch $branch, string $locale = 'vi'): Branch
+    public function getBranchById(int $id): ?Branch
     {
-        return $branch->load([
-            'services' => function ($query) {
-                $query->active();
-            },
-            'staff' => function ($query) {
-                $query->active();
-            }
-        ]);
+        return $this->branchRepository->getById($id);
+    }
+
+    /**
+     * Create a new branch.
+     */
+    public function createBranch(array $data): Branch
+    {
+        return $this->branchRepository->create($data);
+    }
+
+    /**
+     * Update a branch.
+     */
+    public function updateBranch(Branch $branch, array $data): Branch
+    {
+        return $this->branchRepository->updateModel($branch, $data);
+    }
+
+    /**
+     * Delete a branch.
+     */
+    public function deleteBranch(Branch $branch): bool
+    {
+        return $this->branchRepository->deleteModel($branch);
     }
 
     /**
      * Get available time slots for a branch.
      */
-    public function getAvailableSlots(Branch $branch, string $date, int $serviceId, ?int $staffId = null): array
+    public function getAvailableSlots(int $branchId, string $date, int $serviceId, ?int $staffId = null): array
     {
-        $service = Service::findOrFail($serviceId);
-        $bookingDate = Carbon::parse($date);
+        $branch = $this->getBranchById($branchId);
+        
+        if (!$branch) {
+            throw new \Exception('Branch not found');
+        }
         
         // Get existing bookings for the date
-        $existingBookings = Booking::where('branch_id', $branch->id)
-            ->where('booking_date', $bookingDate)
-            ->where('status', '!=', 'cancelled')
-            ->where('status', '!=', 'no_show')
-            ->when($staffId, function ($query) use ($staffId) {
-                $query->where('staff_id', $staffId);
-            })
-            ->get()
-            ->pluck('booking_time')
-            ->map(function ($time) {
-                return Carbon::parse($time)->format('H:i');
-            })
-            ->toArray();
-
+        $existingBookings = $this->branchRepository->getBookingsForDate($branchId, $date, $staffId);
+        
         // Generate time slots (9:00 AM to 6:00 PM, 30-minute intervals)
         $slots = [];
-        $startTime = $bookingDate->copy()->setTime(9, 0);
-        $endTime = $bookingDate->copy()->setTime(18, 0);
-
+        $startTime = \Carbon\Carbon::parse($date)->setTime(9, 0);
+        $endTime = \Carbon\Carbon::parse($date)->setTime(18, 0);
+        
         while ($startTime->lt($endTime)) {
             $timeString = $startTime->format('H:i');
-            $isAvailable = !in_array($timeString, $existingBookings);
+            $isAvailable = !$existingBookings->contains('booking_time', $timeString);
             
             $slot = [
                 'time' => $timeString,
                 'available' => $isAvailable,
             ];
-
+            
             if ($isAvailable) {
                 // Get available staff for this time slot
-                $availableStaff = $this->getAvailableStaff($branch, $serviceId, $startTime);
+                $availableStaff = $this->branchRepository->getAvailableStaff($branchId, $serviceId, $startTime);
                 $slot['staff'] = $availableStaff;
             } else {
                 $slot['reason'] = 'Fully booked';
             }
-
+            
             $slots[] = $slot;
             $startTime->addMinutes(30);
         }
-
+        
         return $slots;
-    }
-
-    /**
-     * Get available staff for a specific time slot.
-     */
-    private function getAvailableStaff(Branch $branch, int $serviceId, Carbon $timeSlot): array
-    {
-        return $branch->staff()
-            ->active()
-            ->whereHas('services', function ($query) use ($serviceId) {
-                $query->where('services.id', $serviceId);
-            })
-            ->get()
-            ->map(function ($staff) {
-                return [
-                    'id' => $staff->id,
-                    'name' => $staff->name,
-                    'avatar' => $staff->avatar,
-                    'rating' => $staff->rating,
-                    'years_of_experience' => $staff->years_of_experience,
-                ];
-            })
-            ->toArray();
     }
 
     /**
@@ -125,14 +109,6 @@ class BranchService
      */
     public function getNearbyBranches(float $latitude, float $longitude, float $radiusKm = 10): Collection
     {
-        return Branch::active()
-            ->get()
-            ->filter(function ($branch) use ($latitude, $longitude, $radiusKm) {
-                return $branch->distanceFrom($latitude, $longitude) <= $radiusKm;
-            })
-            ->sortBy(function ($branch) use ($latitude, $longitude) {
-                return $branch->distanceFrom($latitude, $longitude);
-            })
-            ->values();
+        return $this->branchRepository->getNearby($latitude, $longitude, $radiusKm);
     }
 }

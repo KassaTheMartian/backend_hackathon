@@ -3,44 +3,30 @@
 namespace App\Services;
 
 use App\Models\Review;
-use App\Models\Service;
-use App\Models\Staff;
+use App\Repositories\Contracts\ReviewRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 class ReviewService
 {
+    public function __construct(
+        private ReviewRepositoryInterface $reviewRepository
+    ) {}
+
     /**
      * Get reviews with filters.
      */
     public function getReviews(array $filters = []): LengthAwarePaginator
     {
-        $query = Review::with(['user', 'service', 'staff', 'branch'])
-            ->approved()
-            ->latest();
-
-        // Apply filters
-        if (isset($filters['service_id'])) {
-            $query->where('service_id', $filters['service_id']);
-        }
-
-        if (isset($filters['rating'])) {
-            $query->where('rating', $filters['rating']);
-        }
-
-        if (isset($filters['min_rating'])) {
-            $query->where('rating', '>=', $filters['min_rating']);
-        }
-
-        return $query->paginate($filters['per_page'] ?? 15);
+        return $this->reviewRepository->getWithFilters($filters);
     }
 
     /**
-     * Get review with details.
+     * Get review by ID.
      */
-    public function getReviewWithDetails(Review $review): Review
+    public function getReviewById(int $id): ?Review
     {
-        return $review->load(['user', 'service', 'staff', 'branch']);
+        return $this->reviewRepository->getById($id);
     }
 
     /**
@@ -48,44 +34,62 @@ class ReviewService
      */
     public function createReview(array $data): Review
     {
-        $review = Review::create($data);
-
-        // Update service and staff ratings
-        $this->updateServiceRating($review->service);
-        if ($review->staff) {
-            $this->updateStaffRating($review->staff);
-        }
-
-        return $review;
+        return $this->reviewRepository->create($data);
     }
 
     /**
-     * Update service rating.
+     * Update a review.
      */
-    private function updateServiceRating(Service $service): void
+    public function updateReview(Review $review, array $data): Review
     {
-        $reviews = $service->reviews()->approved();
-        $averageRating = $reviews->avg('rating') ?? 0;
-        $totalReviews = $reviews->count();
-
-        $service->update([
-            'rating' => round($averageRating, 2),
-            'total_reviews' => $totalReviews,
-        ]);
+        return $this->reviewRepository->updateModel($review, $data);
     }
 
     /**
-     * Update staff rating.
+     * Delete a review.
      */
-    private function updateStaffRating(Staff $staff): void
+    public function deleteReview(Review $review): bool
     {
-        $reviews = $staff->reviews()->approved();
-        $averageRating = $reviews->avg('rating') ?? 0;
-        $totalReviews = $reviews->count();
+        return $this->reviewRepository->deleteModel($review);
+    }
 
-        $staff->update([
-            'rating' => round($averageRating, 2),
-            'total_reviews' => $totalReviews,
-        ]);
+    /**
+     * Approve a review.
+     */
+    public function approveReview(Review $review): Review
+    {
+        return $this->reviewRepository->approve($review);
+    }
+
+    /**
+     * Reject a review.
+     */
+    public function rejectReview(Review $review, string $reason): Review
+    {
+        return $this->reviewRepository->reject($review, $reason);
+    }
+
+    /**
+     * Get review statistics.
+     */
+    public function getReviewStats(array $filters = []): array
+    {
+        return $this->reviewRepository->getStats($filters);
+    }
+
+    /**
+     * Get reviews for a service.
+     */
+    public function getServiceReviews(int $serviceId, array $filters = []): LengthAwarePaginator
+    {
+        return $this->reviewRepository->getForService($serviceId, $filters);
+    }
+
+    /**
+     * Get reviews for a staff member.
+     */
+    public function getStaffReviews(int $staffId, array $filters = []): LengthAwarePaginator
+    {
+        return $this->reviewRepository->getForStaff($staffId, $filters);
     }
 }

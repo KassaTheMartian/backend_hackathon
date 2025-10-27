@@ -26,14 +26,6 @@ class ActivityLog extends Model
     ];
 
     /**
-     * Get the user who performed the activity.
-     */
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    /**
      * Get the subject of the activity.
      */
     public function subject(): MorphTo
@@ -50,7 +42,15 @@ class ActivityLog extends Model
     }
 
     /**
-     * Scope a query to filter by log name.
+     * Get the user who performed the activity.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Scope a query to only include activities for a specific log name.
      */
     public function scopeLogName($query, $logName)
     {
@@ -58,44 +58,28 @@ class ActivityLog extends Model
     }
 
     /**
-     * Scope a query to filter by user.
+     * Scope a query to only include activities for a specific subject.
+     */
+    public function scopeSubject($query, $subject)
+    {
+        return $query->where('subject_type', get_class($subject))
+                    ->where('subject_id', $subject->id);
+    }
+
+    /**
+     * Scope a query to only include activities for a specific causer.
+     */
+    public function scopeCauser($query, $causer)
+    {
+        return $query->where('causer_type', get_class($causer))
+                    ->where('causer_id', $causer->id);
+    }
+
+    /**
+     * Scope a query to only include activities for a specific user.
      */
     public function scopeForUser($query, $userId)
     {
         return $query->where('user_id', $userId);
-    }
-
-    /**
-     * Scope a query to filter by subject.
-     */
-    public function scopeForSubject($query, $subjectType, $subjectId)
-    {
-        return $query->where('subject_type', $subjectType)
-                    ->where('subject_id', $subjectId);
-    }
-
-    /**
-     * Scope a query to filter by causer.
-     */
-    public function scopeCausedBy($query, $causerType, $causerId)
-    {
-        return $query->where('causer_type', $causerType)
-                    ->where('causer_id', $causerId);
-    }
-
-    /**
-     * Log an activity.
-     */
-    public static function log(string $logName, string $description, $subject = null, $causer = null, array $properties = []): self
-    {
-        return static::create([
-            'log_name' => $logName,
-            'description' => $description,
-            'subject_type' => $subject ? get_class($subject) : null,
-            'subject_id' => $subject ? $subject->id : null,
-            'causer_type' => $causer ? get_class($causer) : null,
-            'causer_id' => $causer ? $causer->id : null,
-            'properties' => $properties,
-        ]);
     }
 }

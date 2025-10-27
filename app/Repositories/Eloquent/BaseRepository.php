@@ -101,6 +101,11 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return $this->query()->find($id);
     }
 
+    public function getById(int $id): ?Model
+    {
+        return $this->find($id);
+    }
+
     public function create(array $attributes): Model
     {
         return $this->query()->create($attributes);
@@ -117,6 +122,13 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return $entity;
     }
 
+    public function updateModel(Model $model, array $attributes): Model
+    {
+        $model->fill($attributes);
+        $model->save();
+        return $model;
+    }
+
     public function delete(int $id): bool
     {
         $entity = $this->find($id);
@@ -124,6 +136,11 @@ abstract class BaseRepository implements BaseRepositoryInterface
             return false;
         }
         return (bool) $entity->delete();
+    }
+
+    public function deleteModel(Model $model): bool
+    {
+        return (bool) $model->delete();
     }
 }
 

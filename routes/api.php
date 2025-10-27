@@ -43,12 +43,17 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::get('/reviews/{review}', [V1ReviewController::class, 'show']);
         
         Route::get('/posts', [V1PostController::class, 'index']);
+        Route::get('/posts/featured', [V1PostController::class, 'featured']);
         Route::get('/posts/{post}', [V1PostController::class, 'show']);
         
         Route::post('/contact', [V1ContactController::class, 'store']);
         
         Route::post('/chatbot/message', [V1ChatbotController::class, 'sendMessage']);
-        Route::get('/chatbot/session/{sessionId}', [V1ChatbotController::class, 'getHistory']);
+        Route::get('/chatbot/sessions', [V1ChatbotController::class, 'sessions']);
+        Route::post('/chatbot/sessions', [V1ChatbotController::class, 'createSession']);
+        Route::get('/chatbot/sessions/{session}', [V1ChatbotController::class, 'show']);
+        Route::delete('/chatbot/sessions/{session}', [V1ChatbotController::class, 'destroy']);
+        Route::delete('/chatbot/sessions/{session}/messages', [V1ChatbotController::class, 'clearMessages']);
 
         // Authenticated routes
         Route::middleware('auth:sanctum')->group(function () {
@@ -72,6 +77,11 @@ Route::middleware(['throttle:api'])->group(function () {
             Route::get('/profile', [V1ProfileController::class, 'show']);
             Route::put('/profile', [V1ProfileController::class, 'update']);
             Route::put('/profile/password', [V1ProfileController::class, 'changePassword']);
+            Route::post('/profile/avatar', [V1ProfileController::class, 'updateAvatar']);
+            Route::delete('/profile/avatar', [V1ProfileController::class, 'deleteAvatar']);
+            Route::put('/profile/language', [V1ProfileController::class, 'updateLanguage']);
+            Route::get('/profile/stats', [V1ProfileController::class, 'stats']);
+            Route::post('/profile/deactivate', [V1ProfileController::class, 'deactivate']);
             Route::get('/profile/promotions', [V1ProfileController::class, 'promotions']);
         });
 

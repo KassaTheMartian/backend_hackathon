@@ -3,77 +3,38 @@
 namespace App\Services;
 
 use App\Models\Service;
-use App\Models\ServiceCategory;
+use App\Repositories\Contracts\ServiceRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 class ServiceService
 {
+    public function __construct(
+        private ServiceRepositoryInterface $serviceRepository
+    ) {}
+
     /**
      * Get services with filters.
      */
     public function getServices(array $filters = []): LengthAwarePaginator
     {
-        $query = Service::with(['category', 'branches', 'reviews'])
-            ->active()
-            ->ordered();
-
-        // Apply filters
-        if (isset($filters['category_id'])) {
-            $query->where('category_id', $filters['category_id']);
-        }
-
-        if (isset($filters['is_featured'])) {
-            $query->featured();
-        }
-
-        if (isset($filters['min_price'])) {
-            $query->where('price', '>=', $filters['min_price']);
-        }
-
-        if (isset($filters['max_price'])) {
-            $query->where('price', '<=', $filters['max_price']);
-        }
-
-        if (isset($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->whereRaw('JSON_EXTRACT(name, "$.vi") LIKE ?', ["%{$filters['search']}%"])
-                  ->orWhereRaw('JSON_EXTRACT(name, "$.en") LIKE ?', ["%{$filters['search']}%"]);
-            });
-        }
-
-        // Apply sorting
-        $sortBy = $filters['sort'] ?? 'display_order';
-        $sortOrder = $filters['order'] ?? 'asc';
-        
-        if ($sortBy === 'price') {
-            $query->orderBy('price', $sortOrder);
-        } elseif ($sortBy === 'name') {
-            $query->orderByRaw("JSON_EXTRACT(name, '$.vi') {$sortOrder}");
-        } else {
-            $query->orderBy($sortBy, $sortOrder);
-        }
-
-        return $query->paginate($filters['per_page'] ?? 15);
+        return $this->serviceRepository->getWithFilters($filters);
     }
 
     /**
-     * Get service with details.
+     * Get service by ID.
      */
-    public function getServiceWithDetails(Service $service, string $locale = 'vi'): Service
+    public function getServiceById(int $id): ?Service
     {
-        return $service->load([
-            'category',
-            'branches' => function ($query) {
-                $query->active();
-            },
-            'staff' => function ($query) {
-                $query->active();
-            },
-            'reviews' => function ($query) {
-                $query->approved()->latest();
-            }
-        ]);
+        return $this->serviceRepository->getById($id);
+    }
+
+    /**
+     * Get service by slug.
+     */
+    public function getServiceBySlug(string $slug): ?Service
+    {
+        return $this->serviceRepository->getBySlug($slug);
     }
 
     /**
@@ -81,7 +42,7 @@ class ServiceService
      */
     public function createService(array $data): Service
     {
-        return Service::create($data);
+        return $this->serviceRepository->create($data);
     }
 
     /**
@@ -89,36 +50,15 @@ class ServiceService
      */
     public function updateService(Service $service, array $data): Service
     {
-        $service->update($data);
-        return $service->fresh();
+        return $this->serviceRepository->updateModel($service, $data);
     }
 
     /**
      * Delete a service.
      */
-    public function deleteService(Service $service): void
+    public function deleteService(Service $service): bool
     {
-        $service->delete();
-    }
-
-    /**
-     * Get service categories.
-     */
-    public function getCategories(string $locale = 'vi'): Collection
-    {
-        return ServiceCategory::active()
-            ->ordered()
-            ->get()
-            ->map(function ($category) use ($locale) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name[$locale] ?? $category->name['vi'] ?? '',
-                    'slug' => $category->slug,
-                    'description' => $category->description[$locale] ?? $category->description['vi'] ?? '',
-                    'icon' => $category->icon,
-                    'services_count' => $category->services()->active()->count(),
-                ];
-            });
+        return $this->serviceRepository->deleteModel($service);
     }
 
     /**
@@ -126,12 +66,7 @@ class ServiceService
      */
     public function getFeaturedServices(int $limit = 6): Collection
     {
-        return Service::with(['category', 'branches'])
-            ->active()
-            ->featured()
-            ->ordered()
-            ->limit($limit)
-            ->get();
+        return $this->serviceRepository->getFeatured($limit);
     }
 
     /**
@@ -139,13 +74,7 @@ class ServiceService
      */
     public function getRelatedServices(Service $service, int $limit = 4): Collection
     {
-        return Service::with(['category'])
-            ->where('category_id', $service->category_id)
-            ->where('id', '!=', $service->id)
-            ->active()
-            ->ordered()
-            ->limit($limit)
-            ->get();
+        return $this->serviceRepository->getRelated($service, $limit);
     }
 
     /**
@@ -153,6 +82,14 @@ class ServiceService
      */
     public function incrementViews(Service $service): void
     {
-        $service->increment('views_count');
+        $this->serviceRepository->incrementViews($service);
+    }
+
+    /**
+     * Get service categories.
+     */
+    public function getCategories(string $locale = 'vi'): Collection
+    {
+        return $this->serviceRepository->getCategories($locale);
     }
 }

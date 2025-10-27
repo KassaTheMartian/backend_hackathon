@@ -3,28 +3,76 @@
 namespace App\Services;
 
 use App\Models\ContactSubmission;
-use Illuminate\Support\Facades\Mail;
+use App\Repositories\Contracts\ContactRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ContactService
 {
+    public function __construct(
+        private ContactRepositoryInterface $contactRepository
+    ) {}
+
+    /**
+     * Get contact submissions with filters.
+     */
+    public function getSubmissions(array $filters = []): LengthAwarePaginator
+    {
+        return $this->contactRepository->getWithFilters($filters);
+    }
+
+    /**
+     * Get submission by ID.
+     */
+    public function getSubmissionById(int $id): ?ContactSubmission
+    {
+        return $this->contactRepository->getById($id);
+    }
+
     /**
      * Create a new contact submission.
      */
     public function createSubmission(array $data): ContactSubmission
     {
-        $submission = ContactSubmission::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'] ?? null,
-            'subject' => $data['subject'] ?? null,
-            'message' => $data['message'],
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        return $this->contactRepository->create($data);
+    }
 
-        // Send notification email to admin
-        // Mail::to(config('mail.admin_email'))->send(new ContactFormNotification($submission));
+    /**
+     * Mark submission as read.
+     */
+    public function markAsRead(ContactSubmission $submission): ContactSubmission
+    {
+        return $this->contactRepository->markAsRead($submission);
+    }
 
-        return $submission;
+    /**
+     * Mark submission as unread.
+     */
+    public function markAsUnread(ContactSubmission $submission): ContactSubmission
+    {
+        return $this->contactRepository->markAsUnread($submission);
+    }
+
+    /**
+     * Reply to submission.
+     */
+    public function replyToSubmission(ContactSubmission $submission, string $reply): ContactSubmission
+    {
+        return $this->contactRepository->reply($submission, $reply);
+    }
+
+    /**
+     * Delete a submission.
+     */
+    public function deleteSubmission(ContactSubmission $submission): bool
+    {
+        return $this->contactRepository->delete($submission);
+    }
+
+    /**
+     * Get unread submissions count.
+     */
+    public function getUnreadCount(): int
+    {
+        return $this->contactRepository->getUnreadCount();
     }
 }

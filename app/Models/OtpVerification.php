@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OtpVerification extends Model
 {
@@ -42,30 +43,6 @@ class OtpVerification extends Model
     }
 
     /**
-     * Scope a query to filter by phone or email.
-     */
-    public function scopeForContact($query, $contact)
-    {
-        return $query->where('phone_or_email', $contact);
-    }
-
-    /**
-     * Scope a query to filter by type.
-     */
-    public function scopeOfType($query, $type)
-    {
-        return $query->where('type', $type);
-    }
-
-    /**
-     * Scope a query to filter by purpose.
-     */
-    public function scopeForPurpose($query, $purpose)
-    {
-        return $query->where('purpose', $purpose);
-    }
-
-    /**
      * Check if the OTP is expired.
      */
     public function isExpired(): bool
@@ -82,14 +59,6 @@ class OtpVerification extends Model
     }
 
     /**
-     * Check if the OTP is valid (not expired and not verified).
-     */
-    public function isValid(): bool
-    {
-        return !$this->isExpired() && !$this->isVerified();
-    }
-
-    /**
      * Mark the OTP as verified.
      */
     public function markAsVerified(): void
@@ -98,26 +67,10 @@ class OtpVerification extends Model
     }
 
     /**
-     * Increment the attempts count.
+     * Increment the attempt count.
      */
     public function incrementAttempts(): void
     {
         $this->increment('attempts');
-    }
-
-    /**
-     * Check if the OTP has exceeded max attempts.
-     */
-    public function hasExceededMaxAttempts(int $maxAttempts = 5): bool
-    {
-        return $this->attempts >= $maxAttempts;
-    }
-
-    /**
-     * Generate a random OTP.
-     */
-    public static function generateOtp(): string
-    {
-        return str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
     }
 }

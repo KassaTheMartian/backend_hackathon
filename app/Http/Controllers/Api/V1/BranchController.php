@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Branch\BranchResource;
+use App\Http\Requests\Branch\StoreBranchRequest;
+use App\Http\Requests\Branch\UpdateBranchRequest;
 use App\Http\Resources\Branch\BranchCollection;
-use App\Models\Branch;
+use App\Http\Resources\Branch\BranchResource;
 use App\Services\BranchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,11 +36,45 @@ class BranchController extends Controller
     }
 
     /**
+     * Store a newly created branch.
+     */
+    public function store(StoreBranchRequest $request): JsonResponse
+    {
+        $branch = $this->branchService->createBranch($request->validated());
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Branch created successfully',
+            'data' => new BranchResource($branch),
+            'error' => null,
+            'meta' => null,
+            'trace_id' => $request->header('X-Trace-ID'),
+            'timestamp' => now()->toISOString(),
+        ], 201);
+    }
+
+    /**
      * Display the specified branch.
      */
-    public function show(Request $request, Branch $branch): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
-        $branch = $this->branchService->getBranchWithDetails($branch, $request->get('locale', 'vi'));
+        $branch = $this->branchService->getBranchById($id);
+        
+        if (!$branch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch not found',
+                'data' => null,
+                'error' => [
+                    'type' => 'NotFoundError',
+                    'code' => 'NOT_FOUND',
+                    'details' => []
+                ],
+                'meta' => null,
+                'trace_id' => $request->header('X-Trace-ID'),
+                'timestamp' => now()->toISOString(),
+            ], 404);
+        }
         
         return response()->json([
             'success' => true,
@@ -53,18 +88,90 @@ class BranchController extends Controller
     }
 
     /**
+     * Update the specified branch.
+     */
+    public function update(UpdateBranchRequest $request, int $id): JsonResponse
+    {
+        $branch = $this->branchService->getBranchById($id);
+        
+        if (!$branch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch not found',
+                'data' => null,
+                'error' => [
+                    'type' => 'NotFoundError',
+                    'code' => 'NOT_FOUND',
+                    'details' => []
+                ],
+                'meta' => null,
+                'trace_id' => $request->header('X-Trace-ID'),
+                'timestamp' => now()->toISOString(),
+            ], 404);
+        }
+        
+        $updatedBranch = $this->branchService->updateBranch($branch, $request->validated());
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Branch updated successfully',
+            'data' => new BranchResource($updatedBranch),
+            'error' => null,
+            'meta' => null,
+            'trace_id' => $request->header('X-Trace-ID'),
+            'timestamp' => now()->toISOString(),
+        ]);
+    }
+
+    /**
+     * Remove the specified branch.
+     */
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $branch = $this->branchService->getBranchById($id);
+        
+        if (!$branch) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch not found',
+                'data' => null,
+                'error' => [
+                    'type' => 'NotFoundError',
+                    'code' => 'NOT_FOUND',
+                    'details' => []
+                ],
+                'meta' => null,
+                'trace_id' => $request->header('X-Trace-ID'),
+                'timestamp' => now()->toISOString(),
+            ], 404);
+        }
+        
+        $this->branchService->deleteBranch($branch);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Branch deleted successfully',
+            'data' => null,
+            'error' => null,
+            'meta' => null,
+            'trace_id' => $request->header('X-Trace-ID'),
+            'timestamp' => now()->toISOString(),
+        ]);
+    }
+
+    /**
      * Get available time slots for a branch.
      */
-    public function availableSlots(Request $request, Branch $branch): JsonResponse
+    public function availableSlots(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'date' => 'required|date|after_or_equal:today',
-            'service_id' => 'required|exists:services,id',
-            'staff_id' => 'nullable|exists:staff,id',
+            'date' => 'required|date',
+            'service_id' => 'required|integer|exists:services,id',
+            'staff_id' => 'nullable|integer|exists:staff,id',
         ]);
-
+        
         $slots = $this->branchService->getAvailableSlots(
-            $branch,
+            $id,
             $request->date,
             $request->service_id,
             $request->staff_id
@@ -73,10 +180,7 @@ class BranchController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'OK',
-            'data' => [
-                'date' => $request->date,
-                'available_slots' => $slots,
-            ],
+            'data' => $slots,
             'error' => null,
             'meta' => null,
             'trace_id' => $request->header('X-Trace-ID'),

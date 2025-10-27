@@ -58,7 +58,7 @@ return new class extends Migration
             $table->index('category_id');
             $table->index('status');
             $table->index('published_at');
-            $table->fullText(['title', 'excerpt', 'content']);
+            // Fulltext index not supported for JSON columns
         });
 
         // Post Tags table

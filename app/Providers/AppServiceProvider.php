@@ -25,6 +25,62 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AuthRepositoryInterface::class, EloquentAuthRepository::class);
         $this->app->bind(DemoRepositoryInterface::class, EloquentDemoRepository::class);
         
+        // New repository bindings
+        $this->app->bind(
+            \App\Repositories\Contracts\ServiceCategoryRepositoryInterface::class,
+            \App\Repositories\Eloquent\ServiceCategoryRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\ServiceRepositoryInterface::class,
+            \App\Repositories\Eloquent\ServiceRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\BranchRepositoryInterface::class,
+            \App\Repositories\Eloquent\BranchRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\StaffRepositoryInterface::class,
+            \App\Repositories\Eloquent\StaffRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\BookingRepositoryInterface::class,
+            \App\Repositories\Eloquent\BookingRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\ReviewRepositoryInterface::class,
+            \App\Repositories\Eloquent\ReviewRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\PromotionRepositoryInterface::class,
+            \App\Repositories\Eloquent\PromotionRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\PostRepositoryInterface::class,
+            \App\Repositories\Eloquent\PostRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\ContactRepositoryInterface::class,
+            \App\Repositories\Eloquent\ContactRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\ChatRepositoryInterface::class,
+            \App\Repositories\Eloquent\ChatRepository::class
+        );
+        
+        $this->app->bind(
+            \App\Repositories\Contracts\UserRepositoryInterface::class,
+            \App\Repositories\Eloquent\UserRepository::class
+        );
+        
         // Service bindings
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
         $this->app->bind(DemoServiceInterface::class, DemoService::class);
