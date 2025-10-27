@@ -6,7 +6,7 @@ use App\Models\ChatSession;
 use App\Models\ChatMessage;
 use Illuminate\Database\Eloquent\Collection;
 
-interface ChatRepositoryInterface
+interface ChatRepositoryInterface extends BaseRepositoryInterface
 {
     public function getUserSessions(int $userId): Collection;
     public function getSessionById(int $id): ?ChatSession;

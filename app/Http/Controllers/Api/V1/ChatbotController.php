@@ -21,15 +21,7 @@ class ChatbotController extends Controller
     {
         $response = $this->chatbotService->processMessage($request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => $response,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok($response);
     }
 
     /**
@@ -39,14 +31,6 @@ class ChatbotController extends Controller
     {
         $history = $this->chatbotService->getChatHistory($sessionId);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => $history,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok($history);
     }
 }

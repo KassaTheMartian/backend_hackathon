@@ -23,15 +23,7 @@ class ProfileController extends Controller
     {
         $user = $this->profileService->getUserProfile($request->user());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new UserResource($user),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new UserResource($user));
     }
 
     /**
@@ -41,15 +33,7 @@ class ProfileController extends Controller
     {
         $user = $this->profileService->updateProfile($request->user(), $request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Profile updated successfully',
-            'data' => new UserResource($user),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new UserResource($user), 'Profile updated successfully');
     }
 
     /**
@@ -59,15 +43,7 @@ class ProfileController extends Controller
     {
         $this->profileService->changePassword($request->user(), $request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Password changed successfully',
-            'data' => null,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(null, 'Password changed successfully');
     }
 
     /**
@@ -77,14 +53,6 @@ class ProfileController extends Controller
     {
         $promotions = $this->profileService->getUserPromotions($request->user());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => $promotions,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok($promotions);
     }
 }

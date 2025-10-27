@@ -23,11 +23,7 @@ interface BaseRepositoryInterface
 
     public function update(int $id, array $attributes): ?Model;
 
-    public function updateModel(Model $model, array $attributes): Model;
-
     public function delete(int $id): bool;
-
-    public function deleteModel(Model $model): bool;
 }
 
 

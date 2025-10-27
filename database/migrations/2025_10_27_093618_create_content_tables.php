@@ -99,8 +99,8 @@ return new class extends Migration
             $table->enum('applicable_to', ['all', 'services', 'specific'])->default('all');
             $table->json('applicable_services')->nullable()->comment('Array of service IDs');
             
-            $table->timestamp('valid_from');
-            $table->timestamp('valid_to');
+            $table->timestamp('valid_from')->nullable();
+            $table->timestamp('valid_to')->nullable();
             
             $table->boolean('is_active')->default(true);
             

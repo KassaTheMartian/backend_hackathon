@@ -27,15 +27,7 @@ class PaymentController extends Controller
         $booking = Booking::findOrFail($request->booking_id);
         $paymentIntent = $this->paymentService->createPaymentIntent($booking);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => $paymentIntent,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok($paymentIntent);
     }
 
     /**
@@ -56,15 +48,7 @@ class PaymentController extends Controller
             $request->payment_method
         );
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Payment confirmed successfully',
-            'data' => new PaymentResource($payment),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new PaymentResource($payment), 'Payment confirmed successfully');
     }
 
     /**
@@ -74,14 +58,6 @@ class PaymentController extends Controller
     {
         $this->paymentService->handleWebhook($request);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Webhook processed successfully',
-            'data' => null,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(null, 'Webhook processed successfully');
     }
 }

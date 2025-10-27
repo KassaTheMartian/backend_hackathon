@@ -23,23 +23,9 @@ class ReviewController extends Controller
     public function index(Request $request): JsonResponse
     {
         $reviews = $this->reviewService->getReviews($request->all());
+        $items = $reviews->through(fn($review) => new ReviewResource($review));
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new ReviewCollection($reviews),
-            'error' => null,
-            'meta' => [
-                'page' => $reviews->currentPage(),
-                'page_size' => $reviews->perPage(),
-                'total_count' => $reviews->total(),
-                'total_pages' => $reviews->lastPage(),
-                'has_next_page' => $reviews->hasMorePages(),
-                'has_previous_page' => $reviews->currentPage() > 1,
-            ],
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->paginated($items);
     }
 
     /**
@@ -49,15 +35,7 @@ class ReviewController extends Controller
     {
         $review = $this->reviewService->createReview($request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Review submitted successfully. Waiting for approval.',
-            'data' => new ReviewResource($review),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ], 201);
+        return $this->created(new ReviewResource($review), 'Review submitted successfully. Waiting for approval.');
     }
 
     /**
@@ -67,14 +45,6 @@ class ReviewController extends Controller
     {
         $review = $this->reviewService->getReviewWithDetails($review);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new ReviewResource($review),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new ReviewResource($review));
     }
 }

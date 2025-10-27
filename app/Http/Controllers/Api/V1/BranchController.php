@@ -24,15 +24,7 @@ class BranchController extends Controller
     {
         $branches = $this->branchService->getBranches($request->all());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new BranchCollection($branches),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new BranchCollection($branches));
     }
 
     /**
@@ -42,15 +34,7 @@ class BranchController extends Controller
     {
         $branch = $this->branchService->createBranch($request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Branch created successfully',
-            'data' => new BranchResource($branch),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ], 201);
+        return $this->created(new BranchResource($branch), 'Branch created successfully');
     }
 
     /**
@@ -61,30 +45,10 @@ class BranchController extends Controller
         $branch = $this->branchService->getBranchById($id);
         
         if (!$branch) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Branch not found',
-                'data' => null,
-                'error' => [
-                    'type' => 'NotFoundError',
-                    'code' => 'NOT_FOUND',
-                    'details' => []
-                ],
-                'meta' => null,
-                'trace_id' => $request->header('X-Trace-ID'),
-                'timestamp' => now()->toISOString(),
-            ], 404);
+            $this->notFound('Branch');
         }
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new BranchResource($branch),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new BranchResource($branch));
     }
 
     /**
@@ -95,32 +59,12 @@ class BranchController extends Controller
         $branch = $this->branchService->getBranchById($id);
         
         if (!$branch) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Branch not found',
-                'data' => null,
-                'error' => [
-                    'type' => 'NotFoundError',
-                    'code' => 'NOT_FOUND',
-                    'details' => []
-                ],
-                'meta' => null,
-                'trace_id' => $request->header('X-Trace-ID'),
-                'timestamp' => now()->toISOString(),
-            ], 404);
+            $this->notFound('Branch');
         }
         
         $updatedBranch = $this->branchService->updateBranch($branch, $request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Branch updated successfully',
-            'data' => new BranchResource($updatedBranch),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new BranchResource($updatedBranch), 'Branch updated successfully');
     }
 
     /**
@@ -131,32 +75,12 @@ class BranchController extends Controller
         $branch = $this->branchService->getBranchById($id);
         
         if (!$branch) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Branch not found',
-                'data' => null,
-                'error' => [
-                    'type' => 'NotFoundError',
-                    'code' => 'NOT_FOUND',
-                    'details' => []
-                ],
-                'meta' => null,
-                'trace_id' => $request->header('X-Trace-ID'),
-                'timestamp' => now()->toISOString(),
-            ], 404);
+            $this->notFound('Branch');
         }
         
         $this->branchService->deleteBranch($branch);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Branch deleted successfully',
-            'data' => null,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(null, 'Branch deleted successfully');
     }
 
     /**
@@ -177,14 +101,6 @@ class BranchController extends Controller
             $request->staff_id
         );
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => $slots,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok($slots);
     }
 }

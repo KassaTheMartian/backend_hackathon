@@ -8,14 +8,19 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ContactRepository extends BaseRepository implements ContactRepositoryInterface
 {
-    public function getById(int $id): ?ContactSubmission
+    public function __construct(ContactSubmission $model)
     {
-        return $this->model->find($id);
+        parent::__construct($model);
+    }
+
+    protected function allowedIncludes(): array
+    {
+        return [];
     }
 
     public function getWithFilters(array $filters = []): LengthAwarePaginator
     {
-        $query = $this->model->newQuery();
+        $query = $this->query();
 
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -58,6 +63,6 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
 
     public function getUnreadCount(): int
     {
-        return $this->model->where('status', 'unread')->count();
+        return $this->query()->where('status', 'unread')->count();
     }
 }

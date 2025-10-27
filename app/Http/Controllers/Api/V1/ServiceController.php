@@ -24,23 +24,9 @@ class ServiceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $services = $this->serviceService->getServices($request->all());
+        $items = $services->through(fn($service) => new ServiceResource($service));
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new ServiceCollection($services),
-            'error' => null,
-            'meta' => [
-                'page' => $services->currentPage(),
-                'page_size' => $services->perPage(),
-                'total_count' => $services->total(),
-                'total_pages' => $services->lastPage(),
-                'has_next_page' => $services->hasMorePages(),
-                'has_previous_page' => $services->currentPage() > 1,
-            ],
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->paginated($items);
     }
 
     /**
@@ -50,15 +36,7 @@ class ServiceController extends Controller
     {
         $service = $this->serviceService->createService($request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Service created successfully',
-            'data' => new ServiceResource($service),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ], 201);
+        return $this->created(new ServiceResource($service), 'Service created successfully');
     }
 
     /**
@@ -68,15 +46,7 @@ class ServiceController extends Controller
     {
         $service = $this->serviceService->getServiceWithDetails($service, $request->get('locale', 'vi'));
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new ServiceResource($service),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new ServiceResource($service));
     }
 
     /**
@@ -86,15 +56,7 @@ class ServiceController extends Controller
     {
         $service = $this->serviceService->updateService($service, $request->validated());
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Service updated successfully',
-            'data' => new ServiceResource($service),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new ServiceResource($service), 'Service updated successfully');
     }
 
     /**
@@ -104,15 +66,7 @@ class ServiceController extends Controller
     {
         $this->serviceService->deleteService($service);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Service deleted successfully',
-            'data' => null,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => request()->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(null, 'Service deleted successfully');
     }
 
     /**
@@ -122,14 +76,6 @@ class ServiceController extends Controller
     {
         $categories = $this->serviceService->getCategories($request->get('locale', 'vi'));
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => $categories,
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok($categories);
     }
 }
