@@ -24,6 +24,7 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::post('/auth/register', [V1AuthController::class, 'register']);
         Route::post('/auth/forgot-password', [V1AuthController::class, 'forgotPassword']);
         Route::post('/auth/reset-password', [V1AuthController::class, 'resetPassword']);
+        Route::post('/auth/test-email', [V1AuthController::class, 'testEmail']);
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('/auth/me', [V1AuthController::class, 'me']);
             Route::post('/auth/logout', [V1AuthController::class, 'logout']);

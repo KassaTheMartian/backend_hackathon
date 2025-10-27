@@ -11,6 +11,7 @@ use App\Http\Responses\ApiResponse;
 use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -112,7 +113,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'avatar' => $user->avatar,
-            'date_of_birth' => $user->date_of_birth ? $user->date_of_birth->format('Y-m-d') : null,
+            'date_of_birth' => $user->date_of_birth?->format('Y-m-d'),
             'gender' => $user->gender,
             'address' => $user->address,
             'language_preference' => $user->language_preference ?? 'vi',
@@ -225,6 +226,57 @@ class AuthController extends Controller
             return $this->ok($result);
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 'Password Reset Failed', 'RESET_PASSWORD_ERROR', 400);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *   path="/api/v1/auth/test-email",
+     *   summary="Test email sending",
+     *   tags={"Auth"},
+     *   @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *       required={"email"},
+     *       @OA\Property(property="email", type="string", format="email", example="test@example.com")
+     *     )
+     *   ),
+     *   @OA\Response(response=200, description="Email sent successfully", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *   @OA\Response(response=500, description="Email sending failed", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     * 
+     * @param Request $request The HTTP request containing email
+     * @return JsonResponse The test email response
+     */
+    public function testEmail(Request $request): JsonResponse
+    {
+        try {
+            $email = $request->input('email');
+            
+            if (!$email) {
+                return ApiResponse::error('Email is required', 'Validation Error', 'VALIDATION_ERROR', 422);
+            }
+
+            // Gửi email test
+            Mail::raw('Đây là email test từ Beauty Clinic API! 🎉', function ($message) use ($email) {
+                $message->to($email)
+                        ->subject('Test Email - Beauty Clinic API')
+                        ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            return $this->ok([
+                'message' => 'Test email sent successfully',
+                'to' => $email,
+                'timestamp' => now()->toISOString()
+            ], 'Email sent successfully');
+
+        } catch (\Exception $e) {
+            return ApiResponse::error(
+                'Failed to send email: ' . $e->getMessage(), 
+                'Email Sending Failed', 
+                'EMAIL_ERROR', 
+                500
+            );
         }
     }
 }
