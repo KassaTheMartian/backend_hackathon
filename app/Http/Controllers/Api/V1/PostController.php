@@ -22,43 +22,27 @@ class PostController extends Controller
     public function index(Request $request): JsonResponse
     {
         $posts = $this->postService->getPosts($request->all());
+        $items = $posts->through(fn($post) => new PostResource($post));
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new PostCollection($posts),
-            'error' => null,
-            'meta' => [
-                'page' => $posts->currentPage(),
-                'page_size' => $posts->perPage(),
-                'total_count' => $posts->total(),
-                'total_pages' => $posts->lastPage(),
-                'has_next_page' => $posts->hasMorePages(),
-                'has_previous_page' => $posts->currentPage() > 1,
-            ],
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->paginated($items);
     }
 
     /**
      * Display the specified post.
      */
-    public function show(Request $request, Post $post): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $post = $this->postService->getPostById($id);
+        
+        if (!$post) {
+            $this->notFound('Post');
+        }
+        
         $post = $this->postService->getPostWithDetails($post, $request->get('locale', 'vi'));
         
         // Increment view count
         $this->postService->incrementViews($post);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'OK',
-            'data' => new PostResource($post),
-            'error' => null,
-            'meta' => null,
-            'trace_id' => $request->header('X-Trace-ID'),
-            'timestamp' => now()->toISOString(),
-        ]);
+        return $this->ok(new PostResource($post));
     }
 }

@@ -4,9 +4,10 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Services\Contracts\PaymentServiceInterface;
 use Illuminate\Support\Facades\Log;
 
-class PaymentService
+class PaymentService implements PaymentServiceInterface
 {
     /**
      * Create payment intent for Stripe.

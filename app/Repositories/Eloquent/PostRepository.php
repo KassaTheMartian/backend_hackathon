@@ -9,14 +9,19 @@ use Illuminate\Database\Eloquent\Collection;
 
 class PostRepository extends BaseRepository implements PostRepositoryInterface
 {
-    public function getById(int $id): ?Post
+    public function __construct(Post $model)
     {
-        return $this->model->find($id);
+        parent::__construct($model);
+    }
+
+    protected function allowedIncludes(): array
+    {
+        return ['category', 'tags', 'author'];
     }
 
     public function getWithFilters(array $filters = []): LengthAwarePaginator
     {
-        $query = $this->model->newQuery();
+        $query = $this->query();
 
         if (isset($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
@@ -46,7 +51,7 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
 
     public function getBySlug(string $slug): ?Post
     {
-        return $this->model->where('slug', $slug)->first();
+        return $this->query()->where('slug', $slug)->first();
     }
 
     public function publish(Post $post): Post
@@ -68,7 +73,7 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
 
     public function getRelated(Post $post, int $limit = 4): Collection
     {
-        return $this->model
+        return $this->query()
             ->where('category_id', $post->category_id)
             ->where('id', '!=', $post->id)
             ->where('status', 'published')
@@ -78,7 +83,7 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
 
     public function getFeatured(int $limit = 6): Collection
     {
-        return $this->model
+        return $this->query()
             ->where('is_featured', true)
             ->where('status', 'published')
             ->orderBy('created_at', 'desc')

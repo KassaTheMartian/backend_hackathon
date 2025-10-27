@@ -76,7 +76,7 @@ class DemoController extends Controller
         
         $dto = DemoData::from($request->validated());
         $demo = $this->service->create($dto);
-        return $this->created(DemoResource::make($demo), 'Demo created successfully');
+        return $this->created(DemoResource::make(parameters: $demo), 'Demo created successfully');
     }
 
     /**

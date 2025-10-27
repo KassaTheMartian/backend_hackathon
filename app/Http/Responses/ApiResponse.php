@@ -30,6 +30,7 @@ class ApiResponse
             'has_next_page' => $paginator->currentPage() < $paginator->lastPage(),
             'has_previous_page' => $paginator->currentPage() > 1,
         ];
+        
         return response()->json(self::envelope(true, $message, $paginator->items(), null, $meta));
     }
 

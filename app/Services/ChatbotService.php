@@ -5,10 +5,11 @@ namespace App\Services;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
 use App\Repositories\Contracts\ChatRepositoryInterface;
+use App\Services\Contracts\ChatbotServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
-class ChatbotService
+class ChatbotService implements ChatbotServiceInterface
 {
     public function __construct(
         private ChatRepositoryInterface $chatRepository
@@ -68,16 +69,24 @@ class ChatbotService
     /**
      * Delete a session.
      */
-    public function deleteSession(ChatSession $session): bool
+    public function deleteSession(int $id): bool
     {
+        $session = $this->chatRepository->getSessionById($id);
+        if (!$session) {
+            return false;
+        }
         return $this->chatRepository->deleteSession($session);
     }
 
     /**
      * Clear session messages.
      */
-    public function clearSessionMessages(ChatSession $session): bool
+    public function clearSessionMessages(int $id): bool
     {
+        $session = $this->chatRepository->getSessionById($id);
+        if (!$session) {
+            return false;
+        }
         return $this->chatRepository->clearSessionMessages($session);
     }
 

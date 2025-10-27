@@ -38,6 +38,14 @@ class ServiceService
     }
 
     /**
+     * Get service with details (relationships loaded).
+     */
+    public function getServiceWithDetails(Service $service, string $locale = 'vi'): Service
+    {
+        return $service->load(['category', 'branches']);
+    }
+
+    /**
      * Create a new service.
      */
     public function createService(array $data): Service
@@ -48,17 +56,17 @@ class ServiceService
     /**
      * Update a service.
      */
-    public function updateService(Service $service, array $data): Service
+    public function updateService(int $id, array $data): ?Service
     {
-        return $this->serviceRepository->updateModel($service, $data);
+        return $this->serviceRepository->update($id, $data);
     }
 
     /**
      * Delete a service.
      */
-    public function deleteService(Service $service): bool
+    public function deleteService(int $id): bool
     {
-        return $this->serviceRepository->deleteModel($service);
+        return $this->serviceRepository->delete($id);
     }
 
     /**

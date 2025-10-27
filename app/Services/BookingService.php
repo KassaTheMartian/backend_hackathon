@@ -58,16 +58,20 @@ class BookingService
     /**
      * Update a booking.
      */
-    public function updateBooking(Booking $booking, array $data): Booking
+    public function updateBooking(int $id, array $data): ?Booking
     {
-        return $this->bookingRepository->updateModel($booking, $data);
+        return $this->bookingRepository->update($id, $data);
     }
 
     /**
      * Cancel a booking.
      */
-    public function cancelBooking(Booking $booking, string $reason): Booking
+    public function cancelBooking(int $id, string $reason): ?Booking
     {
+        $booking = $this->bookingRepository->getById($id);
+        if (!$booking) {
+            return null;
+        }
         return $this->bookingRepository->cancel($booking, $reason);
     }
 

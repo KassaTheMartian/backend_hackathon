@@ -96,17 +96,17 @@ class PromotionService
     /**
      * Update a promotion.
      */
-    public function updatePromotion(Promotion $promotion, array $data): Promotion
+    public function updatePromotion(int $id, array $data): ?Promotion
     {
-        return $this->promotionRepository->updateModel($promotion, $data);
+        return $this->promotionRepository->update($id, $data);
     }
 
     /**
      * Delete a promotion.
      */
-    public function deletePromotion(Promotion $promotion): bool
+    public function deletePromotion(int $id): bool
     {
-        return $this->promotionRepository->deleteModel($promotion);
+        return $this->promotionRepository->delete($id);
     }
 
     /**

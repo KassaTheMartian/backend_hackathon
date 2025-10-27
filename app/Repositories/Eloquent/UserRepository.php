@@ -7,19 +7,24 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
-    public function getById(int $id): ?User
+    public function __construct(User $model)
     {
-        return $this->model->find($id);
+        parent::__construct($model);
+    }
+
+    protected function allowedIncludes(): array
+    {
+        return ['bookings', 'reviews', 'promotions'];
     }
 
     public function getByEmail(string $email): ?User
     {
-        return $this->model->where('email', $email)->first();
+        return $this->query()->where('email', $email)->first();
     }
 
     public function findByPhone(string $phone): ?User
     {
-        return $this->model->where('phone', $phone)->first();
+        return $this->query()->where('phone', $phone)->first();
     }
 
     public function verifyEmail(User $user): User
