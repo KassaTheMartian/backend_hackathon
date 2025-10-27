@@ -30,8 +30,14 @@ class PostController extends Controller
     /**
      * Display the specified post.
      */
-    public function show(Request $request, Post $post): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $post = $this->postService->getPostById($id);
+        
+        if (!$post) {
+            $this->notFound('Post');
+        }
+        
         $post = $this->postService->getPostWithDetails($post, $request->get('locale', 'vi'));
         
         // Increment view count

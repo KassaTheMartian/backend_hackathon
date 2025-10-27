@@ -21,7 +21,11 @@ class ProfileController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $this->profileService->getUserProfile($request->user());
+        $user = $this->profileService->getProfile($request->user()->id);
+        
+        if (!$user) {
+            $this->notFound('User');
+        }
         
         return $this->ok(new UserResource($user));
     }
@@ -31,7 +35,11 @@ class ProfileController extends Controller
      */
     public function update(UpdateProfileRequest $request): JsonResponse
     {
-        $user = $this->profileService->updateProfile($request->user(), $request->validated());
+        $user = $this->profileService->updateProfile($request->user()->id, $request->validated());
+        
+        if (!$user) {
+            $this->notFound('User');
+        }
         
         return $this->ok(new UserResource($user), 'Profile updated successfully');
     }
@@ -41,18 +49,27 @@ class ProfileController extends Controller
      */
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
-        $this->profileService->changePassword($request->user(), $request->validated());
+        $validated = $request->validated();
+        $success = $this->profileService->changePassword(
+            $request->user()->id,
+            $validated['current_password'],
+            $validated['new_password']
+        );
+        
+        if (!$success) {
+            return $this->ok(null, 'Current password is incorrect');
+        }
         
         return $this->ok(null, 'Password changed successfully');
     }
 
     /**
-     * Get user's promotions.
+     * Get user's statistics.
      */
-    public function promotions(Request $request): JsonResponse
+    public function stats(Request $request): JsonResponse
     {
-        $promotions = $this->profileService->getUserPromotions($request->user());
+        $stats = $this->profileService->getUserStats($request->user()->id);
         
-        return $this->ok($promotions);
+        return $this->ok($stats);
     }
 }

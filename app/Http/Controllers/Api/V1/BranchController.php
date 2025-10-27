@@ -56,13 +56,11 @@ class BranchController extends Controller
      */
     public function update(UpdateBranchRequest $request, int $id): JsonResponse
     {
-        $branch = $this->branchService->getBranchById($id);
+        $updatedBranch = $this->branchService->updateBranch($id, $request->validated());
         
-        if (!$branch) {
+        if (!$updatedBranch) {
             $this->notFound('Branch');
         }
-        
-        $updatedBranch = $this->branchService->updateBranch($branch, $request->validated());
         
         return $this->ok(new BranchResource($updatedBranch), 'Branch updated successfully');
     }
@@ -72,13 +70,11 @@ class BranchController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $branch = $this->branchService->getBranchById($id);
+        $deleted = $this->branchService->deleteBranch($id);
         
-        if (!$branch) {
+        if (!$deleted) {
             $this->notFound('Branch');
         }
-        
-        $this->branchService->deleteBranch($branch);
         
         return $this->ok(null, 'Branch deleted successfully');
     }

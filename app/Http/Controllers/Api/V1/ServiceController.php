@@ -42,8 +42,14 @@ class ServiceController extends Controller
     /**
      * Display the specified service.
      */
-    public function show(Request $request, Service $service): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $service = $this->serviceService->getServiceById($id);
+        
+        if (!$service) {
+            $this->notFound('Service');
+        }
+        
         $service = $this->serviceService->getServiceWithDetails($service, $request->get('locale', 'vi'));
         
         return $this->ok(new ServiceResource($service));
@@ -52,19 +58,27 @@ class ServiceController extends Controller
     /**
      * Update the specified service.
      */
-    public function update(UpdateServiceRequest $request, Service $service): JsonResponse
+    public function update(UpdateServiceRequest $request, int $id): JsonResponse
     {
-        $service = $this->serviceService->updateService($service, $request->validated());
+        $updatedService = $this->serviceService->updateService($id, $request->validated());
         
-        return $this->ok(new ServiceResource($service), 'Service updated successfully');
+        if (!$updatedService) {
+            $this->notFound('Service');
+        }
+        
+        return $this->ok(new ServiceResource($updatedService), 'Service updated successfully');
     }
 
     /**
      * Remove the specified service.
      */
-    public function destroy(Service $service): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
-        $this->serviceService->deleteService($service);
+        $deleted = $this->serviceService->deleteService($id);
+        
+        if (!$deleted) {
+            $this->notFound('Service');
+        }
         
         return $this->ok(null, 'Service deleted successfully');
     }

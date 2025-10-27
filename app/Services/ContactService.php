@@ -4,9 +4,10 @@ namespace App\Services;
 
 use App\Models\ContactSubmission;
 use App\Repositories\Contracts\ContactRepositoryInterface;
+use App\Services\Contracts\ContactServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-class ContactService
+class ContactService implements ContactServiceInterface
 {
     public function __construct(
         private ContactRepositoryInterface $contactRepository
@@ -39,33 +40,45 @@ class ContactService
     /**
      * Mark submission as read.
      */
-    public function markAsRead(ContactSubmission $submission): ContactSubmission
+    public function markAsRead(int $id): ?ContactSubmission
     {
+        $submission = $this->contactRepository->getById($id);
+        if (!$submission) {
+            return null;
+        }
         return $this->contactRepository->markAsRead($submission);
     }
 
     /**
      * Mark submission as unread.
      */
-    public function markAsUnread(ContactSubmission $submission): ContactSubmission
+    public function markAsUnread(int $id): ?ContactSubmission
     {
+        $submission = $this->contactRepository->getById($id);
+        if (!$submission) {
+            return null;
+        }
         return $this->contactRepository->markAsUnread($submission);
     }
 
     /**
      * Reply to submission.
      */
-    public function replyToSubmission(ContactSubmission $submission, string $reply): ContactSubmission
+    public function replyToSubmission(int $id, string $reply): ?ContactSubmission
     {
+        $submission = $this->contactRepository->getById($id);
+        if (!$submission) {
+            return null;
+        }
         return $this->contactRepository->reply($submission, $reply);
     }
 
     /**
      * Delete a submission.
      */
-    public function deleteSubmission(ContactSubmission $submission): bool
+    public function deleteSubmission(int $id): bool
     {
-        return $this->contactRepository->delete($submission);
+        return $this->contactRepository->delete($id);
     }
 
     /**

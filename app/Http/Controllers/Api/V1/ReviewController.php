@@ -41,8 +41,14 @@ class ReviewController extends Controller
     /**
      * Display the specified review.
      */
-    public function show(Request $request, Review $review): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $review = $this->reviewService->getReviewById($id);
+        
+        if (!$review) {
+            $this->notFound('Review');
+        }
+        
         $review = $this->reviewService->getReviewWithDetails($review);
         
         return $this->ok(new ReviewResource($review));

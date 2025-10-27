@@ -30,6 +30,14 @@ class ReviewService
     }
 
     /**
+     * Get review with details (relationships loaded).
+     */
+    public function getReviewWithDetails(Review $review): Review
+    {
+        return $review->load(['user', 'service', 'booking']);
+    }
+
+    /**
      * Create a new review.
      */
     public function createReview(array $data): Review
@@ -40,17 +48,17 @@ class ReviewService
     /**
      * Update a review.
      */
-    public function updateReview(Review $review, array $data): Review
+    public function updateReview(int $id, array $data): ?Review
     {
-        return $this->reviewRepository->updateModel($review, $data);
+        return $this->reviewRepository->update($id, $data);
     }
 
     /**
      * Delete a review.
      */
-    public function deleteReview(Review $review): bool
+    public function deleteReview(int $id): bool
     {
-        return $this->reviewRepository->deleteModel($review);
+        return $this->reviewRepository->delete($id);
     }
 
     /**

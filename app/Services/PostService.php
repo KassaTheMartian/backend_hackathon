@@ -38,6 +38,14 @@ class PostService
     }
 
     /**
+     * Get post with details (relationships loaded).
+     */
+    public function getPostWithDetails(Post $post, string $locale = 'vi'): Post
+    {
+        return $post->load(['category', 'tags', 'author']);
+    }
+
+    /**
      * Create a new post.
      */
     public function createPost(array $data): Post
@@ -48,17 +56,17 @@ class PostService
     /**
      * Update a post.
      */
-    public function updatePost(Post $post, array $data): Post
+    public function updatePost(int $id, array $data): ?Post
     {
-        return $this->postRepository->update($post, $data);
+        return $this->postRepository->update($id, $data);
     }
 
     /**
      * Delete a post.
      */
-    public function deletePost(Post $post): bool
+    public function deletePost(int $id): bool
     {
-        return $this->postRepository->delete($post);
+        return $this->postRepository->delete($id);
     }
 
     /**

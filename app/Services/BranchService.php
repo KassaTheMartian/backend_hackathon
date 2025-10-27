@@ -48,17 +48,17 @@ class BranchService
     /**
      * Update a branch.
      */
-    public function updateBranch(Branch $branch, array $data): Branch
+    public function updateBranch(int $id, array $data): ?Branch
     {
-        return $this->branchRepository->updateModel($branch, $data);
+        return $this->branchRepository->update($id, $data);
     }
 
     /**
      * Delete a branch.
      */
-    public function deleteBranch(Branch $branch): bool
+    public function deleteBranch(int $id): bool
     {
-        return $this->branchRepository->deleteModel($branch);
+        return $this->branchRepository->delete($id);
     }
 
     /**

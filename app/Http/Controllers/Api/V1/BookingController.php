@@ -42,8 +42,14 @@ class BookingController extends Controller
     /**
      * Display the specified booking.
      */
-    public function show(Request $request, Booking $booking): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $booking = $this->bookingService->getBookingById($id);
+        
+        if (!$booking) {
+            $this->notFound('Booking');
+        }
+        
         $booking = $this->bookingService->getBookingWithDetails($booking);
         
         return $this->ok(new BookingResource($booking));
@@ -52,23 +58,31 @@ class BookingController extends Controller
     /**
      * Update the specified booking.
      */
-    public function update(UpdateBookingRequest $request, Booking $booking): JsonResponse
+    public function update(UpdateBookingRequest $request, int $id): JsonResponse
     {
-        $booking = $this->bookingService->updateBooking($booking, $request->validated());
+        $updatedBooking = $this->bookingService->updateBooking($id, $request->validated());
         
-        return $this->ok(new BookingResource($booking), 'Booking updated successfully');
+        if (!$updatedBooking) {
+            $this->notFound('Booking');
+        }
+        
+        return $this->ok(new BookingResource($updatedBooking), 'Booking updated successfully');
     }
 
     /**
      * Cancel the specified booking.
      */
-    public function cancel(Request $request, Booking $booking): JsonResponse
+    public function cancel(Request $request, int $id): JsonResponse
     {
         $request->validate([
             'cancellation_reason' => 'required|string|max:500',
         ]);
 
-        $booking = $this->bookingService->cancelBooking($booking, $request->cancellation_reason);
+        $booking = $this->bookingService->cancelBooking($id, $request->cancellation_reason);
+        
+        if (!$booking) {
+            $this->notFound('Booking');
+        }
         
         return $this->ok(new BookingResource($booking), 'Booking cancelled successfully');
     }

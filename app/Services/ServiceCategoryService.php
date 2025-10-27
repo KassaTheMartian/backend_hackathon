@@ -39,17 +39,17 @@ class ServiceCategoryService
     /**
      * Update a service category.
      */
-    public function updateCategory(ServiceCategory $category, array $data): ServiceCategory
+    public function updateCategory(int $id, array $data): ?ServiceCategory
     {
-        return $this->serviceCategoryRepository->updateModel($category, $data);
+        return $this->serviceCategoryRepository->update($id, $data);
     }
 
     /**
      * Delete a service category.
      */
-    public function deleteCategory(ServiceCategory $category): bool
+    public function deleteCategory(int $id): bool
     {
-        return $this->serviceCategoryRepository->deleteModel($category);
+        return $this->serviceCategoryRepository->delete($id);
     }
 
     /**

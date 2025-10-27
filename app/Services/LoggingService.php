@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
+use App\Services\Contracts\LoggingServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-class LoggingService
+class LoggingService implements LoggingServiceInterface
 {
     /**
      * Log API request

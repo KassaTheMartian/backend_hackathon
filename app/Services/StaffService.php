@@ -55,17 +55,17 @@ class StaffService
     /**
      * Update a staff member.
      */
-    public function updateStaff(Staff $staff, array $data): Staff
+    public function updateStaff(int $id, array $data): ?Staff
     {
-        return $this->staffRepository->updateModel($staff, $data);
+        return $this->staffRepository->update($id, $data);
     }
 
     /**
      * Delete a staff member.
      */
-    public function deleteStaff(Staff $staff): bool
+    public function deleteStaff(int $id): bool
     {
-        return $this->staffRepository->deleteModel($staff);
+        return $this->staffRepository->delete($id);
     }
 
     /**
