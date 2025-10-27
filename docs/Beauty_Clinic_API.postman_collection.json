@@ -123,6 +123,104 @@
               "path": ["auth", "logout"]
             }
           }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "forgot-password"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/forgot-password",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "forgot-password"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Password reset link sent to your email\",\n  \"data\": null,\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-forgot-password-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset_token_123456789\",\n  \"email\": \"user@example.com\",\n  \"password\": \"NewPassword123!\",\n  \"password_confirmation\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "reset-password"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"token\": \"reset_token_123456789\",\n  \"email\": \"user@example.com\",\n  \"password\": \"NewPassword123!\",\n  \"password_confirmation\": \"NewPassword123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/reset-password",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "reset-password"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Password reset successfully\",\n  \"data\": null,\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-reset-password-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -190,6 +288,165 @@
               ]
             }
           }
+        },
+        {
+          "name": "Create Service (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dịch vụ mới\",\n  \"description\": \"Mô tả dịch vụ\",\n  \"price\": 500000,\n  \"duration\": 60,\n  \"category_id\": 1,\n  \"is_active\": true,\n  \"image\": \"https://via.placeholder.com/400x300\",\n  \"features\": [\"Tính năng 1\", \"Tính năng 2\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/services",
+              "host": ["{{base_url}}"],
+              "path": ["services"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Dịch vụ mới\",\n  \"description\": \"Mô tả dịch vụ\",\n  \"price\": 500000,\n  \"duration\": 60,\n  \"category_id\": 1,\n  \"is_active\": true,\n  \"image\": \"https://via.placeholder.com/400x300\",\n  \"features\": [\"Tính năng 1\", \"Tính năng 2\"]\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/services",
+                  "host": ["{{base_url}}"],
+                  "path": ["services"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service created successfully\",\n  \"data\": {\n    \"id\": 5,\n    \"name\": \"Dịch vụ mới\",\n    \"description\": \"Mô tả dịch vụ\",\n    \"price\": 500000,\n    \"duration\": 60,\n    \"category_id\": 1,\n    \"is_active\": true,\n    \"image\": \"https://via.placeholder.com/400x300\",\n    \"features\": [\"Tính năng 1\", \"Tính năng 2\"],\n    \"created_at\": \"2025-10-27T10:00:00Z\",\n    \"updated_at\": \"2025-10-27T10:00:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-create-service-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Service (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dịch vụ đã cập nhật\",\n  \"description\": \"Mô tả dịch vụ đã cập nhật\",\n  \"price\": 600000,\n  \"duration\": 90,\n  \"category_id\": 1,\n  \"is_active\": true,\n  \"image\": \"https://via.placeholder.com/400x300\",\n  \"features\": [\"Tính năng 1\", \"Tính năng 2\", \"Tính năng 3\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": ["{{base_url}}"],
+              "path": ["services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Dịch vụ đã cập nhật\",\n  \"description\": \"Mô tả dịch vụ đã cập nhật\",\n  \"price\": 600000,\n  \"duration\": 90,\n  \"category_id\": 1,\n  \"is_active\": true,\n  \"image\": \"https://via.placeholder.com/400x300\",\n  \"features\": [\"Tính năng 1\", \"Tính năng 2\", \"Tính năng 3\"]\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/services/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["services", "1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Dịch vụ đã cập nhật\",\n    \"description\": \"Mô tả dịch vụ đã cập nhật\",\n    \"price\": 600000,\n    \"duration\": 90,\n    \"category_id\": 1,\n    \"is_active\": true,\n    \"image\": \"https://via.placeholder.com/400x300\",\n    \"features\": [\"Tính năng 1\", \"Tính năng 2\", \"Tính năng 3\"],\n    \"created_at\": \"2025-10-27T09:00:00Z\",\n    \"updated_at\": \"2025-10-27T10:00:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-update-service-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Service (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services/:id",
+              "host": ["{{base_url}}"],
+              "path": ["services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/services/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["services", "1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service deleted successfully\",\n  \"data\": null,\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-delete-service-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -341,6 +598,65 @@
           }
         },
         {
+          "name": "Update Booking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"branch_id\": 1,\n  \"service_id\": 1,\n  \"staff_id\": 2,\n  \"booking_date\": \"2025-10-29\",\n  \"booking_time\": \"14:00\",\n  \"notes\": \"Tôi muốn thay đổi lịch hẹn\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings/:id",
+              "host": ["{{base_url}}"],
+              "path": ["bookings", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"branch_id\": 1,\n  \"service_id\": 1,\n  \"staff_id\": 2,\n  \"booking_date\": \"2025-10-29\",\n  \"booking_time\": \"14:00\",\n  \"notes\": \"Tôi muốn thay đổi lịch hẹn\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/bookings/123",
+                  "host": ["{{base_url}}"],
+                  "path": ["bookings", "123"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Booking updated successfully\",\n  \"data\": {\n    \"id\": 123,\n    \"booking_code\": \"BC20251027001\",\n    \"user_id\": 1,\n    \"branch_id\": 1,\n    \"service_id\": 1,\n    \"staff_id\": 2,\n    \"booking_date\": \"2025-10-29\",\n    \"booking_time\": \"14:00\",\n    \"status\": \"confirmed\",\n    \"notes\": \"Tôi muốn thay đổi lịch hẹn\",\n    \"total_amount\": 500000,\n    \"created_at\": \"2025-10-27T10:00:00Z\",\n    \"updated_at\": \"2025-10-27T10:30:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-update-booking-001\",\n  \"timestamp\": \"2025-10-27T10:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
           "name": "Cancel Booking",
           "request": {
             "method": "POST",
@@ -401,6 +717,48 @@
               ]
             }
           }
+        },
+        {
+          "name": "Get Review Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reviews/:id",
+              "host": ["{{base_url}}"],
+              "path": ["reviews", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/reviews/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["reviews", "1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Review retrieved successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"user\": {\n      \"id\": 1,\n      \"name\": \"Nguyễn Văn A\",\n      \"avatar\": \"https://via.placeholder.com/150\"\n    },\n    \"service\": {\n      \"id\": 1,\n      \"name\": \"Điều trị mụn\",\n      \"image\": \"https://via.placeholder.com/400x300\"\n    },\n    \"staff\": {\n      \"id\": 1,\n      \"name\": \"Nguyễn Thị B\",\n      \"avatar\": \"https://via.placeholder.com/150\"\n    },\n    \"branch\": {\n      \"id\": 1,\n      \"name\": \"Chi nhánh Quận 1\"\n    },\n    \"rating\": 5,\n    \"title\": \"Dịch vụ tuyệt vời!\",\n    \"comment\": \"Tôi rất hài lòng với dịch vụ\",\n    \"service_quality_rating\": 5,\n    \"staff_rating\": 5,\n    \"cleanliness_rating\": 5,\n    \"value_rating\": 4,\n    \"images\": [],\n    \"status\": \"approved\",\n    \"created_at\": \"2025-10-27T10:00:00Z\",\n    \"updated_at\": \"2025-10-27T10:00:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-get-review-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
         },
         {
           "name": "Create Review",
@@ -481,6 +839,59 @@
               "path": ["payments", "confirm"]
             }
           }
+        },
+        {
+          "name": "Payment Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Stripe-Signature",
+                "value": "t=1234567890,v1=stripe_signature_here"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"evt_1234567890\",\n  \"object\": \"event\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_mock_123456789\",\n      \"object\": \"payment_intent\",\n      \"amount\": 500000,\n      \"currency\": \"vnd\",\n      \"status\": \"succeeded\",\n      \"metadata\": {\n        \"booking_id\": \"123\"\n      }\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/webhook",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "webhook"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"id\": \"evt_1234567890\",\n  \"object\": \"event\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_mock_123456789\",\n      \"object\": \"payment_intent\",\n      \"amount\": 500000,\n      \"currency\": \"vnd\",\n      \"status\": \"succeeded\",\n      \"metadata\": {\n        \"booking_id\": \"123\"\n      }\n    }\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/payments/webhook",
+                  "host": ["{{base_url}}"],
+                  "path": ["payments", "webhook"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Webhook processed successfully\",\n  \"data\": null,\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-webhook-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -581,6 +992,214 @@
       "name": "Chatbot",
       "item": [
         {
+          "name": "Get Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chatbot/sessions?page=1&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["chatbot", "sessions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/chatbot/sessions?page=1&per_page=15",
+                  "host": ["{{base_url}}"],
+                  "path": ["chatbot", "sessions"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "per_page",
+                      "value": "15"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Sessions retrieved successfully\",\n  \"data\": [\n    {\n      \"id\": \"sess_abc123xyz\",\n      \"user_id\": 1,\n      \"status\": \"active\",\n      \"last_message\": \"Tôi muốn đặt lịch hẹn\",\n      \"message_count\": 5,\n      \"created_at\": \"2025-10-27T10:00:00Z\",\n      \"updated_at\": \"2025-10-27T10:30:00Z\"\n    }\n  ],\n  \"error\": null,\n  \"meta\": {\n    \"page\": 1,\n    \"page_size\": 15,\n    \"total_count\": 1\n  },\n  \"trace_id\": \"trace-get-sessions-001\",\n  \"timestamp\": \"2025-10-27T10:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"context\": {\n    \"page\": \"home\",\n    \"user_preferences\": {\n      \"language\": \"vi\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/chatbot/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["chatbot", "sessions"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"context\": {\n    \"page\": \"home\",\n    \"user_preferences\": {\n      \"language\": \"vi\"\n    }\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/chatbot/sessions",
+                  "host": ["{{base_url}}"],
+                  "path": ["chatbot", "sessions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Session created successfully\",\n  \"data\": {\n    \"id\": \"sess_new123xyz\",\n    \"user_id\": 1,\n    \"status\": \"active\",\n    \"context\": {\n      \"page\": \"home\",\n      \"user_preferences\": {\n        \"language\": \"vi\"\n      }\n    },\n    \"message_count\": 0,\n    \"created_at\": \"2025-10-27T10:30:00Z\",\n    \"updated_at\": \"2025-10-27T10:30:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-create-session-001\",\n  \"timestamp\": \"2025-10-27T10:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Session Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chatbot/sessions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["chatbot", "sessions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "sess_abc123xyz"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/chatbot/sessions/sess_abc123xyz",
+                  "host": ["{{base_url}}"],
+                  "path": ["chatbot", "sessions", "sess_abc123xyz"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Session retrieved successfully\",\n  \"data\": {\n    \"id\": \"sess_abc123xyz\",\n    \"user_id\": 1,\n    \"status\": \"active\",\n    \"context\": {\n      \"page\": \"booking\",\n      \"service_id\": 1\n    },\n    \"messages\": [\n      {\n        \"id\": 1,\n        \"role\": \"user\",\n        \"content\": \"Tôi muốn đặt lịch hẹn\",\n        \"timestamp\": \"2025-10-27T10:00:00Z\"\n      },\n      {\n        \"id\": 2,\n        \"role\": \"assistant\",\n        \"content\": \"Tôi có thể giúp bạn đặt lịch hẹn. Bạn muốn đặt dịch vụ nào?\",\n        \"timestamp\": \"2025-10-27T10:01:00Z\"\n      }\n    ],\n    \"message_count\": 2,\n    \"created_at\": \"2025-10-27T10:00:00Z\",\n    \"updated_at\": \"2025-10-27T10:30:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-get-session-001\",\n  \"timestamp\": \"2025-10-27T10:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Session",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/chatbot/sessions/:id",
+              "host": ["{{base_url}}"],
+              "path": ["chatbot", "sessions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "sess_abc123xyz"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/chatbot/sessions/sess_abc123xyz",
+                  "host": ["{{base_url}}"],
+                  "path": ["chatbot", "sessions", "sess_abc123xyz"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Session deleted successfully\",\n  \"data\": null,\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-delete-session-001\",\n  \"timestamp\": \"2025-10-27T10:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
           "name": "Send Message",
           "request": {
             "method": "POST",
@@ -647,6 +1266,161 @@
               "path": ["profile"]
             }
           }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"OldPassword123!\",\n  \"password\": \"NewPassword123!\",\n  \"password_confirmation\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/profile/password",
+              "host": ["{{base_url}}"],
+              "path": ["profile", "password"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"current_password\": \"OldPassword123!\",\n  \"password\": \"NewPassword123!\",\n  \"password_confirmation\": \"NewPassword123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/profile/password",
+                  "host": ["{{base_url}}"],
+                  "path": ["profile", "password"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Password changed successfully\",\n  \"data\": null,\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-change-password-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload Avatar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/profile/avatar",
+              "host": ["{{base_url}}"],
+              "path": ["profile", "avatar"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "avatar",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/profile/avatar",
+                  "host": ["{{base_url}}"],
+                  "path": ["profile", "avatar"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Avatar uploaded successfully\",\n  \"data\": {\n    \"avatar_url\": \"https://api.beautyclinic.com/storage/avatars/user_1_avatar.jpg\",\n    \"updated_at\": \"2025-10-27T10:00:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-upload-avatar-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Avatar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profile/avatar",
+              "host": ["{{base_url}}"],
+              "path": ["profile", "avatar"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/profile/avatar",
+                  "host": ["{{base_url}}"],
+                  "path": ["profile", "avatar"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Avatar deleted successfully\",\n  \"data\": {\n    \"avatar_url\": null,\n    \"updated_at\": \"2025-10-27T10:00:00Z\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-delete-avatar-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+            }
+          ]
         },
         {
           "name": "Get My Promotions",

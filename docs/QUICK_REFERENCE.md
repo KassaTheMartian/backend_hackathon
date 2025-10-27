@@ -22,15 +22,15 @@ Quick reference guide cho developers.
 ```
 POST /auth/register -> OK
 POST /auth/login -> OK
-POST /auth/logout
-GET  /auth/me
+POST /auth/logout -> OK
+GET  /auth/me -> OK
 POST /auth/forgot-password
 POST /auth/reset-password
 ```
 
 ### 2. Services (4 endpoints)
 ```
-GET    /services
+GET    /services -> OK
 GET    /services/:id
 GET    /service-categories
 POST   /services        (Admin)

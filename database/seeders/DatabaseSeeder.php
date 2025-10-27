@@ -16,8 +16,12 @@ class DatabaseSeeder extends Seeder
     {
         // Run seeders in order
         $this->call([
-            ServiceCategorySeeder::class,
-            ServiceSeeder::class,
+            UserSeeder::class,           // Users and Admins
+            ServiceCategorySeeder::class, // Service Categories
+            ServiceSeeder::class,        // Services
+            BranchSeeder::class,         // Branches
+            StaffSeeder::class,          // Staff Members
+            BookingSeeder::class,        // Bookings
         ]);
 
         // Create demo data
