@@ -1,0 +1,19 @@
+includes:
+  - vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+  paths:
+    - app
+  level: 6
+  tmpDir: storage/framework/cache/phpstan
+  checkMissingIterableValueType: true
+  checkGenericClassInNonGenericObjectType: true
+  checkUninitializedProperties: true
+  reportUnmatchedIgnoredErrors: true
+  excludePaths:
+    - app/Console/*
+    - app/Providers/*
+  ignoreErrors:
+    - '#Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator::through#'
+
+
