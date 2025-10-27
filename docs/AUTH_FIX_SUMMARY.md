@@ -178,4 +178,3 @@ curl -X POST http://localhost:8000/api/v1/auth/logout \
 2. Check integration with Frontend
 3. Update API documentation if needed
 4. Consider implementing email verification flow
-
