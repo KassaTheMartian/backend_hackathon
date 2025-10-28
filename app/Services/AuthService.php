@@ -41,17 +41,17 @@ class AuthService implements AuthServiceInterface
         
         // Business Logic: Validate credentials
         if (!$user || !Hash::check($password, $user->password)) {
-            throw new \Exception('Invalid credentials');
+            throw new \Exception(__("auth.invalid_credentials"));
         }
 
         // Business Logic: Check if user is active
         if (!$user->is_active) {
-            throw new \Exception('Account is inactive. Please contact support.');
+            throw new \Exception(__("auth.account_inactive"));
         }
 
         // Business Logic: Require verified email
         if (!$user->email_verified_at) {
-            throw new \Exception('Email not verified. Please verify your email.');
+            throw new \Exception(__("auth.email_not_verified"));
         }
 
         // Database Operation: Create authentication token
@@ -107,7 +107,7 @@ class AuthService implements AuthServiceInterface
                 'language_preference' => $user->language_preference,
                 'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toISOString() : null,
             ],
-            'message' => 'Registration successful. Please verify your email.',
+            'message' => __("auth.registration_success"),
         ];
     }
 
@@ -163,7 +163,7 @@ class AuthService implements AuthServiceInterface
         // Database Operation: Find user
         $user = $this->authRepository->findByEmail($email);
         if (!$user) {
-            throw new \Exception('User not found');
+            throw new \Exception(__("auth.user_not_found"));
         }
 
         // Database Operation: Create password reset token
@@ -192,13 +192,13 @@ class AuthService implements AuthServiceInterface
         // Business Logic: Validate reset token
         $passwordReset = $this->authRepository->findPasswordResetToken($token);
         if (!$passwordReset || $passwordReset['email'] !== $email) {
-            throw new \Exception('Invalid or expired reset token');
+            throw new \Exception(__("auth.invalid_or_expired_token"));
         }
 
         // Database Operation: Find user
         $user = $this->authRepository->findByEmail($email);
         if (!$user) {
-            throw new \Exception('User not found');
+            throw new \Exception(__("auth.user_not_found"));
         }
 
         // Business Logic: Hash new password and update
@@ -212,7 +212,7 @@ class AuthService implements AuthServiceInterface
         $this->authRepository->revokeAllTokens($user);
 
         return [
-            'message' => 'Password reset successfully',
+            'message' => __("auth.password_reset_success"),
         ];
     }
 
@@ -234,7 +234,7 @@ class AuthService implements AuthServiceInterface
         // Business Logic: Send email with beautiful template
         Mail::to($email)->send(new OtpMail($otp, $purpose, 10));
 
-        return ['message' => 'OTP sent'];
+        return ['message' => __("auth.otp_sent")];
     }
 
     public function verifyEmailOtp(string $email, string $otp, string $purpose = 'verify_email'): array
@@ -243,15 +243,15 @@ class AuthService implements AuthServiceInterface
         $record = $this->otpRepository->findLatestValid($email, $purpose);
 
         if (!$record) {
-            throw new \Exception('OTP not found or expired');
+            throw new \Exception(__("auth.otp_not_found"));
         }
         if ($record->isLockedOut()) {
-            throw new \Exception('Too many invalid attempts. Please request a new OTP.');
+            throw new \Exception(__("auth.otp_locked"));
         }
 
         if ($record->otp !== $otp) {
             $this->otpRepository->incrementAttempts($record->id);
-            throw new \Exception('Invalid OTP');
+            throw new \Exception(__("auth.invalid_otp"));
         }
 
         // Business Logic: Mark OTP as verified via repository
@@ -263,7 +263,7 @@ class AuthService implements AuthServiceInterface
             $this->authRepository->update($user->id, ['email_verified_at' => now()]);
         }
 
-        return ['message' => 'Email verified successfully'];
+        return ['message' => __("auth.email_verified_success")];
     }
 
     public function sendPasswordResetOtp(string $email): array
@@ -271,7 +271,7 @@ class AuthService implements AuthServiceInterface
         // Database Operation: Ensure user exists
         $user = $this->authRepository->findByEmail($email);
         if (!$user) {
-            throw new \Exception('User not found');
+            throw new \Exception(__("auth.user_not_found"));
         }
         
         // Business Logic: Send OTP for password reset
@@ -310,7 +310,7 @@ class AuthService implements AuthServiceInterface
         // Business Logic: Revoke existing tokens for security
         $this->authRepository->revokeAllTokens($user);
 
-        return ['message' => 'Password reset successfully'];
+        return ['message' => __("auth.password_reset_success")];
     }
 
     public function sendTestEmail(string $email): array
@@ -318,7 +318,7 @@ class AuthService implements AuthServiceInterface
         Mail::to($email)->send(new OtpMail('123456', 'verify_email', 10));
 
         return [
-            'message' => 'Test email sent successfully',
+            'message' => __("auth.test_email_sent"),
             'to' => $email,
             'timestamp' => now()->toISOString(),
         ];

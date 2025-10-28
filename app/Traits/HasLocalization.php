@@ -19,21 +19,21 @@ trait HasLocalization
         // 2. Check query parameter
         if ($request->has('locale')) {
             $locale = $request->get('locale');
-            if (in_array($locale, ['en', 'vi', 'ja', 'zh'])) {
+            if (in_array($locale, config('localization.supported', ['en','vi','ja','zh']))) {
                 return $locale;
             }
         }
 
         // 3. Check Accept-Language header
         if ($request->hasHeader('Accept-Language')) {
-            $locale = $request->getPreferredLanguage(['en', 'vi', 'ja', 'zh']);
+            $locale = $request->getPreferredLanguage(config('localization.supported', ['en','vi','ja','zh']));
             if ($locale) {
                 return $locale;
             }
         }
 
-        // 4. Default to Vietnamese
-        return 'vi';
+        // 4. Default from config
+        return config('localization.default', 'en');
     }
 
     /**
@@ -50,14 +50,11 @@ trait HasLocalization
             return $jsonField[$locale];
         }
 
-        // Fallback to Vietnamese
-        if (isset($jsonField['vi'])) {
-            return $jsonField['vi'];
-        }
-
-        // Fallback to English
-        if (isset($jsonField['en'])) {
-            return $jsonField['en'];
+        // Fallback order from config
+        foreach (config('localization.fallbacks', ['en','vi']) as $fallback) {
+            if (isset($jsonField[$fallback])) {
+                return $jsonField[$fallback];
+            }
         }
 
         // Return first available value

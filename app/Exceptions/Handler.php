@@ -74,7 +74,7 @@ class Handler extends ExceptionHandler
         if ($e instanceof ValidationException) {
             return ApiResponse::validationError(
                 $e->errors(),
-                'Validation failed',
+                __('validation.failed'),
                 'VALIDATION_FAILED'
             );
         }

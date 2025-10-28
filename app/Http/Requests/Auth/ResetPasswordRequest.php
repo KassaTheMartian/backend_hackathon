@@ -35,15 +35,7 @@ class ResetPasswordRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'token.required' => 'Reset token is required',
-            'email.required' => 'Email is required',
-            'email.email' => 'Please provide a valid email address',
-            'email.max' => 'Email must not exceed 255 characters',
-            'password.required' => 'Password is required',
-            'password.min' => 'Password must be at least 8 characters',
-            'password.confirmed' => 'Password confirmation does not match',
-        ];
+        return [];
     }
 
     /**
@@ -53,10 +45,6 @@ class ResetPasswordRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return [
-            'token' => 'reset token',
-            'email' => 'email address',
-            'password' => 'password',
-        ];
+        return [];
     }
 }

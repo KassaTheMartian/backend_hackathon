@@ -21,6 +21,43 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Translatable inputs (multilingual)
+
+We support translatable fields that can be either a plain string or an object of translations.
+
+- If client sends a string, it's treated as the default locale from `config/localization.php` (default `en`).
+- If client sends an object, keys must be supported locales (e.g., `{ "en": "Spa & Beauty Center - District 1 Branch", "vi": "Spa & Beauty Center - Chi nhánh Quận 1" }`).
+
+Configuration: `config/localization.php`
+
+Usage in a FormRequest:
+
+```php
+use App\Http\Requests\Concerns\NormalizesTranslatable;
+use App\Rules\Translatable;
+
+class StoreBranchRequest extends FormRequest
+{
+    use NormalizesTranslatable;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeTranslatable(['name', 'address', 'description']);
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' => [new Translatable(requiredDefault: true, max: 255)],
+            'address' => [new Translatable(requiredDefault: false, max: 255)],
+            'description' => [new Translatable(requiredDefault: false, max: null)],
+        ];
+    }
+}
+```
+
+This minimizes per-file edits: just import the trait, call `normalizeTranslatable([...])`, and use the `Translatable` rule for the fields.
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.

@@ -13,8 +13,8 @@ use App\Http\Controllers\Api\V1\ContactController as V1ContactController;
 use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
 use App\Http\Controllers\Api\V1\ProfileController as V1ProfileController;
 
-// Apply rate limiting and logging middleware to all API routes
-Route::middleware(['throttle:api'])->group(function () {
+// Apply locale + rate limiting middleware to all API routes
+Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->group(function () {
 
     // API Version 1 - 60 requests per minute
     Route::prefix('v1')->middleware(['throttle:60,1'])->group(function () {

@@ -34,9 +34,6 @@ class CreateSessionRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'title.max' => 'Session title must not exceed 255 characters',
-            'context.max' => 'Context must not exceed 1000 characters',
-        ];
+        return [];
     }
 }

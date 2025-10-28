@@ -26,7 +26,7 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:20'],
-            'language_preference' => ['nullable', 'string', 'in:vi,en,ja,zh'],
+            'language_preference' => ['nullable', 'string', 'in:' . implode(',', config('localization.supported', ['en','vi','ja','zh']))],
             'device_name' => ['nullable', 'string', 'max:255'],
         ];
     }
@@ -38,17 +38,8 @@ class RegisterRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'name.required' => 'Name is required',
-            'name.max' => 'Name must not exceed 255 characters',
-            'email.required' => 'Email is required',
-            'email.email' => 'Please provide a valid email address',
-            'email.max' => 'Email must not exceed 255 characters',
-            'email.unique' => 'This email address is already registered',
-            'password.required' => 'Password is required',
-            'password.min' => 'Password must be at least 8 characters',
-            'password.confirmed' => 'Password confirmation does not match',
-        ];
+        // Use default Laravel translation messages
+        return [];
     }
 
     /**
@@ -58,10 +49,7 @@ class RegisterRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return [
-            'name' => 'full name',
-            'email' => 'email address',
-            'password' => 'password',
-        ];
+        // Use lang/xx/validation.php attributes mapping
+        return [];
     }
 }

@@ -22,7 +22,7 @@ class UpdateLanguageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'language' => 'required|string|in:vi,en',
+            'language' => 'required|string|in:' . implode(',', config('localization.supported', ['en','vi'])),
         ];
     }
 
@@ -34,8 +34,7 @@ class UpdateLanguageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'language.required' => 'Language preference is required',
-            'language.in' => 'Language must be either vi or en',
+            // Prefer framework default messages via lang files
         ];
     }
 }

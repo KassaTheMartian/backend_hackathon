@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Booking;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -21,7 +22,7 @@ class StoreBookingRequest extends FormRequest
      */
     public function rules(): array
     {
-        $isGuest = !auth()->check();
+        $isGuest = !Auth::check();
         
         return [
             // Guest information (required if user not authenticated)
@@ -48,21 +49,6 @@ class StoreBookingRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'guest_name.required' => 'Vui lòng nhập họ tên của bạn.',
-            'guest_email.required' => 'Vui lòng nhập email của bạn.',
-            'guest_email.email' => 'Email không hợp lệ.',
-            'guest_phone.required' => 'Vui lòng nhập số điện thoại của bạn.',
-            'branch_id.required' => 'Vui lòng chọn chi nhánh.',
-            'branch_id.exists' => 'Chi nhánh không tồn tại.',
-            'service_id.required' => 'Vui lòng chọn dịch vụ.',
-            'service_id.exists' => 'Dịch vụ không tồn tại.',
-            'staff_id.required' => 'Vui lòng chọn nhân viên.',
-            'staff_id.exists' => 'Nhân viên không tồn tại.',
-            'booking_date.required' => 'Vui lòng chọn ngày đặt lịch.',
-            'booking_date.after_or_equal' => 'Ngày đặt lịch phải là hôm nay hoặc trong tương lai.',
-            'booking_time.required' => 'Vui lòng chọn giờ đặt lịch.',
-            'booking_time.date_format' => 'Giờ đặt lịch phải có định dạng HH:MM.',
-        ];
+        return [];
     }
 }

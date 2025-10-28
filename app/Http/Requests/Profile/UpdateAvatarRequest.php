@@ -33,11 +33,6 @@ class UpdateAvatarRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'avatar.required' => 'Avatar image is required',
-            'avatar.image' => 'File must be an image',
-            'avatar.mimes' => 'Avatar must be a file of type: jpeg, png, jpg, gif, webp',
-            'avatar.max' => 'Avatar size must not exceed 2MB',
-        ];
+        return [];
     }
 }

@@ -33,10 +33,6 @@ class ForgotPasswordRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'email.required' => 'Email is required',
-            'email.email' => 'Please provide a valid email address',
-            'email.max' => 'Email must not exceed 255 characters',
-        ];
+        return [];
     }
 }

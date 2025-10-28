@@ -21,7 +21,7 @@ class UpdateProfileRequest extends FormRequest
             'date_of_birth' => 'nullable|date|before:today',
             'gender' => 'nullable|in:male,female,other',
             'address' => 'nullable|string|max:500',
-            'language_preference' => 'nullable|in:en,vi'
+            'language_preference' => 'nullable|in:' . implode(',', config('localization.supported', ['en','vi']))
         ];
     }
 }

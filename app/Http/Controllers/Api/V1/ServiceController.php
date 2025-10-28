@@ -87,7 +87,7 @@ class ServiceController extends Controller
      */
     public function categories(Request $request): JsonResponse
     {
-        $categories = $this->service->categories($request->get('locale', 'vi'));
+        $categories = $this->service->categories($request->get('locale', config('localization.default', 'en')));
         return $this->ok($categories, 'Service categories retrieved successfully');
     }
 }

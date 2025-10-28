@@ -34,9 +34,6 @@ class CancelBookingRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'cancellation_reason.required' => 'Please provide a reason for cancellation',
-            'cancellation_reason.max' => 'Cancellation reason must not exceed 500 characters',
-        ];
+        return [];
     }
 }

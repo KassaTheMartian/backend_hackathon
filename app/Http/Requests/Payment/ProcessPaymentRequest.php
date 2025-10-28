@@ -35,12 +35,6 @@ class ProcessPaymentRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'booking_id.required' => 'Booking ID is required',
-            'booking_id.exists' => 'Selected booking does not exist',
-            'payment_intent_id.required' => 'Payment intent ID is required',
-            'payment_method.required' => 'Payment method is required',
-            'payment_method.in' => 'Payment method must be stripe, card, online, cash, bank_transfer, momo, or zalopay',
-        ];
+        return [];
     }
 }

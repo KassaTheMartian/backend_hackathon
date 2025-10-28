@@ -35,12 +35,6 @@ class AvailableSlotsRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'date.required' => 'Date is required',
-            'date.after_or_equal' => 'Date must be today or a future date',
-            'service_id.required' => 'Service is required',
-            'service_id.exists' => 'Selected service does not exist',
-            'staff_id.exists' => 'Selected staff does not exist',
-        ];
+        return [];
     }
 }
