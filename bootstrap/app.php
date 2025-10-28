@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Register custom middleware
         $middleware->alias([
+            'auth' => \App\Http\Middleware\Authenticate::class,
             'throttle.custom' => \App\Http\Middleware\ThrottleRequests::class,
             'log.api' => \App\Http\Middleware\LogApiRequests::class,
             'rate.limit' => \App\Http\Middleware\RateLimitMiddleware::class,
