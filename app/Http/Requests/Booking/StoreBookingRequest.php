@@ -21,16 +21,18 @@ class StoreBookingRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isGuest = !auth()->check();
+        
         return [
             // Guest information (required if user not authenticated)
-            'guest_name' => 'required_if:user_id,null|string|max:255',
-            'guest_email' => 'required_if:user_id,null|email|max:255',
-            'guest_phone' => 'required_if:user_id,null|string|max:20',
+            'guest_name' => $isGuest ? 'required|string|max:255' : 'nullable|string|max:255',
+            'guest_email' => $isGuest ? 'required|email|max:255' : 'nullable|email|max:255',
+            'guest_phone' => $isGuest ? 'required|string|max:20' : 'nullable|string|max:20',
             
             // Booking details
             'branch_id' => 'required|exists:branches,id',
             'service_id' => 'required|exists:services,id',
-            'staff_id' => 'nullable|exists:staff,id',
+            'staff_id' => 'required|exists:staff,id',
             'booking_date' => 'required|date|after_or_equal:today',
             'booking_time' => 'required|date_format:H:i',
             'notes' => 'nullable|string|max:1000',
@@ -46,11 +48,20 @@ class StoreBookingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'guest_name.required_if' => 'Guest name is required for non-authenticated users.',
-            'guest_email.required_if' => 'Guest email is required for non-authenticated users.',
-            'guest_phone.required_if' => 'Guest phone is required for non-authenticated users.',
-            'booking_date.after_or_equal' => 'Booking date must be today or in the future.',
-            'booking_time.date_format' => 'Booking time must be in HH:MM format.',
+            'guest_name.required' => 'Vui lòng nhập họ tên của bạn.',
+            'guest_email.required' => 'Vui lòng nhập email của bạn.',
+            'guest_email.email' => 'Email không hợp lệ.',
+            'guest_phone.required' => 'Vui lòng nhập số điện thoại của bạn.',
+            'branch_id.required' => 'Vui lòng chọn chi nhánh.',
+            'branch_id.exists' => 'Chi nhánh không tồn tại.',
+            'service_id.required' => 'Vui lòng chọn dịch vụ.',
+            'service_id.exists' => 'Dịch vụ không tồn tại.',
+            'staff_id.required' => 'Vui lòng chọn nhân viên.',
+            'staff_id.exists' => 'Nhân viên không tồn tại.',
+            'booking_date.required' => 'Vui lòng chọn ngày đặt lịch.',
+            'booking_date.after_or_equal' => 'Ngày đặt lịch phải là hôm nay hoặc trong tương lai.',
+            'booking_time.required' => 'Vui lòng chọn giờ đặt lịch.',
+            'booking_time.date_format' => 'Giờ đặt lịch phải có định dạng HH:MM.',
         ];
     }
 }

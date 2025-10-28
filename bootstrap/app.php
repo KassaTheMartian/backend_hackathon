@@ -27,6 +27,14 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogApiRequests::class,
             \App\Http\Middleware\AuthenticateApi::class,
         ]);
+        
+        // Configure stateful API (prevent redirect to login for API routes)
+        $middleware->statefulApi();
+        
+        // Use custom Authenticate middleware
+        $middleware->use([
+            \App\Http\Middleware\Authenticate::class,
+        ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {

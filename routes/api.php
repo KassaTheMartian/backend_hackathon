@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\DemoController as V1DemoController;
 use App\Http\Controllers\Api\V1\AuthController as V1AuthController;
-use App\Http\Controllers\Api\V1\UserController as V1UserController;
 use App\Http\Controllers\Api\V1\ServiceController as V1ServiceController;
 use App\Http\Controllers\Api\V1\BranchController as V1BranchController;
 use App\Http\Controllers\Api\V1\BookingController as V1BookingController;
@@ -62,7 +61,6 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::get('/bookings/{id}', [V1BookingController::class, 'show']);
         Route::put('/bookings/{id}', [V1BookingController::class, 'update']);
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
-        Route::get('/my-bookings', [V1BookingController::class, 'myBookings']);
 
         // Payments
         Route::post('/payments/create-intent', [V1PaymentController::class, 'createIntent']);
@@ -71,6 +69,9 @@ Route::middleware(['throttle:api'])->group(function () {
 
         // Authenticated routes
         Route::middleware('auth:sanctum')->group(function () {
+            // My Bookings
+            Route::get('/my-bookings', [V1BookingController::class, 'myBookings']);
+            
             // Reviews
             Route::post('/reviews', [V1ReviewController::class, 'store']);
 
@@ -84,20 +85,6 @@ Route::middleware(['throttle:api'])->group(function () {
             Route::get('/profile/stats', [V1ProfileController::class, 'stats']);
             Route::post('/profile/deactivate', [V1ProfileController::class, 'deactivate']);
             Route::get('/profile/promotions', [V1ProfileController::class, 'promotions']);
-        });
-
-        // Admin routes
-        Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-            // Services management
-            Route::post('/services', [V1ServiceController::class, 'store']);
-            Route::put('/services/{id}', [V1ServiceController::class, 'update']);
-            Route::delete('/services/{id}', [V1ServiceController::class, 'destroy']);
-
-            // Users management
-            Route::get('/users', [V1UserController::class, 'index']);
-            Route::get('/users/{id}', [V1UserController::class, 'show']);
-            Route::put('/users/{id}', [V1UserController::class, 'update']);
-            Route::delete('/users/{id}', [V1UserController::class, 'destroy']);
         });
 
         // Demos (existing)

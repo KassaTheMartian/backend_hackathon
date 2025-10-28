@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Requests\Payment;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class ProcessPaymentRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'booking_id' => 'required|integer|exists:bookings,id',
+            'payment_intent_id' => 'required|string|max:255',
+            'payment_method' => 'required|string|in:stripe,card,online,cash,bank_transfer,momo,zalopay',
+        ];
+    }
+
+    /**
+     * Get custom error messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'booking_id.required' => 'Booking ID is required',
+            'booking_id.exists' => 'Selected booking does not exist',
+            'payment_intent_id.required' => 'Payment intent ID is required',
+            'payment_method.required' => 'Payment method is required',
+            'payment_method.in' => 'Payment method must be stripe, card, online, cash, bank_transfer, momo, or zalopay',
+        ];
+    }
+}

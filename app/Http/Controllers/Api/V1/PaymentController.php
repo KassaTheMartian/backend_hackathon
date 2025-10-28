@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Payment\CreatePaymentIntentRequest;
+use App\Http\Requests\Payment\ProcessPaymentRequest;
 use App\Http\Resources\Payment\PaymentResource;
 use App\Models\Booking;
 use App\Models\Payment;
@@ -41,15 +43,11 @@ class PaymentController extends Controller
      * 
      * Create payment intent for Stripe.
      *
-     * @param Request $request The create payment intent request
+     * @param CreatePaymentIntentRequest $request The create payment intent request
      * @return JsonResponse The payment intent response
      */
-    public function createIntent(Request $request): JsonResponse
+    public function createIntent(CreatePaymentIntentRequest $request): JsonResponse
     {
-        $request->validate([
-            'booking_id' => 'required|exists:bookings,id'
-        ]);
-        
         $booking = Booking::findOrFail($request->booking_id);
         
         $paymentIntent = $this->service->createPaymentIntent($booking);
@@ -78,17 +76,11 @@ class PaymentController extends Controller
      * 
      * Confirm payment.
      *
-     * @param Request $request The confirm payment request
+     * @param ProcessPaymentRequest $request The confirm payment request
      * @return JsonResponse The payment confirmation response
      */
-    public function confirm(Request $request): JsonResponse
+    public function confirm(ProcessPaymentRequest $request): JsonResponse
     {
-        $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'payment_intent_id' => 'required|string',
-            'payment_method' => 'required|string|in:stripe,card,online'
-        ]);
-        
         $booking = Booking::findOrFail($request->booking_id);
         
         $payment = $this->service->confirmPayment(

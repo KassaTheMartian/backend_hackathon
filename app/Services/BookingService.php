@@ -58,10 +58,29 @@ class BookingService implements BookingServiceInterface
     {
         $payload = $data->toArray();
         
-        // Automatically assign the current user as the owner
+        // Handle authenticated user vs guest
         if (Auth::check()) {
+            // Authenticated user - use current user info
             $payload['user_id'] = Auth::id();
+            // Clear guest fields if provided
+            unset($payload['guest_name'], $payload['guest_email'], $payload['guest_phone']);
+        } else {
+            // Guest user - require guest info (already validated in Request)
+            $payload['user_id'] = null;
         }
+        
+        // Get duration and price from service
+        $service = \App\Models\Service::find($data->service_id);
+        if ($service) {
+            $payload['duration'] = $service->duration;
+            $payload['service_price'] = $service->price;
+            $payload['total_amount'] = $service->price; // Initially same as service price
+            $payload['discount_amount'] = 0;
+        }
+        
+        // Set default status
+        $payload['status'] = 'pending';
+        $payload['payment_status'] = 'pending';
         
         return $this->bookings->create($payload);
     }
@@ -115,6 +134,9 @@ class BookingService implements BookingServiceInterface
     public function myBookings(Request $request): LengthAwarePaginator
     {
         $user = Auth::user();
+        if (!$user) {
+            throw new \Exception('User not authenticated');
+        }
         $request->merge(['user_id' => $user->id]);
         return $this->bookings->paginateWithFilters($request);
     }

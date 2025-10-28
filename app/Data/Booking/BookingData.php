@@ -39,6 +39,11 @@ class BookingData extends Data
         public ?string $notes,
         
         public ?string $promotion_code,
+        
+        // Guest information (for non-authenticated users)
+        public ?string $guest_name,
+        public ?string $guest_email,
+        public ?string $guest_phone,
     ) {
     }
 }

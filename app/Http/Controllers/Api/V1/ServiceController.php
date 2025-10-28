@@ -48,43 +48,6 @@ class ServiceController extends Controller
     }
 
     /**
-     * @OA\Post(
-     *     path="/api/v1/services",
-     *     summary="Create service",
-     *     tags={"Services"},
-     *     security={{"sanctum": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name","price","duration","category_id"},
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="description", type="string"),
-     *             @OA\Property(property="price", type="number"),
-     *             @OA\Property(property="duration", type="integer"),
-     *             @OA\Property(property="category_id", type="integer"),
-     *             @OA\Property(property="is_active", type="boolean"),
-     *             @OA\Property(property="image", type="string"),
-     *             @OA\Property(property="features", type="array", @OA\Items(type="string"))
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Created", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Store a newly created service.
-     *
-     * @param StoreServiceRequest $request The store service request
-     * @return JsonResponse The created service response
-     */
-    public function store(StoreServiceRequest $request): JsonResponse
-    {
-        
-        $dto = ServiceData::from($request->validated());
-        $service = $this->service->create($dto);
-        return $this->created(ServiceResource::make($service), 'Service created successfully');
-    }
-
-    /**
      * @OA\Get(
      *     path="/api/v1/services/{id}",
      *     summary="Get service by id",
@@ -108,78 +71,6 @@ class ServiceController extends Controller
         }
         
         return $this->ok(ServiceResource::make($service), 'Service retrieved successfully');
-    }
-
-    /**
-     * @OA\Put(
-     *     path="/api/v1/services/{id}",
-     *     summary="Update service",
-     *     tags={"Services"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="description", type="string"),
-     *             @OA\Property(property="price", type="number"),
-     *             @OA\Property(property="duration", type="integer"),
-     *             @OA\Property(property="category_id", type="integer"),
-     *             @OA\Property(property="is_active", type="boolean"),
-     *             @OA\Property(property="image", type="string"),
-     *             @OA\Property(property="features", type="array", @OA\Items(type="string"))
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Update the specified service.
-     *
-     * @param UpdateServiceRequest $request The update service request
-     * @param int $id The service ID
-     * @return JsonResponse The updated service response
-     */
-    public function update(UpdateServiceRequest $request, int $id): JsonResponse
-    {
-        $service = $this->service->find($id);
-        if (!$service) {
-            $this->notFound('Service');
-        }
-        
-        
-        $dto = UpdateServiceData::from($request->validated());
-        $service = $this->service->update($id, $dto);
-        return $this->ok(ServiceResource::make($service), 'Service updated successfully');
-    }
-
-    /**
-     * @OA\Delete(
-     *     path="/api/v1/services/{id}",
-     *     summary="Delete service",
-     *     tags={"Services"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=204, description="No Content"),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Remove the specified service from storage.
-     *
-     * @param int $id The service ID
-     * @return JsonResponse The deletion response
-     */
-    public function destroy(int $id): JsonResponse
-    {
-        $service = $this->service->find($id);
-        if (!$service) {
-            $this->notFound('Service');
-        }
-        
-        
-        $deleted = $this->service->delete($id);
-        return $this->noContent('Service deleted successfully');
     }
 
     /**

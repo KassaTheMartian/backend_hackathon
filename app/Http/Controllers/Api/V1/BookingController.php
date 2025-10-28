@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Http\Requests\Booking\UpdateBookingRequest;
+use App\Http\Requests\Booking\CancelBookingRequest;
 use App\Http\Resources\Booking\BookingResource;
 use App\Models\Booking;
 use App\Services\Contracts\BookingServiceInterface;
@@ -107,7 +108,6 @@ class BookingController extends Controller
             $this->notFound('Booking');
         }
         
-        
         return $this->ok(BookingResource::make($booking), 'Booking retrieved successfully');
     }
 
@@ -148,7 +148,6 @@ class BookingController extends Controller
             $this->notFound('Booking');
         }
         
-        
         $dto = UpdateBookingData::from($request->validated());
         $booking = $this->service->update($id, $dto);
         return $this->ok(BookingResource::make($booking), 'Booking updated successfully');
@@ -175,21 +174,16 @@ class BookingController extends Controller
      * 
      * Cancel the specified booking.
      *
-     * @param Request $request The HTTP request
+     * @param CancelBookingRequest $request The HTTP request
      * @param int $id The booking ID
      * @return JsonResponse The cancellation response
      */
-    public function cancel(Request $request, int $id): JsonResponse
+    public function cancel(CancelBookingRequest $request, int $id): JsonResponse
     {
-        $request->validate([
-            'cancellation_reason' => 'required|string|max:500',
-        ]);
-
         $booking = $this->service->find($id);
         if (!$booking) {
             $this->notFound('Booking');
         }
-        
         
         $booking = $this->service->cancel($id, $request->cancellation_reason);
         return $this->ok(BookingResource::make($booking), 'Booking cancelled successfully');
@@ -213,7 +207,6 @@ class BookingController extends Controller
      */
     public function myBookings(Request $request): JsonResponse
     {
-        
         $items = $this->service->myBookings($request)->through(fn ($model) => BookingResource::make($model));
         return $this->paginated($items, 'My bookings retrieved successfully');
     }

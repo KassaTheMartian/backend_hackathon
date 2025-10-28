@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Chatbot\SendMessageRequest;
+use App\Http\Requests\Chatbot\CreateSessionRequest;
 use App\Http\Resources\Chatbot\ChatSessionResource;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
@@ -64,16 +65,11 @@ class ChatbotController extends Controller
      * 
      * Store a newly created chat session.
      *
-     * @param Request $request The create session request
+     * @param CreateSessionRequest $request The create session request
      * @return JsonResponse The created chat session response
      */
-    public function createSession(Request $request): JsonResponse
+    public function createSession(CreateSessionRequest $request): JsonResponse
     {
-        
-        $request->validate([
-            'title' => 'nullable|string|max:255'
-        ]);
-        
         $session = $this->service->createSession($request->user()->id, $request->title);
         return $this->created(ChatSessionResource::make($session), 'Chat session created successfully');
     }

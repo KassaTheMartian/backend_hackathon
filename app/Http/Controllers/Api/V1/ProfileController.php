@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Http\Requests\Profile\ChangePasswordRequest;
+use App\Http\Requests\Profile\UpdateAvatarRequest;
+use App\Http\Requests\Profile\UpdateLanguageRequest;
 use App\Http\Resources\User\UserResource;
 use App\Models\User;
 use App\Services\Contracts\ProfileServiceInterface;
@@ -111,15 +113,11 @@ class ProfileController extends Controller
      * 
      * Update the user's avatar.
      *
-     * @param Request $request The update avatar request
+     * @param UpdateAvatarRequest $request The update avatar request
      * @return JsonResponse The updated profile response
      */
-    public function updateAvatar(Request $request): JsonResponse
+    public function updateAvatar(UpdateAvatarRequest $request): JsonResponse
     {
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
-        
         $user = $this->service->updateAvatar($request->user()->id, $request->file('avatar'));
         
         if (!$user) {
@@ -215,15 +213,11 @@ class ProfileController extends Controller
      * 
      * Update the user's language preference.
      *
-     * @param Request $request The update language request
+     * @param UpdateLanguageRequest $request The update language request
      * @return JsonResponse The updated profile response
      */
-    public function updateLanguage(Request $request): JsonResponse
+    public function updateLanguage(UpdateLanguageRequest $request): JsonResponse
     {
-        $request->validate([
-            'language' => 'required|string|in:vi,en'
-        ]);
-        
         $user = $this->service->updateLanguagePreference($request->user()->id, $request->language);
         
         if (!$user) {
