@@ -65,7 +65,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"user\": {\n      \"id\": 1,\n      \"name\": \"Nguyễn Văn A\",\n      \"email\": \"user@example.com\",\n      \"phone\": \"+84901234567\",\n      \"avatar\": \"https://via.placeholder.com/150\",\n      \"language_preference\": \"vi\"\n    },\n    \"token\": \"1|mockToken123456789abcdefghijklmnopqrstuvwxyz\",\n    \"token_type\": \"Bearer\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-login-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"user\": {\n      \"id\": 1,\n      \"name\": \"Nguyễn Văn A\",\n      \"email\": \"user@example.com\",\n      \"phone\": \"+84901234567\",\n      \"avatar\": \"https://via.placeholder.com/150\",\n      \"language_preference\": \"vi\",\n      \"is_admin\": true\n    },\n    \"token\": \"1|mockToken123456789abcdefghijklmnopqrstuvwxyz\",\n    \"token_type\": \"Bearer\"\n  },\n  \"error\": null,\n  \"meta\": null,\n  \"trace_id\": \"trace-login-001\",\n  \"timestamp\": \"2025-10-27T10:00:00Z\"\n}"
             }
           ]
         },

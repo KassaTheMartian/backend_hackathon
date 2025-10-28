@@ -26,20 +26,20 @@
 - [x] Availability search
 - [x] Guest booking: send OTP
 - [x] Guest booking history by email + OTP (public)
-- [ ] OTP rate-limit & attempt lockout threshold — recommended
+- [x] OTP rate-limit & attempt lockout threshold — recommended
 
 ## Payments
 - [x] Stripe: create intent, confirm, webhook
 - [x] VNPay: create, return, IPN, refund, query
 - [x] List payments (auth, scoped to user)
-- [ ] Secure create/confirm (auth or booking ownership/email checks) — recommended
+- [x] Secure create/confirm (auth or booking ownership/email checks) — recommended
 
 ## Reviews
 - [x] List reviews (filters)
 - [x] Create review (member)
 - [x] Review detail
-- [ ] Prevent duplicate review per booking/user — recommended
-- [ ] Moderation/admin endpoints — optional
+- [x] Prevent duplicate review per booking/user — recommended
+- [x] Moderation/admin endpoints — optional
 
 ## Posts/Blog
 - [x] List posts (filters)
@@ -73,7 +73,7 @@
 
 ## Docs/Testing/Deployment
 - [~] Swagger annotations (ensure all paths/security aligned)
-- [ ] setup.md (local setup, keys, data) — required by de_bai
+- [x] setup.md (local setup, keys, data) — required by de_bai
 - [ ] High-level architecture/API docs — recommended
 - [ ] Deployment notes — optional
 - [ ] Expand automated tests — recommended
