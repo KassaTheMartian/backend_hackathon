@@ -172,7 +172,7 @@ class ChatbotController extends Controller
         }
         
         
-        $response = $this->service->processBotResponse($id, $request->message);
+        $response = $this->service->processBotResponse($id, $request->message, $request->input('mode'));
         
         $messageData = [
             'id' => $response->id,

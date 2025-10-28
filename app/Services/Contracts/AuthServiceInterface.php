@@ -40,4 +40,24 @@ interface AuthServiceInterface
      * Reset password with token
      */
     public function resetPassword(string $token, string $email, string $password): array;
+
+    /**
+     * Send OTP to email for verification.
+     */
+    public function sendEmailOtp(string $email, string $purpose = 'verify_email'): array;
+
+    /**
+     * Verify OTP and mark email as verified.
+     */
+    public function verifyEmailOtp(string $email, string $otp, string $purpose = 'verify_email'): array;
+
+    /**
+     * Send OTP for password reset.
+     */
+    public function sendPasswordResetOtp(string $email): array;
+
+    /**
+     * Reset password using OTP.
+     */
+    public function resetPasswordWithOtp(string $email, string $otp, string $password): array;
 }

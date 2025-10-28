@@ -28,6 +28,7 @@ class StoreBookingRequest extends FormRequest
             'guest_name' => $isGuest ? 'required|string|max:255' : 'nullable|string|max:255',
             'guest_email' => $isGuest ? 'required|email|max:255' : 'nullable|email|max:255',
             'guest_phone' => $isGuest ? 'required|string|max:20' : 'nullable|string|max:20',
+            'guest_email_otp' => $isGuest ? 'required|string|size:6' : 'nullable|string|size:6',
             
             // Booking details
             'branch_id' => 'required|exists:branches,id',

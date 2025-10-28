@@ -21,4 +21,14 @@ interface BookingServiceInterface
     public function cancel(int $id, string $reason): ?Model;
 
     public function myBookings(Request $request): LengthAwarePaginator;
+
+    /**
+     * Availability search by day and optional staff.
+     */
+    public function availableSlots(int $branchId, int $serviceId, string $date, ?int $staffId = null, int $granularity = 15): array;
+
+    /**
+     * Reschedule a booking to new time (with availability check).
+     */
+    public function reschedule(int $id, string $bookingDate, string $bookingTime, ?int $staffId = null): ?Model;
 }

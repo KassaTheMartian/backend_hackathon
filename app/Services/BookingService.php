@@ -77,7 +77,18 @@ class BookingService implements BookingServiceInterface
             $payload['total_amount'] = $service->price; // Initially same as service price
             $payload['discount_amount'] = 0;
         }
-        
+
+        // Check availability
+        $available = $this->isTimeSlotAvailable(
+            $payload['branch_id'],
+            $payload['booking_date'],
+            $payload['booking_time'],
+            $payload['staff_id'] ?? null
+        );
+        if (!$available) {
+            throw new \Exception('Selected time slot is not available');
+        }
+
         // Set default status
         $payload['status'] = 'pending';
         $payload['payment_status'] = 'pending';
@@ -105,7 +116,22 @@ class BookingService implements BookingServiceInterface
      */
     public function update(int $id, UpdateBookingData $data): ?Model
     {
-        return $this->bookings->update($id, $data->toArray());
+        $payload = $data->toArray();
+        if (isset($payload['booking_date']) || isset($payload['booking_time']) || isset($payload['staff_id']) || isset($payload['branch_id'])) {
+            $existing = $this->bookings->find($id);
+            if (!$existing) {
+                return null;
+            }
+            $branchId = $payload['branch_id'] ?? $existing->branch_id;
+            $date = $payload['booking_date'] ?? $existing->booking_date;
+            $time = $payload['booking_time'] ?? $existing->booking_time;
+            $staffId = array_key_exists('staff_id', $payload) ? $payload['staff_id'] : $existing->staff_id;
+            $available = $this->isTimeSlotAvailable($branchId, $date, $time, $staffId);
+            if (!$available) {
+                throw new \Exception('Selected time slot is not available');
+            }
+        }
+        return $this->bookings->update($id, $payload);
     }
 
     /**
@@ -147,6 +173,46 @@ class BookingService implements BookingServiceInterface
     public function isTimeSlotAvailable(int $branchId, string $date, string $time, ?int $staffId = null): bool
     {
         return $this->bookings->isTimeSlotAvailable($branchId, $date, $time, $staffId);
+    }
+
+    public function availableSlots(int $branchId, int $serviceId, string $date, ?int $staffId = null, int $granularity = 15): array
+    {
+        $service = \App\Models\Service::findOrFail($serviceId);
+        $start = \Carbon\Carbon::parse($date . ' 08:00');
+        $end = \Carbon\Carbon::parse($date . ' 20:00');
+        $slots = [];
+        for ($t = $start->copy(); $t < $end; $t->addMinutes($granularity)) {
+            $time = $t->format('H:i');
+            if ($this->isTimeSlotAvailable($branchId, $date, $time, $staffId)) {
+                $slots[] = $time;
+            }
+        }
+        return [
+            'date' => $date,
+            'granularity' => $granularity,
+            'available' => $slots,
+        ];
+    }
+
+    public function reschedule(int $id, string $bookingDate, string $bookingTime, ?int $staffId = null): ?Model
+    {
+        $booking = $this->bookings->find($id);
+        if (!$booking) {
+            return null;
+        }
+        if (\Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->booking_time) < now()->addHours(4)) {
+            throw new \Exception('Reschedule cutoff exceeded');
+        }
+        $branchId = $booking->branch_id;
+        $staff = $staffId ?? $booking->staff_id;
+        if (!$this->isTimeSlotAvailable($branchId, $bookingDate, $bookingTime, $staff)) {
+            throw new \Exception('Selected time slot is not available');
+        }
+        return $this->bookings->update($id, [
+            'booking_date' => $bookingDate,
+            'booking_time' => $bookingTime,
+            'staff_id' => $staff,
+        ]);
     }
 
     /**

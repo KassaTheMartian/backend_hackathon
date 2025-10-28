@@ -188,7 +188,9 @@ class ProfileController extends Controller
         );
         
         if (!$success) {
-            return $this->ok(null, 'Current password is incorrect');
+            return \App\Http\Responses\ApiResponse::validationError([
+                'current_password' => ['Current password is incorrect']
+            ]);
         }
         
         return $this->ok(null, 'Password changed successfully');

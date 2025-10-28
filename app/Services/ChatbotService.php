@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
+use App\Models\Service as ServiceModel;
 use App\Repositories\Contracts\ChatRepositoryInterface;
 use App\Services\Contracts\ChatbotServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Http;
 
 class ChatbotService implements ChatbotServiceInterface
 {
@@ -58,12 +60,28 @@ class ChatbotService implements ChatbotServiceInterface
     /**
      * Process bot response.
      */
-    public function processBotResponse(int $sessionId, string $userMessage): ChatMessage
+    public function processBotResponse(int $sessionId, string $userMessage, ?string $mode = null): ChatMessage
     {
-        // Simple bot logic - in real implementation, this would integrate with AI service
-        $botResponse = $this->generateBotResponse($userMessage);
-        
-        return $this->chatRepository->sendMessage($sessionId, $botResponse, 'bot');
+        // Mode routing: booking | faq | human | default
+        $mode = $mode ?: $this->inferMode($userMessage);
+
+        if ($mode === 'human') {
+            $response = 'Đã chuyển sang nhân viên hỗ trợ. Vui lòng đợi trong giây lát...';
+            return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
+        }
+
+        if ($mode === 'booking') {
+            $response = $this->generateBookingSuggestions($userMessage);
+            return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
+        }
+
+        if ($mode === 'faq') {
+            $response = $this->generateFaqAnswer($userMessage);
+            return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
+        }
+
+        $response = $this->generateBotResponse($userMessage);
+        return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
     }
 
     /**
@@ -114,5 +132,123 @@ class ChatbotService implements ChatbotServiceInterface
         }
         
         return 'Thank you for your message. Our team will get back to you soon. Is there anything else I can help you with?';
+    }
+
+    private function inferMode(string $message): string
+    {
+        $m = strtolower($message);
+        if (str_contains($m, 'nhân viên') || str_contains($m, 'human') || str_contains($m, 'agent')) {
+            return 'human';
+        }
+        if (str_contains($m, 'đặt lịch') || str_contains($m, 'booking') || str_contains($m, 'dịch vụ')) {
+            return 'booking';
+        }
+        if (str_contains($m, 'cách đặt') || str_contains($m, 'hướng dẫn') || str_contains($m, 'faq')) {
+            return 'faq';
+        }
+        return 'default';
+    }
+
+    private function generateBookingSuggestions(string $userMessage): string
+    {
+        // Try Gemini first if configured, otherwise fallback to local search
+        $services = $this->suggestServicesWithGemini($userMessage);
+        if (!$services) {
+            $services = $this->suggestServicesLocally($userMessage);
+        }
+        $payload = json_encode(['services' => $services], JSON_UNESCAPED_UNICODE);
+        return 'Gợi ý dịch vụ phù hợp. Vui lòng chọn để đặt lịch.' . "\n" . 'SUGGEST:' . $payload;
+    }
+
+    private function generateFaqAnswer(string $userMessage): string
+    {
+        $faqs = [
+            'cách đặt lịch' => 'Bạn có thể đặt lịch qua menu Dịch vụ → Chọn dịch vụ → Chọn chi nhánh → Chọn thời gian.',
+            'huỷ lịch' => 'Bạn có thể huỷ trong mục Lịch hẹn của tôi trước 24h.',
+            'thanh toán' => 'Hỗ trợ VNPay và Stripe. Bạn có thể thanh toán online hoặc tại quầy.',
+        ];
+        $m = mb_strtolower($userMessage);
+        foreach ($faqs as $k => $v) {
+            if (str_contains($m, $k)) {
+                return $v;
+            }
+        }
+        return 'Bạn muốn hỏi về đặt lịch, huỷ lịch hay thanh toán?';
+    }
+
+    /**
+     * Call Gemini to get suggestions in fixed JSON schema, validated against local catalog.
+     */
+    private function suggestServicesWithGemini(string $userMessage): ?array
+    {
+        $apiKey = config('services.gemini.key');
+        if (!$apiKey) {
+            return null;
+        }
+        try {
+            $prompt = 'You are a booking assistant for a beauty clinic. Given the user message, return ONLY a JSON object with this exact shape: {"services":[{"service_id":number,"name":string}]}. Rules: Suggest 1-5 services most relevant; service_id and name must exist in our catalog. User message: "' . $userMessage . '"';
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type' => 'application/json',
+            ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', [
+                'contents' => [[
+                    'parts' => [['text' => $prompt]],
+                ]],
+            ]);
+            if (!$response->successful()) {
+                return null;
+            }
+            $raw = $response->json();
+            $candidateText = $raw['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            if (!$candidateText) {
+                return null;
+            }
+            $jsonStart = strpos($candidateText, '{');
+            $jsonEnd = strrpos($candidateText, '}');
+            if ($jsonStart === false || $jsonEnd === false || $jsonEnd <= $jsonStart) {
+                return null;
+            }
+            $jsonString = substr($candidateText, $jsonStart, $jsonEnd - $jsonStart + 1);
+            $decoded = json_decode($jsonString, true);
+            if (!is_array($decoded) || !isset($decoded['services']) || !is_array($decoded['services'])) {
+                return null;
+            }
+            $validated = [];
+            $ids = collect($decoded['services'])->pluck('service_id')->filter()->unique()->take(5)->values();
+            $existing = ServiceModel::whereIn('id', $ids)->get(['id', 'name'])->keyBy('id');
+            foreach ($decoded['services'] as $svc) {
+                $sid = (int)($svc['service_id'] ?? 0);
+                if ($sid && isset($existing[$sid])) {
+                    $validated[] = [
+                        'service_id' => $sid,
+                        'name' => (string)$existing[$sid]->name,
+                    ];
+                }
+                if (count($validated) >= 5) break;
+            }
+            return $validated ?: null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Fallback: local keyword search on Service model.
+     */
+    private function suggestServicesLocally(string $userMessage): array
+    {
+        $q = trim($userMessage);
+        $query = ServiceModel::query();
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', '%' . $q . '%')
+                    ->orWhere('description', 'like', '%' . $q . '%');
+            });
+        }
+        $services = $query->limit(5)->get(['id', 'name']);
+        if ($services->isEmpty()) {
+            $services = ServiceModel::limit(5)->get(['id', 'name']);
+        }
+        return $services->map(fn ($s) => ['service_id' => $s->id, 'name' => $s->name])->all();
     }
 }

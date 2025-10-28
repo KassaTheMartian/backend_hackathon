@@ -21,8 +21,12 @@ Route::middleware(['throttle:api'])->group(function () {
         // Auth
         Route::post('/auth/login', [V1AuthController::class, 'login']);
         Route::post('/auth/register', [V1AuthController::class, 'register']);
+        Route::post('/auth/send-otp', [V1AuthController::class, 'sendOtp']);
+        Route::post('/auth/verify-otp', [V1AuthController::class, 'verifyOtp']);
         Route::post('/auth/forgot-password', [V1AuthController::class, 'forgotPassword']);
         Route::post('/auth/reset-password', [V1AuthController::class, 'resetPassword']);
+        Route::post('/auth/send-reset-otp', [V1AuthController::class, 'sendResetOtp']);
+        Route::post('/auth/reset-password-otp', [V1AuthController::class, 'resetPasswordWithOtp']);
         Route::post('/auth/test-email', [V1AuthController::class, 'testEmail']);
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('/auth/me', [V1AuthController::class, 'me']);
@@ -61,11 +65,25 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::get('/bookings/{id}', [V1BookingController::class, 'show']);
         Route::put('/bookings/{id}', [V1BookingController::class, 'update']);
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
+        Route::post('/bookings/{id}/reschedule', [V1BookingController::class, 'reschedule']);
+        Route::get('/availability', [V1BookingController::class, 'availability']);
+        Route::post('/guest-booking/send-otp', [V1BookingController::class, 'sendGuestBookingOtp']);
+        Route::get('/guest-bookings', [V1BookingController::class, 'guestBookings']);
 
-        // Payments
+        // Payments - list (scope to user)
+        Route::middleware('auth:sanctum')->get('/payments', [V1PaymentController::class, 'index']);
+
+        // Payments - Stripe
         Route::post('/payments/create-intent', [V1PaymentController::class, 'createIntent']);
         Route::post('/payments/confirm', [V1PaymentController::class, 'confirm']);
         Route::post('/payments/webhook', [V1PaymentController::class, 'webhook']);
+
+        // Payments - VNPay
+        Route::post('/payments/vnpay/create', [V1PaymentController::class, 'vnpayCreate']);
+        Route::get('/payments/vnpay/return', [V1PaymentController::class, 'vnpayReturn']);
+        Route::post('/payments/vnpay/ipn', [V1PaymentController::class, 'vnpayIpn']);
+        Route::post('/payments/vnpay/refund', [V1PaymentController::class, 'vnpayRefund']);
+        Route::post('/payments/vnpay/query', [V1PaymentController::class, 'vnpayQuery']);
 
         // Authenticated routes
         Route::middleware('auth:sanctum')->group(function () {
