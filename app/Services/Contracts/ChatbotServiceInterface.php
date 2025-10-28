@@ -34,9 +34,12 @@ interface ChatbotServiceInterface
     public function sendMessage(int $sessionId, string $content, string $type = 'user'): ChatMessage;
 
     /**
-     * Process bot response.
+     * Process bot response with optional mode:
+     * - booking: suggest services for booking
+     * - faq: answer booking-related FAQs
+     * - human: escalate to staff
      */
-    public function processBotResponse(int $sessionId, string $userMessage): ChatMessage;
+    public function processBotResponse(int $sessionId, string $userMessage, ?string $mode = null): ChatMessage;
 
     /**
      * Delete a session.

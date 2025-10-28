@@ -21,4 +21,29 @@ interface PaymentServiceInterface
      * Handle Stripe webhook.
      */
     public function handleWebhook($request): void;
+
+    /**
+     * VNPay: Create payment URL and Payment record.
+     */
+    public function vnpayCreate(int $bookingId, ?string $bankCode, ?string $language, ?string $guestEmail, ?string $guestPhone): array;
+
+    /**
+     * VNPay: Handle return URL (client redirect back).
+     */
+    public function vnpayReturn(array $params): array;
+
+    /**
+     * VNPay: Handle IPN notification.
+     */
+    public function vnpayIpn(array $params): array;
+
+    /**
+     * VNPay: Refund transaction.
+     */
+    public function vnpayRefund(string $transactionId, int $amount, string $reason, ?string $guestEmail, ?string $guestPhone): array;
+
+    /**
+     * VNPay: Query transaction status.
+     */
+    public function vnpayQuery(string $transactionId, ?string $guestEmail, ?string $guestPhone): array;
 }

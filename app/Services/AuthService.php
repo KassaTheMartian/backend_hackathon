@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\OtpVerification;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +40,11 @@ class AuthService implements AuthServiceInterface
         // Check if user is active
         if (!$user->is_active) {
             throw new \Exception('Account is inactive. Please contact support.');
+        }
+
+        // Require verified email
+        if (!$user->email_verified_at) {
+            throw new \Exception('Email not verified. Please verify your email.');
         }
 
         $token = $this->authRepository->createToken($user);
@@ -78,7 +84,8 @@ class AuthService implements AuthServiceInterface
         $userData['language_preference'] = $userData['language_preference'] ?? 'vi';
         
         $user = $this->authRepository->create($userData);
-        $token = $this->authRepository->createToken($user);
+        // Auto send OTP to email
+        $this->sendEmailOtp($user->email, 'verify_email');
 
         return [
             'user' => [
@@ -89,7 +96,7 @@ class AuthService implements AuthServiceInterface
                 'language_preference' => $user->language_preference,
                 'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toISOString() : null,
             ],
-            'token' => $token,
+            'message' => 'Registration successful. Please verify your email.',
         ];
     }
 
@@ -193,5 +200,97 @@ class AuthService implements AuthServiceInterface
         return [
             'message' => 'Password reset successfully',
         ];
+    }
+
+    public function sendEmailOtp(string $email, string $purpose = 'verify_email'): array
+    {
+        $otp = (string)random_int(100000, 999999);
+        OtpVerification::create([
+            'phone_or_email' => $email,
+            'otp' => $otp,
+            'type' => 'email',
+            'purpose' => $purpose,
+            'expires_at' => now()->addMinutes(10),
+            'attempts' => 0,
+        ]);
+
+        // Send simple email
+        Mail::raw('Your verification code is: ' . $otp, function ($message) use ($email) {
+            $message->to($email)
+                ->subject('Your OTP Code')
+                ->from(config('mail.from.address'), config('mail.from.name'));
+        });
+
+        return ['message' => 'OTP sent'];
+    }
+
+    public function verifyEmailOtp(string $email, string $otp, string $purpose = 'verify_email'): array
+    {
+        $record = OtpVerification::where('phone_or_email', $email)
+            ->where('purpose', $purpose)
+            ->unexpired()
+            ->unverified()
+            ->latest('id')
+            ->first();
+
+        if (!$record) {
+            throw new \Exception('OTP not found or expired');
+        }
+
+        if ($record->otp !== $otp) {
+            $record->incrementAttempts();
+            throw new \Exception('Invalid OTP');
+        }
+
+        $record->markAsVerified();
+
+        $user = $this->authRepository->findByEmail($email);
+        if ($user && !$user->email_verified_at) {
+            $user->email_verified_at = now();
+            $user->save();
+        }
+
+        return ['message' => 'Email verified successfully'];
+    }
+
+    public function sendPasswordResetOtp(string $email): array
+    {
+        // Ensure user exists via repository
+        $user = $this->authRepository->findByEmail($email);
+        if (!$user) {
+            throw new \Exception('User not found');
+        }
+        return $this->sendEmailOtp($email, 'password_reset');
+    }
+
+    public function resetPasswordWithOtp(string $email, string $otp, string $password): array
+    {
+        $record = OtpVerification::where('phone_or_email', $email)
+            ->where('purpose', 'password_reset')
+            ->unexpired()
+            ->unverified()
+            ->latest('id')
+            ->first();
+
+        if (!$record) {
+            throw new \Exception('OTP not found or expired');
+        }
+        if ($record->otp !== $otp) {
+            $record->incrementAttempts();
+            throw new \Exception('Invalid OTP');
+        }
+        $record->markAsVerified();
+
+        $user = $this->authRepository->findByEmail($email);
+        if (!$user) {
+            throw new \Exception('User not found');
+        }
+        $user->password = Hash::make($password);
+        $user->save();
+
+        // Revoke existing tokens
+        $this->authRepository->revokeAllTokens($user);
+
+        return ['message' => 'Password reset successfully'];
     }
 }

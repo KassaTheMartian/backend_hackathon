@@ -132,16 +132,31 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
      */
     public function isTimeSlotAvailable(int $branchId, string $date, string $time, ?int $staffId = null): bool
     {
+        // Duration-aware overlap detection
+        $newStart = \Carbon\Carbon::parse($date . ' ' . $time);
+
         $query = $this->model->where('branch_id', $branchId)
             ->where('booking_date', $date)
-            ->where('booking_time', $time)
             ->whereIn('status', ['pending', 'confirmed', 'in_progress']);
 
         if ($staffId) {
             $query->where('staff_id', $staffId);
         }
 
-        return $query->count() === 0;
+        $bookings = $query->get(['booking_time', 'duration']);
+
+        foreach ($bookings as $b) {
+            $existStart = \Carbon\Carbon::parse($date . ' ' . $b->booking_time);
+            $existEnd = $existStart->copy()->addMinutes((int)$b->duration);
+            // assume service duration from caller; use 0 to mean no overlap check
+            // Here we conservatively assume minimum 5 minutes overlap when same time
+            $newEnd = $newStart->copy()->addMinutes( max(5, (int)($b->duration)) );
+            if ($newStart < $existEnd && $existStart < $newEnd) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
