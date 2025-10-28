@@ -47,8 +47,12 @@ class ReviewSeeder extends Seeder
         $reviewsCreated = 0;
 
         foreach ($bookingsToReview as $booking) {
+            // Bỏ qua guest bookings (không có user_id) để tránh trùng ngoài ý muốn
+            if (!$booking->user_id) {
+                continue;
+            }
             // Kiểm tra xem booking đã có review chưa
-            if ($booking->reviews()->exists()) {
+            if ($booking->reviews()->where('user_id', $booking->user_id)->exists()) {
                 continue;
             }
 
@@ -58,15 +62,19 @@ class ReviewSeeder extends Seeder
                 ? rand(4, 5) 
                 : rand(1, 3);
 
-            $review = Review::factory()->create([
-                'user_id' => $booking->user_id,
-                'booking_id' => $booking->id,
-                'service_id' => $booking->service_id,
-                'staff_id' => $booking->staff_id,
-                'branch_id' => $booking->branch_id,
-                'rating' => $rating,
-                'is_approved' => rand(1, 100) <= 85, // 85% được approve
-            ]);
+            $review = Review::updateOrCreate(
+                [
+                    'user_id' => $booking->user_id,
+                    'booking_id' => $booking->id,
+                ],
+                [
+                    'service_id' => $booking->service_id,
+                    'staff_id' => $booking->staff_id,
+                    'branch_id' => $booking->branch_id,
+                    'rating' => $rating,
+                    'is_approved' => rand(1, 100) <= 85,
+                ]
+            );
 
             // 30% reviews sẽ có admin response
             if (rand(1, 100) <= 30) {

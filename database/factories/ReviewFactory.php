@@ -102,7 +102,8 @@ class ReviewFactory extends Factory
         
         return [
             'user_id' => User::inRandomOrder()->first()?->id ?? User::factory(),
-            'booking_id' => Booking::inRandomOrder()->first()?->id ?? Booking::factory(),
+            // Default to null to avoid violating unique (user_id, booking_id) during bulk seeding
+            'booking_id' => null,
             'service_id' => Service::inRandomOrder()->first()?->id ?? Service::factory(),
             'staff_id' => Staff::inRandomOrder()->first()?->id ?? Staff::factory(),
             'branch_id' => Branch::inRandomOrder()->first()?->id ?? Branch::factory(),

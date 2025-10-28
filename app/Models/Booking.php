@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
@@ -162,7 +163,7 @@ class Booking extends Model
     public static function generateBookingCode(): string
     {
         do {
-            $code = 'BK' . date('Ymd') . str_pad(random_int(1, 999), 3, '0', STR_PAD_LEFT);
+            $code = 'BK' . date('Ymd') . strtoupper(Str::random(5));
         } while (static::where('booking_code', $code)->exists());
 
         return $code;

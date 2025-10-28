@@ -24,6 +24,9 @@ class DatabaseSeeder extends Seeder
             BookingSeeder::class,        // Bookings
             ReviewSeeder::class,         // Reviews (phải sau BookingSeeder)
             PostSeeder::class,           // Posts (Blog/News)
+            PaymentSeeder::class,        // Payments (derived from bookings)
+            PromotionSeeder::class,      // Promotions & usages
+            ContactSeeder::class,        // Contact submissions
         ]);
 
         // Create demo data
