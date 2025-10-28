@@ -1,61 +1,65 @@
 @extends('emails.layout')
 
-@section('title', 'Mã OTP - Beauty Clinic')
+@section('title', $purpose === 'verify_email'
+    ? __('emails.otp.subjects.verify_email')
+    : ($purpose === 'password_reset'
+        ? __('emails.otp.subjects.password_reset')
+        : ($purpose === 'guest_booking'
+            ? __('emails.otp.subjects.guest_booking')
+            : __('emails.otp.subjects.default'))))
 
 @section('content')
     <h2>
         @if($purpose === 'verify_email')
-            ✉️ Xác thực Email của bạn
+            ✉️ {{ __('emails.otp.headings.verify_email') }}
         @elseif($purpose === 'password_reset')
-            🔐 Đặt lại Mật khẩu
+            🔐 {{ __('emails.otp.headings.password_reset') }}
         @elseif($purpose === 'guest_booking')
-            📅 Xác nhận Đặt lịch
+            📅 {{ __('emails.otp.headings.guest_booking') }}
         @else
-            🔒 Mã Xác thực OTP
+            🔒 {{ __('emails.otp.headings.default') }}
         @endif
     </h2>
 
-    <p>Xin chào,</p>
+    <p>{{ __('emails.common.greeting') }}</p>
 
     @if($purpose === 'verify_email')
-        <p>Cảm ơn bạn đã đăng ký tài khoản tại <strong>Beauty Clinic</strong>! Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã OTP dưới đây để xác thực email của bạn.</p>
+        <p>{!! __('emails.otp.intro.verify_email') !!}</p>
     @elseif($purpose === 'password_reset')
-        <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Vui lòng sử dụng mã OTP dưới đây để tiếp tục.</p>
+        <p>{{ __('emails.otp.intro.password_reset') }}</p>
     @elseif($purpose === 'guest_booking')
-        <p>Để hoàn tất việc đặt lịch hoặc xem lịch sử đặt lịch của bạn, vui lòng sử dụng mã OTP dưới đây.</p>
+        <p>{{ __('emails.otp.intro.guest_booking') }}</p>
     @else
-        <p>Vui lòng sử dụng mã OTP dưới đây để xác thực.</p>
+        <p>{{ __('emails.otp.intro.default') }}</p>
     @endif
 
     <div class="otp-box">
-        <div class="otp-label">MÃ OTP CỦA BẠN</div>
+        <div class="otp-label">{{ __('emails.otp.box.label') }}</div>
         <div class="otp-code">{{ $otp }}</div>
-        <div class="otp-expiry">⏰ Mã có hiệu lực trong {{ $expiryMinutes }} phút</div>
+        <div class="otp-expiry">{!! __('emails.otp.box.expiry', ['minutes' => $expiryMinutes]) !!}</div>
     </div>
 
     <div class="warning">
         <p>
-            <strong>⚠️ Lưu ý bảo mật:</strong><br>
-            Không chia sẻ mã OTP này với bất kỳ ai. Beauty Clinic sẽ không bao giờ yêu cầu mã OTP qua điện thoại hoặc email.
+            <strong>⚠️ {{ __('emails.otp.security.title') }}</strong><br>
+            {{ __('emails.otp.security.note') }}
         </p>
     </div>
 
     @if($purpose === 'verify_email')
-        <p>Sau khi xác thực email thành công, bạn sẽ có thể:</p>
+        <p>{{ __('emails.otp.benefits.title') }}</p>
         <ul style="color: #666; line-height: 1.8; margin-left: 20px;">
-            <li>Đặt lịch hẹn dịch vụ làm đẹp</li>
-            <li>Theo dõi lịch sử điều trị</li>
-            <li>Nhận ưu đãi và khuyến mãi đặc biệt</li>
-            <li>Tích điểm thành viên thân thiết</li>
+            <li>{{ __('emails.otp.benefits.item1') }}</li>
+            <li>{{ __('emails.otp.benefits.item2') }}</li>
+            <li>{{ __('emails.otp.benefits.item3') }}</li>
+            <li>{{ __('emails.otp.benefits.item4') }}</li>
         </ul>
     @endif
 
-    <p style="margin-top: 30px;">
-        Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này hoặc liên hệ với chúng tôi ngay.
-    </p>
+    <p style="margin-top: 30px;">{{ __('emails.common.ignore_if_not_you') }}</p>
 
     <p style="margin-top: 20px;">
-        Trân trọng,<br>
-        <strong>Đội ngũ Beauty Clinic</strong>
+        {{ __('emails.common.regards') }}<br>
+        <strong>{{ __('emails.common.team_name') }}</strong>
     </p>
 @endsection

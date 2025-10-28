@@ -31,15 +31,7 @@ interface AuthServiceInterface
      */
     public function logoutAll(): bool;
 
-    /**
-     * Send password reset link to user email
-     */
-    public function sendPasswordResetLink(string $email): array;
-
-    /**
-     * Reset password with token
-     */
-    public function resetPassword(string $token, string $email, string $password): array;
+    // Removed legacy token-based reset methods in favor of OTP-only flow
 
     /**
      * Send OTP to email for verification.

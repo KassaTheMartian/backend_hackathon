@@ -5,6 +5,7 @@ return [
     'account_inactive' => 'Tài khoản đang bị khóa. Vui lòng liên hệ hỗ trợ.',
     'email_not_verified' => 'Email chưa được xác minh. Vui lòng xác minh email.',
     'user_not_found' => 'Không tìm thấy người dùng',
+    // Keep for legacy but OTP flow is default now
     'password_reset_link_sent' => 'Đã gửi liên kết đặt lại mật khẩu tới email của bạn',
     'invalid_or_expired_token' => 'Mã đặt lại không hợp lệ hoặc đã hết hạn',
     'password_reset_success' => 'Đặt lại mật khẩu thành công',

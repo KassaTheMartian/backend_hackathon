@@ -151,70 +151,7 @@ class AuthService implements AuthServiceInterface
         return $this->authRepository->revokeAllTokens($user);
     }
 
-    /**
-     * Send password reset link to user email.
-     *
-     * @param string $email The user's email address
-     * @return array The response containing reset token (for demo purposes)
-     * @throws \Exception When user is not found
-     */
-    public function sendPasswordResetLink(string $email): array
-    {
-        // Database Operation: Find user
-        $user = $this->authRepository->findByEmail($email);
-        if (!$user) {
-            throw new \Exception(__("auth.user_not_found"));
-        }
-
-        // Database Operation: Create password reset token
-        $token = $this->authRepository->createPasswordResetToken($email);
-        
-        // Business Logic: Send email (in production, don't return token)
-        // Mail::to($email)->send(new PasswordResetMail($token));
-
-        return [
-            'message' => 'Password reset link sent to your email',
-            'token' => $token, // Remove this in production
-        ];
-    }
-
-    /**
-     * Reset password with token.
-     *
-     * @param string $token The password reset token
-     * @param string $email The user's email address
-     * @param string $password The new password
-     * @return array The password reset response
-     * @throws \Exception When token is invalid or user is not found
-     */
-    public function resetPassword(string $token, string $email, string $password): array
-    {
-        // Business Logic: Validate reset token
-        $passwordReset = $this->authRepository->findPasswordResetToken($token);
-        if (!$passwordReset || $passwordReset['email'] !== $email) {
-            throw new \Exception(__("auth.invalid_or_expired_token"));
-        }
-
-        // Database Operation: Find user
-        $user = $this->authRepository->findByEmail($email);
-        if (!$user) {
-            throw new \Exception(__("auth.user_not_found"));
-        }
-
-        // Business Logic: Hash new password and update
-        $hashedPassword = Hash::make($password);
-        $this->authRepository->update($user->id, ['password' => $hashedPassword]);
-
-        // Database Operation: Delete the reset token
-        $this->authRepository->deletePasswordResetToken($email);
-
-        // Business Logic: Revoke all existing tokens for security
-        $this->authRepository->revokeAllTokens($user);
-
-        return [
-            'message' => __("auth.password_reset_success"),
-        ];
-    }
+    // Removed legacy token-based reset methods in favor of OTP-only flow
 
     public function sendEmailOtp(string $email, string $purpose = 'verify_email'): array
     {

@@ -21,10 +21,9 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         // Auth
         Route::post('/auth/login', [V1AuthController::class, 'login']);
         Route::post('/auth/register', [V1AuthController::class, 'register']);
-        Route::post('/auth/send-otp', [V1AuthController::class, 'sendOtp'])->middleware('throttle:otp');
+        // Removed standalone send-otp route; OTP is sent within relevant flows
         Route::post('/auth/verify-otp', [V1AuthController::class, 'verifyOtp']);
-        Route::post('/auth/forgot-password', [V1AuthController::class, 'forgotPassword']);
-        Route::post('/auth/reset-password', [V1AuthController::class, 'resetPassword']);
+        // Removed legacy token-based password reset routes; using OTP-only flow
         Route::post('/auth/send-reset-otp', [V1AuthController::class, 'sendResetOtp'])->middleware('throttle:otp');
         Route::post('/auth/reset-password-otp', [V1AuthController::class, 'resetPasswordWithOtp']);
         Route::post('/auth/test-email', [V1AuthController::class, 'testEmail']);

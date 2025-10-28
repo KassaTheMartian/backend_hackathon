@@ -5,9 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Requests\Auth\ForgotPasswordRequest;
-use App\Http\Requests\Auth\ResetPasswordRequest;
-use App\Http\Requests\Auth\SendOtpRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
 use App\Http\Requests\Auth\SendPasswordResetOtpRequest;
 use App\Http\Requests\Auth\ResetPasswordWithOtpRequest;
@@ -90,31 +87,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *   path="/api/v1/auth/send-otp",
-     *   summary="Send OTP to email for verification",
-     *   tags={"Auth"},
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"email"},
-     *       @OA\Property(property="email", type="string", format="email")
-     *     )
-     *   ),
-     *   @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     */
-    public function sendOtp(SendOtpRequest $request): JsonResponse
-    {
-        $validated = $request->validated();
-        try {
-            $result = $this->authService->sendEmailOtp($validated['email'], 'verify_email');
-            return $this->ok($result, 'OTP sent');
-        } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 'Failed to send OTP', 'OTP_SEND_ERROR', 422);
-        }
-    }
+    // Removed standalone sendOtp endpoint; email OTP is sent on registration and other flows as needed
 
     /**
      * @OA\Post(
@@ -223,36 +196,6 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *   path="/api/v1/auth/forgot-password",
-     *   summary="Send password reset link",
-     *   tags={"Auth"},
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"email"},
-     *       @OA\Property(property="email", type="string", format="email")
-     *     )
-     *   ),
-     *   @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *   @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * @param ForgotPasswordRequest $request The forgot password request containing email
-     * @return JsonResponse The password reset link response
-     */
-    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
-    {
-        try {
-            $validated = $request->validated();
-            $result = $this->authService->sendPasswordResetLink($validated['email']);
-            return $this->ok($result);
-        } catch (\Exception $e) {
-            return ApiResponse::notFound($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Post(
      *   path="/api/v1/auth/send-reset-otp",
      *   summary="Send OTP for password reset",
      *   tags={"Auth"},
@@ -306,42 +249,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *   path="/api/v1/auth/reset-password",
-     *   summary="Reset password with token",
-     *   tags={"Auth"},
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"token","email","password","password_confirmation"},
-     *       @OA\Property(property="token", type="string"),
-     *       @OA\Property(property="email", type="string", format="email"),
-     *       @OA\Property(property="password", type="string"),
-     *       @OA\Property(property="password_confirmation", type="string")
-     *     )
-     *   ),
-     *   @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *   @OA\Response(response=400, description="Bad Request", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * @param ResetPasswordRequest $request The reset password request containing token, email, and new password
-     * @return JsonResponse The password reset response
-     */
-    public function resetPassword(ResetPasswordRequest $request): JsonResponse
-    {
-        try {
-            $validated = $request->validated();
-            $result = $this->authService->resetPassword(
-                $validated['token'],
-                $validated['email'],
-                $validated['password']
-            );
-            return $this->ok($result);
-        } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 'Password Reset Failed', 'RESET_PASSWORD_ERROR', 400);
-        }
-    }
+    // Removed legacy token-based password reset endpoints in favor of OTP-only flow
 
     /**
      * @OA\Post(

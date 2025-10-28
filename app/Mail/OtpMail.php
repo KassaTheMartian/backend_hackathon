@@ -28,14 +28,15 @@ class OtpMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subjects = [
-            'verify_email' => 'Xác thực Email - Beauty Clinic',
-            'password_reset' => 'Đặt lại Mật khẩu - Beauty Clinic',
-            'guest_booking' => 'Xác nhận Đặt lịch - Beauty Clinic',
-        ];
+        $subjectKey = match ($this->purpose) {
+            'verify_email' => 'emails.otp.subjects.verify_email',
+            'password_reset' => 'emails.otp.subjects.password_reset',
+            'guest_booking' => 'emails.otp.subjects.guest_booking',
+            default => 'emails.otp.subjects.default',
+        };
 
         return new Envelope(
-            subject: $subjects[$this->purpose] ?? 'Mã OTP - Beauty Clinic',
+            subject: __($subjectKey),
         );
     }
 

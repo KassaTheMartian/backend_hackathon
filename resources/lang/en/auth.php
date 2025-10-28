@@ -5,6 +5,7 @@ return [
     'account_inactive' => 'Account is inactive. Please contact support.',
     'email_not_verified' => 'Email not verified. Please verify your email.',
     'user_not_found' => 'User not found',
+    // Keep for legacy but OTP flow is default now
     'password_reset_link_sent' => 'Password reset link sent to your email',
     'invalid_or_expired_token' => 'Invalid or expired reset token',
     'password_reset_success' => 'Password reset successfully',
