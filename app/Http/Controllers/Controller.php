@@ -35,7 +35,7 @@ abstract class Controller
         return ApiResponse::paginated($paginator, $message);
     }
 
-    protected function notFound(string $name = 'Resource'): never
+    protected function notFound(string $name = 'Resource'): JsonResponse
     {
         throw new ResourceNotFoundException($name);
     }

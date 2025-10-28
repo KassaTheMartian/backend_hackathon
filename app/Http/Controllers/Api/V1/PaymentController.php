@@ -51,7 +51,6 @@ class PaymentController extends Controller
         ]);
         
         $booking = Booking::findOrFail($request->booking_id);
-        $this->authorize('view', $booking);
         
         $paymentIntent = $this->service->createPaymentIntent($booking);
         
@@ -91,7 +90,6 @@ class PaymentController extends Controller
         ]);
         
         $booking = Booking::findOrFail($request->booking_id);
-        $this->authorize('view', $booking);
         
         $payment = $this->service->confirmPayment(
             $booking,

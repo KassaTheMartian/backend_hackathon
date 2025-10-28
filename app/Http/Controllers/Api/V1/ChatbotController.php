@@ -39,7 +39,6 @@ class ChatbotController extends Controller
      */
     public function sessions(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', ChatSession::class);
         
         $sessions = $this->service->getUserSessions($request->user()->id);
         $items = $sessions->map(fn ($model) => ChatSessionResource::make($model));
@@ -70,7 +69,6 @@ class ChatbotController extends Controller
      */
     public function createSession(Request $request): JsonResponse
     {
-        $this->authorize('create', ChatSession::class);
         
         $request->validate([
             'title' => 'nullable|string|max:255'
@@ -103,7 +101,6 @@ class ChatbotController extends Controller
             $this->notFound('Chat session');
         }
         
-        $this->authorize('view', $session);
         
         return $this->ok(ChatSessionResource::make($session), 'Chat session retrieved successfully');
     }
@@ -131,7 +128,6 @@ class ChatbotController extends Controller
             $this->notFound('Chat session');
         }
         
-        $this->authorize('view', $session);
         
         $messages = $this->service->getSessionMessages($id);
         $items = $messages->map(function ($message) {
@@ -179,7 +175,6 @@ class ChatbotController extends Controller
             $this->notFound('Chat session');
         }
         
-        $this->authorize('update', $session);
         
         $response = $this->service->processBotResponse($id, $request->message);
         
@@ -217,7 +212,6 @@ class ChatbotController extends Controller
             $this->notFound('Chat session');
         }
         
-        $this->authorize('delete', $session);
         
         $deleted = $this->service->deleteSession($id);
         return $this->noContent('Chat session deleted successfully');
@@ -246,7 +240,6 @@ class ChatbotController extends Controller
             $this->notFound('Chat session');
         }
         
-        $this->authorize('update', $session);
         
         $cleared = $this->service->clearSessionMessages($id);
         return $this->noContent('Chat messages cleared successfully');

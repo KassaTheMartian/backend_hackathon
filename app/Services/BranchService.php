@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Data\Branch\BranchData;
 use App\Data\Branch\UpdateBranchData;
 use App\Repositories\Contracts\BranchRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\Contracts\BranchServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class BranchService implements BranchServiceInterface
 {
@@ -16,8 +18,12 @@ class BranchService implements BranchServiceInterface
      * Create a new BranchService instance.
      *
      * @param BranchRepositoryInterface $branches The branch repository
+     * @param BookingRepositoryInterface $bookings The booking repository
      */
-    public function __construct(private readonly BranchRepositoryInterface $branches)
+    public function __construct(
+        private readonly BranchRepositoryInterface $branches,
+        private readonly BookingRepositoryInterface $bookings
+    )
     {
     }
 
@@ -102,7 +108,7 @@ class BranchService implements BranchServiceInterface
         }
         
         // Get existing bookings for the date
-        $existingBookings = $this->branches->getBookingsForDate($branchId, $date, $staffId);
+        $existingBookings = $this->bookings->getBookingsForDate($branchId, $date, $staffId);
         
         // Generate time slots (9:00 AM to 6:00 PM, 30-minute intervals)
         $slots = [];
@@ -132,12 +138,11 @@ class BranchService implements BranchServiceInterface
         
         return $slots;
     }
-
     /**
      * Get branches near coordinates.
      */
     public function getNearbyBranches(float $latitude, float $longitude, float $radiusKm = 10): Collection
     {
-        return $this->branchRepository->getNearby($latitude, $longitude, $radiusKm);
+        return $this->branches->getNearby($latitude, $longitude, $radiusKm);
     }
 }

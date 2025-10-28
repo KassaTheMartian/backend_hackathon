@@ -111,6 +111,23 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
     }
 
     /**
+     * Get bookings for a specific date.
+     */
+    public function getBookingsForDate(int $branchId, string $date, ?int $staffId = null): Collection
+    {
+        $query = $this->model
+            ->where('branch_id', $branchId)
+            ->where('booking_date', $date)
+            ->whereIn('status', ['pending', 'confirmed', 'in_progress']);
+            
+        if ($staffId) {
+            $query->where('staff_id', $staffId);
+        }
+        
+        return $query->get();
+    }
+
+    /**
      * Check time slot availability.
      */
     public function isTimeSlotAvailable(int $branchId, string $date, string $time, ?int $staffId = null): bool

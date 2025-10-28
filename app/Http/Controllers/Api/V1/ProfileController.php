@@ -46,7 +46,6 @@ class ProfileController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('view', $user);
         
         return $this->ok(UserResource::make($user), 'Profile retrieved successfully');
     }
@@ -87,7 +86,6 @@ class ProfileController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('update', $user);
         
         return $this->ok(UserResource::make($user), 'Profile updated successfully');
     }
@@ -128,7 +126,6 @@ class ProfileController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('update', $user);
         
         return $this->ok(UserResource::make($user), 'Avatar updated successfully');
     }
@@ -155,7 +152,6 @@ class ProfileController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('update', $user);
         
         return $this->ok(UserResource::make($user), 'Avatar deleted successfully');
     }
@@ -234,7 +230,6 @@ class ProfileController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('update', $user);
         
         return $this->ok(UserResource::make($user), 'Language preference updated successfully');
     }
@@ -282,7 +277,6 @@ class ProfileController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('update', $user);
         
         return $this->ok(UserResource::make($user), 'Account deactivated successfully');
     }
@@ -309,8 +303,28 @@ class ProfileController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('update', $user);
         
         return $this->ok(UserResource::make($user), 'Account reactivated successfully');
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/profile/promotions",
+     *     summary="Get user available promotions",
+     *     tags={"Profile"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     * 
+     * Get promotions available for the user.
+     *
+     * @param Request $request The HTTP request
+     * @return JsonResponse The promotions response
+     */
+    public function promotions(Request $request): JsonResponse
+    {
+        $promotions = $this->service->getUserPromotions($request->user()->id);
+        
+        return $this->ok($promotions, 'Promotions retrieved successfully');
     }
 }

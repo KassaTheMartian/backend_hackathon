@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             BranchSeeder::class,         // Branches
             StaffSeeder::class,          // Staff Members
             BookingSeeder::class,        // Bookings
+            ReviewSeeder::class,         // Reviews (phải sau BookingSeeder)
+            PostSeeder::class,           // Posts (Blog/News)
         ]);
 
         // Create demo data

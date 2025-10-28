@@ -44,7 +44,6 @@ class PostController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Post::class);
         
         $posts = $this->service->getPosts($request->all());
         $items = $posts->through(fn($post) => PostResource::make($post));
@@ -83,7 +82,6 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request): JsonResponse
     {
-        $this->authorize('create', Post::class);
         
         $post = $this->service->createPost($request->validated());
         return $this->created(PostResource::make($post), 'Post created successfully');
@@ -92,9 +90,9 @@ class PostController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v1/posts/{id}",
-     *     summary="Get post by id",
+     *     summary="Get post by id or slug",
      *     tags={"Posts"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", description="Post ID or slug")),
      *     @OA\Parameter(name="locale", in="query", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
      *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
@@ -103,18 +101,21 @@ class PostController extends Controller
      * Display the specified post.
      *
      * @param Request $request The HTTP request
-     * @param int $id The post ID
+     * @param string $idOrSlug The post ID or slug
      * @return JsonResponse The post response
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(Request $request, string $idOrSlug): JsonResponse
     {
-        $post = $this->service->getPostById($id);
-        
-        if (!$post) {
-            $this->notFound('Post');
+        // Try to get by ID first, then by slug
+        if (is_numeric($idOrSlug)) {
+            $post = $this->service->getPostById((int)$idOrSlug);
+        } else {
+            $post = $this->service->getPostBySlug($idOrSlug);
         }
         
-        $this->authorize('view', $post);
+        if (!$post) {
+            return $this->notFound('Post');
+        }
         
         // Increment view count
         $this->service->incrementViews($post);
@@ -160,7 +161,6 @@ class PostController extends Controller
             $this->notFound('Post');
         }
         
-        $this->authorize('update', $post);
         
         $post = $this->service->updatePost($id, $request->validated());
         return $this->ok(PostResource::make($post), 'Post updated successfully');
@@ -186,12 +186,35 @@ class PostController extends Controller
     {
         $post = $this->service->getPostById($id);
         if (!$post) {
-            $this->notFound('Post');
+            return $this->notFound('Post');
         }
-        
-        $this->authorize('delete', $post);
         
         $deleted = $this->service->deletePost($id);
         return $this->noContent('Post deleted successfully');
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/posts/featured",
+     *     summary="Get featured posts",
+     *     tags={"Posts"},
+     *     @OA\Parameter(name="limit", in="query", @OA\Schema(type="integer", default=6)),
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     * 
+     * Get featured posts.
+     *
+     * @param Request $request The HTTP request
+     * @return JsonResponse The featured posts response
+     */
+    public function featured(Request $request): JsonResponse
+    {
+        $limit = $request->input('limit', 6);
+        $posts = $this->service->getFeaturedPosts($limit);
+        
+        return $this->ok(
+            PostResource::collection($posts),
+            'Featured posts retrieved successfully'
+        );
     }
 }

@@ -41,7 +41,6 @@ class ContactController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', ContactSubmission::class);
         
         $submissions = $this->service->getSubmissions($request->all());
         $items = $submissions->through(fn ($model) => ContactResource::make($model));
@@ -108,7 +107,6 @@ class ContactController extends Controller
             $this->notFound('Contact submission');
         }
         
-        $this->authorize('view', $submission);
         
         return $this->ok(ContactResource::make($submission), 'Contact submission retrieved successfully');
     }
@@ -152,7 +150,6 @@ class ContactController extends Controller
             $this->notFound('Contact submission');
         }
         
-        $this->authorize('update', $submission);
         
         $data = $request->validated();
         
@@ -201,7 +198,6 @@ class ContactController extends Controller
             $this->notFound('Contact submission');
         }
         
-        $this->authorize('update', $submission);
         
         $submission = $this->service->replyToSubmission($id, $request->reply);
         
@@ -231,7 +227,6 @@ class ContactController extends Controller
             $this->notFound('Contact submission');
         }
         
-        $this->authorize('delete', $submission);
         
         $deleted = $this->service->deleteSubmission($id);
         return $this->noContent('Contact submission deleted successfully');

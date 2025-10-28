@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 
 interface ProfileServiceInterface
@@ -16,4 +17,5 @@ interface ProfileServiceInterface
     public function deactivateAccount(int $userId): ?User;
     public function reactivateAccount(int $userId): ?User;
     public function getUserStats(int $userId): ?array;
+    public function getUserPromotions(int $userId): Collection;
 }

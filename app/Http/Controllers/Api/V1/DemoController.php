@@ -41,7 +41,6 @@ class DemoController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Demo::class);
         
         $items = $this->service->list($request)->through(fn ($model) => DemoResource::make($model));
         return $this->paginated($items, 'Demos retrieved successfully');
@@ -72,7 +71,6 @@ class DemoController extends Controller
      */
     public function store(StoreDemoRequest $request): JsonResponse
     {
-        $this->authorize('create', Demo::class);
         
         $dto = DemoData::from($request->validated());
         $demo = $this->service->create($dto);
@@ -101,7 +99,6 @@ class DemoController extends Controller
             $this->notFound('Demo');
         }
         
-        $this->authorize('view', $demo);
         
         return $this->ok(DemoResource::make($demo), 'Demo retrieved successfully');
     }
@@ -138,7 +135,6 @@ class DemoController extends Controller
             $this->notFound('Demo');
         }
         
-        $this->authorize('update', $demo);
         
         $dto = DemoData::from($request->validated());
         $demo = $this->service->update($id, $dto);
@@ -167,7 +163,6 @@ class DemoController extends Controller
             $this->notFound('Demo');
         }
         
-        $this->authorize('delete', $demo);
         
         $deleted = $this->service->delete($id);
         return $this->noContent('Demo deleted successfully');

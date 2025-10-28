@@ -78,7 +78,6 @@ class ServiceController extends Controller
      */
     public function store(StoreServiceRequest $request): JsonResponse
     {
-        $this->authorize('create', Service::class);
         
         $dto = ServiceData::from($request->validated());
         $service = $this->service->create($dto);
@@ -149,7 +148,6 @@ class ServiceController extends Controller
             $this->notFound('Service');
         }
         
-        $this->authorize('update', $service);
         
         $dto = UpdateServiceData::from($request->validated());
         $service = $this->service->update($id, $dto);
@@ -179,7 +177,6 @@ class ServiceController extends Controller
             $this->notFound('Service');
         }
         
-        $this->authorize('delete', $service);
         
         $deleted = $this->service->delete($id);
         return $this->noContent('Service deleted successfully');

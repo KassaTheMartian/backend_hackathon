@@ -51,7 +51,14 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
 
     public function getBySlug(string $slug): ?Post
     {
-        return $this->query()->where('slug', $slug)->first();
+        // Slug is stored as JSON with 'vi' and 'en' keys
+        // Try to find by either Vietnamese or English slug
+        return $this->query()
+            ->where(function ($query) use ($slug) {
+                $query->whereRaw('JSON_EXTRACT(slug, "$.vi") = ?', [$slug])
+                      ->orWhereRaw('JSON_EXTRACT(slug, "$.en") = ?', [$slug]);
+            })
+            ->first();
     }
 
     public function publish(Post $post): Post

@@ -38,6 +38,30 @@ class ServiceCategoryRepository extends BaseRepository implements ServiceCategor
     }
 
     /**
+     * Get service categories with locale.
+     */
+    public function getCategories(string $locale): array
+    {
+        return $this->model->active()
+            ->ordered()
+            ->withCount(['services' => function ($query) {
+                $query->where('is_active', true);
+            }])
+            ->get()
+            ->map(function ($category) use ($locale) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name[$locale] ?? $category->name['en'] ?? 'Unknown',
+                    'slug' => $category->slug,
+                    'description' => $category->description[$locale] ?? $category->description['en'] ?? null,
+                    'icon' => $category->icon,
+                    'services_count' => $category->services_count,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
      * Update display order.
      */
     public function updateDisplayOrder(int $categoryId, int $order): void

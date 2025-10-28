@@ -4,34 +4,29 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Contracts\PromotionRepositoryInterface;
+use App\Services\Contracts\ProfileServiceInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-class ProfileService
+class ProfileService implements ProfileServiceInterface
 {
     public function __construct(
-        private UserRepositoryInterface $userRepository
+        private UserRepositoryInterface $userRepository,
+        private PromotionRepositoryInterface $promotionRepository
     ) {}
 
-    /**
-     * Get user profile.
-     */
     public function getProfile(int $userId): ?User
     {
         return $this->userRepository->getById($userId);
     }
 
-    /**
-     * Update user profile.
-     */
     public function updateProfile(int $userId, array $data): ?User
     {
         return $this->userRepository->update($userId, $data);
     }
 
-    /**
-     * Update user avatar.
-     */
     public function updateAvatar(int $userId, UploadedFile $file): ?User
     {
         $user = $this->userRepository->getById($userId);
@@ -39,20 +34,15 @@ class ProfileService
             return null;
         }
 
-        // Delete old avatar if exists
         if ($user->avatar) {
             Storage::disk('public')->delete($user->avatar);
         }
 
-        // Store new avatar
         $path = $file->store('avatars', 'public');
         
         return $this->userRepository->update($userId, ['avatar' => $path]);
     }
 
-    /**
-     * Delete user avatar.
-     */
     public function deleteAvatar(int $userId): ?User
     {
         $user = $this->userRepository->getById($userId);
@@ -67,9 +57,6 @@ class ProfileService
         return $this->userRepository->update($userId, ['avatar' => null]);
     }
 
-    /**
-     * Change password.
-     */
     public function changePassword(int $userId, string $currentPassword, string $newPassword): bool
     {
         $user = $this->userRepository->getById($userId);
@@ -81,40 +68,25 @@ class ProfileService
             return false;
         }
 
-        $this->userRepository->update($userId, [
-            'password' => bcrypt($newPassword)
-        ]);
-
+        $this->userRepository->update($userId, ['password' => bcrypt($newPassword)]);
         return true;
     }
 
-    /**
-     * Update language preference.
-     */
     public function updateLanguagePreference(int $userId, string $language): ?User
     {
         return $this->userRepository->update($userId, ['language_preference' => $language]);
     }
 
-    /**
-     * Deactivate account.
-     */
     public function deactivateAccount(int $userId): ?User
     {
         return $this->userRepository->update($userId, ['is_active' => false]);
     }
 
-    /**
-     * Reactivate account.
-     */
     public function reactivateAccount(int $userId): ?User
     {
         return $this->userRepository->update($userId, ['is_active' => true]);
     }
 
-    /**
-     * Get user statistics.
-     */
     public function getUserStats(int $userId): ?array
     {
         $user = $this->userRepository->getById($userId);
@@ -129,5 +101,15 @@ class ProfileService
             'member_since' => $user->created_at->format('Y-m-d'),
             'last_login' => $user->last_login_at?->format('Y-m-d H:i:s'),
         ];
+    }
+
+    public function getUserPromotions(int $userId): Collection
+    {
+        $user = $this->userRepository->getById($userId);
+        if (!$user) {
+            return new Collection();
+        }
+
+        return $this->promotionRepository->getUserPromotions($user);
     }
 }

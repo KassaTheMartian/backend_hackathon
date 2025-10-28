@@ -23,6 +23,11 @@ interface ServiceCategoryRepositoryInterface extends BaseRepositoryInterface
     public function getWithServicesCount(): Collection;
 
     /**
+     * Get service categories with locale.
+     */
+    public function getCategories(string $locale): array;
+
+    /**
      * Update display order.
      */
     public function updateDisplayOrder(int $categoryId, int $order): void;

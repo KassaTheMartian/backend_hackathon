@@ -32,48 +32,48 @@ Route::middleware(['throttle:api'])->group(function () {
         });
 
         // Public routes
-        Route::get('/services', [V1ServiceController::class, 'index']);
-        Route::get('/services/{service}', [V1ServiceController::class, 'show']);
-        Route::get('/service-categories', [V1ServiceController::class, 'categories']);
-        
-        Route::get('/branches', [V1BranchController::class, 'index']);
-        Route::get('/branches/{branch}', [V1BranchController::class, 'show']);
-        Route::get('/branches/{branch}/available-slots', [V1BranchController::class, 'availableSlots']);
-        
-        Route::get('/reviews', [V1ReviewController::class, 'index']);
-        Route::get('/reviews/{review}', [V1ReviewController::class, 'show']);
-        
+        Route::get('/services', action: [V1ServiceController::class, 'index']);
+        Route::get('/services/{id}', action: [V1ServiceController::class, 'show']);
+        Route::get('/service-categories', action: [V1ServiceController::class, 'categories']);
+
+        Route::get('/branches', action: [V1BranchController::class, 'index']);
+        Route::get('/branches/{id}', action: [V1BranchController::class, 'show']);
+        Route::get('/branches/{id}/available-slots', action: [V1BranchController::class, 'availableSlots']);
+
+        Route::get('/reviews', action: [V1ReviewController::class, 'index']);
+        Route::get('/reviews/{id}', action: [V1ReviewController::class, 'show']);
+
         Route::get('/posts', [V1PostController::class, 'index']);
         Route::get('/posts/featured', [V1PostController::class, 'featured']);
-        Route::get('/posts/{post}', [V1PostController::class, 'show']);
-        
+        Route::get('/posts/{id}', [V1PostController::class, 'show']);
+
         Route::post('/contact', [V1ContactController::class, 'store']);
-        
+
         Route::post('/chatbot/message', [V1ChatbotController::class, 'sendMessage']);
         Route::get('/chatbot/sessions', [V1ChatbotController::class, 'sessions']);
         Route::post('/chatbot/sessions', [V1ChatbotController::class, 'createSession']);
-        Route::get('/chatbot/sessions/{session}', [V1ChatbotController::class, 'show']);
-        Route::delete('/chatbot/sessions/{session}', [V1ChatbotController::class, 'destroy']);
-        Route::delete('/chatbot/sessions/{session}/messages', [V1ChatbotController::class, 'clearMessages']);
+        Route::get('/chatbot/sessions/{id}', [V1ChatbotController::class, 'show']);
+        Route::delete('/chatbot/sessions/{id}', [V1ChatbotController::class, 'destroy']);
+        Route::delete('/chatbot/sessions/{id}/messages', [V1ChatbotController::class, 'clearMessages']);
+
+        // Bookings
+        Route::get('/bookings', [V1BookingController::class, 'index']);
+        Route::post('/bookings', [V1BookingController::class, 'store']);
+        Route::get('/bookings/{id}', [V1BookingController::class, 'show']);
+        Route::put('/bookings/{id}', [V1BookingController::class, 'update']);
+        Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
+        Route::get('/my-bookings', [V1BookingController::class, 'myBookings']);
+
+        // Payments
+        Route::post('/payments/create-intent', [V1PaymentController::class, 'createIntent']);
+        Route::post('/payments/confirm', [V1PaymentController::class, 'confirm']);
+        Route::post('/payments/webhook', [V1PaymentController::class, 'webhook']);
 
         // Authenticated routes
         Route::middleware('auth:sanctum')->group(function () {
-            // Bookings
-            Route::get('/bookings', [V1BookingController::class, 'index']);
-            Route::post('/bookings', [V1BookingController::class, 'store']);
-            Route::get('/bookings/{booking}', [V1BookingController::class, 'show']);
-            Route::put('/bookings/{booking}', [V1BookingController::class, 'update']);
-            Route::post('/bookings/{booking}/cancel', [V1BookingController::class, 'cancel']);
-            Route::get('/my-bookings', [V1BookingController::class, 'myBookings']);
-            
-            // Payments
-            Route::post('/payments/create-intent', [V1PaymentController::class, 'createIntent']);
-            Route::post('/payments/confirm', [V1PaymentController::class, 'confirm']);
-            Route::post('/payments/webhook', [V1PaymentController::class, 'webhook']);
-            
             // Reviews
             Route::post('/reviews', [V1ReviewController::class, 'store']);
-            
+
             // Profile
             Route::get('/profile', [V1ProfileController::class, 'show']);
             Route::put('/profile', [V1ProfileController::class, 'update']);
@@ -90,9 +90,9 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::middleware(['auth:sanctum', 'admin'])->group(function () {
             // Services management
             Route::post('/services', [V1ServiceController::class, 'store']);
-            Route::put('/services/{service}', [V1ServiceController::class, 'update']);
-            Route::delete('/services/{service}', [V1ServiceController::class, 'destroy']);
-            
+            Route::put('/services/{id}', [V1ServiceController::class, 'update']);
+            Route::delete('/services/{id}', [V1ServiceController::class, 'destroy']);
+
             // Users management
             Route::get('/users', [V1UserController::class, 'index']);
             Route::get('/users/{id}', [V1UserController::class, 'show']);

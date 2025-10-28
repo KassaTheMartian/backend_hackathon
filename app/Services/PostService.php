@@ -4,10 +4,11 @@ namespace App\Services;
 
 use App\Models\Post;
 use App\Repositories\Contracts\PostRepositoryInterface;
+use App\Services\Contracts\PostServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
-class PostService
+class PostService implements PostServiceInterface
 {
     public function __construct(
         private PostRepositoryInterface $postRepository

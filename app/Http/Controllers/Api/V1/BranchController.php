@@ -80,7 +80,7 @@ class BranchController extends Controller
     public function store(StoreBranchRequest $request): JsonResponse
     {
         $this->authorize('create', Branch::class);
-        
+                
         $dto = BranchData::from($request->validated());
         $branch = $this->service->create($dto);
         return $this->created(BranchResource::make($branch), 'Branch created successfully');
@@ -151,7 +151,6 @@ class BranchController extends Controller
             $this->notFound('Branch');
         }
         
-        $this->authorize('update', $branch);
         
         $dto = UpdateBranchData::from($request->validated());
         $branch = $this->service->update($id, $dto);
@@ -181,7 +180,6 @@ class BranchController extends Controller
             $this->notFound('Branch');
         }
         
-        $this->authorize('delete', $branch);
         
         $deleted = $this->service->delete($id);
         return $this->noContent('Branch deleted successfully');

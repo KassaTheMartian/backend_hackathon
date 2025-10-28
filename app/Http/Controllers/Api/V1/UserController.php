@@ -34,7 +34,6 @@ class UserController extends Controller
      */
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', User::class);
         
         $users = User::paginate(15);
         $items = $users->through(fn ($user) => UserResource::make($user));
@@ -62,7 +61,6 @@ class UserController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('view', $user);
         
         return $this->ok(UserResource::make($user), 'User retrieved successfully');
     }
@@ -96,7 +94,6 @@ class UserController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('update', $user);
         
         $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -129,7 +126,6 @@ class UserController extends Controller
             $this->notFound('User');
         }
         
-        $this->authorize('delete', $user);
         
         $user->delete();
         

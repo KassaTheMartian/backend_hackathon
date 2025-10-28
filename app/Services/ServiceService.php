@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\Service\ServiceData;
 use App\Data\Service\UpdateServiceData;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
+use App\Repositories\Contracts\ServiceCategoryRepositoryInterface;
 use App\Services\Contracts\ServiceServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -16,8 +17,12 @@ class ServiceService implements ServiceServiceInterface
      * Create a new ServiceService instance.
      *
      * @param ServiceRepositoryInterface $services The service repository
+     * @param ServiceCategoryRepositoryInterface $categories The service category repository
      */
-    public function __construct(private readonly ServiceRepositoryInterface $services)
+    public function __construct(
+        private readonly ServiceRepositoryInterface $services,
+        private readonly ServiceCategoryRepositoryInterface $categories
+    )
     {
     }
 
@@ -92,6 +97,6 @@ class ServiceService implements ServiceServiceInterface
      */
     public function categories(string $locale = 'vi'): array
     {
-        return $this->services->getCategories($locale)->toArray();
+        return $this->categories->getCategories($locale);
     }
 }

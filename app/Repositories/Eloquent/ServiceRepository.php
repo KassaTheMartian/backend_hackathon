@@ -118,13 +118,5 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
     {
         $service->increment('views_count');
     }
-
-    /**
-     * Get service categories.
-     */
-    public function getCategories(string $locale): Collection
-    {
-        return $this->model->getCategories($locale);
-    }
 }
 

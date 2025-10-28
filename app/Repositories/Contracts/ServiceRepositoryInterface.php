@@ -37,10 +37,5 @@ interface ServiceRepositoryInterface extends BaseRepositoryInterface
      * Increment service views.
      */
     public function incrementViews(Service $service): void;
-
-    /**
-     * Get service categories.
-     */
-    public function getCategories(string $locale): Collection;
 }
 

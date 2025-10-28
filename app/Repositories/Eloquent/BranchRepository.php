@@ -56,23 +56,6 @@ class BranchRepository extends BaseRepository implements BranchRepositoryInterfa
     }
 
     /**
-     * Get bookings for a specific date.
-     */
-    public function getBookingsForDate(int $branchId, string $date, ?int $staffId = null): Collection
-    {
-        $query = DB::table('bookings')
-            ->where('branch_id', $branchId)
-            ->where('booking_date', $date)
-            ->whereIn('status', ['pending', 'confirmed', 'in_progress']);
-            
-        if ($staffId) {
-            $query->where('staff_id', $staffId);
-        }
-        
-        return $query->get();
-    }
-
-    /**
      * Get available staff for a time slot.
      */
     public function getAvailableStaff(int $branchId, int $serviceId, \Carbon\Carbon $timeSlot): array

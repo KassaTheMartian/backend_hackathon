@@ -15,7 +15,19 @@ class ReviewData extends Data
     public function __construct(
         #[Required]
         #[IntegerType]
+        public int $user_id,
+        
+        #[Required]
+        #[IntegerType]
         public int $booking_id,
+        
+        #[Required]
+        #[IntegerType]
+        public int $service_id,
+        
+        public ?int $staff_id,
+        
+        public ?int $branch_id,
         
         #[Required]
         #[IntegerType, Min(1), Max(5)]

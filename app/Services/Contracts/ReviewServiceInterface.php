@@ -13,5 +13,7 @@ interface ReviewServiceInterface
 
     public function create(ReviewData $data): Model;
 
+    public function createFromBooking(array $reviewData, int $userId): Model;
+
     public function find(int $id): ?Model;
 }

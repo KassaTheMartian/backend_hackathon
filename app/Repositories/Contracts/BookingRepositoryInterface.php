@@ -5,6 +5,7 @@ namespace App\Repositories\Contracts;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 interface BookingRepositoryInterface extends BaseRepositoryInterface
 {
@@ -32,6 +33,11 @@ interface BookingRepositoryInterface extends BaseRepositoryInterface
      * Get user's bookings.
      */
     public function getUserBookings(User $user, array $filters): LengthAwarePaginator;
+
+    /**
+     * Get bookings for a specific date.
+     */
+    public function getBookingsForDate(int $branchId, string $date, ?int $staffId = null): Collection;
 
     /**
      * Check time slot availability.

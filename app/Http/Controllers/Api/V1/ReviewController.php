@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Review\ReviewResource;
+use App\Http\Requests\Review\StoreReviewRequest;
+use App\Http\Requests\Review\UpdateReviewRequest;
 use App\Models\Review;
 use App\Services\Contracts\ReviewServiceInterface;
 use App\Data\Review\ReviewData;
@@ -42,8 +44,6 @@ class ReviewController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Review::class);
-        
         $items = $this->service->list($request)->through(fn ($model) => ReviewResource::make($model));
         return $this->paginated($items, 'Reviews retrieved successfully');
     }
@@ -70,23 +70,16 @@ class ReviewController extends Controller
      * 
      * Store a newly created review.
      *
-     * @param Request $request The store review request
+     * @param StoreReviewRequest $request The store review request
      * @return JsonResponse The created review response
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreReviewRequest $request): JsonResponse
     {
-        $this->authorize('create', Review::class);
+        $review = $this->service->createFromBooking(
+            $request->validated(),
+            $request->user()->id
+        );
         
-        $validated = $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|max:1000',
-            'images' => 'nullable|array',
-            'images.*' => 'string|max:255'
-        ]);
-        
-        $dto = ReviewData::from($validated);
-        $review = $this->service->create($dto);
         return $this->created(ReviewResource::make($review), 'Review submitted successfully. Waiting for approval.');
     }
 
@@ -111,8 +104,6 @@ class ReviewController extends Controller
         if (!$review) {
             $this->notFound('Review');
         }
-        
-        $this->authorize('view', $review);
         
         return $this->ok(ReviewResource::make($review), 'Review retrieved successfully');
     }

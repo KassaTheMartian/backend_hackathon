@@ -43,7 +43,6 @@ class BookingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Booking::class);
         
         $items = $this->service->list($request)->through(fn ($model) => BookingResource::make($model));
         return $this->paginated($items, 'Bookings retrieved successfully');
@@ -79,7 +78,6 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request): JsonResponse
     {
-        $this->authorize('create', Booking::class);
         
         $dto = BookingData::from($request->validated());
         $booking = $this->service->create($dto);
@@ -109,7 +107,6 @@ class BookingController extends Controller
             $this->notFound('Booking');
         }
         
-        $this->authorize('view', $booking);
         
         return $this->ok(BookingResource::make($booking), 'Booking retrieved successfully');
     }
@@ -151,7 +148,6 @@ class BookingController extends Controller
             $this->notFound('Booking');
         }
         
-        $this->authorize('update', $booking);
         
         $dto = UpdateBookingData::from($request->validated());
         $booking = $this->service->update($id, $dto);
@@ -194,7 +190,6 @@ class BookingController extends Controller
             $this->notFound('Booking');
         }
         
-        $this->authorize('update', $booking);
         
         $booking = $this->service->cancel($id, $request->cancellation_reason);
         return $this->ok(BookingResource::make($booking), 'Booking cancelled successfully');
@@ -218,7 +213,6 @@ class BookingController extends Controller
      */
     public function myBookings(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Booking::class);
         
         $items = $this->service->myBookings($request)->through(fn ($model) => BookingResource::make($model));
         return $this->paginated($items, 'My bookings retrieved successfully');
