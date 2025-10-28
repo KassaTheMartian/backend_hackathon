@@ -31,4 +31,14 @@ interface BookingServiceInterface
      * Reschedule a booking to new time (with availability check).
      */
     public function reschedule(int $id, string $bookingDate, string $bookingTime, ?int $staffId = null): ?Model;
+
+    /**
+     * Send OTP to guest email for booking verification.
+     */
+    public function sendGuestBookingOtp(string $email): array;
+
+    /**
+     * Get guest bookings by email after OTP verification.
+     */
+    public function guestBookings(string $email, string $otp, int $perPage = 15): LengthAwarePaginator;
 }

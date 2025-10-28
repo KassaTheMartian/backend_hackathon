@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Service\StoreServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
 use App\Http\Resources\Service\ServiceResource;
-use App\Models\Service;
 use App\Services\Contracts\ServiceServiceInterface;
 use App\Data\Service\ServiceData;
-use App\Data\Service\UpdateServiceData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

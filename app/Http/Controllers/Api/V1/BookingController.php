@@ -10,11 +10,8 @@ use App\Http\Requests\Booking\AvailabilityRequest;
 use App\Http\Requests\Booking\RescheduleBookingRequest;
 use App\Http\Requests\Booking\GuestBookingSendOtpRequest;
 use App\Http\Requests\Booking\GuestBookingHistoryRequest;
-use App\Models\OtpVerification;
-use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\Booking\BookingResource;
 use App\Http\Responses\ApiResponse;
-use App\Models\Booking;
 use App\Services\Contracts\BookingServiceInterface;
 use App\Data\Booking\BookingData;
 use App\Data\Booking\UpdateBookingData;
@@ -86,29 +83,6 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request): JsonResponse
     {
-        // For guest bookings, verify OTP
-        if (!$this->user()) {
-            $email = (string)$request->guest_email;
-            $otp = (string)$request->guest_email_otp;
-            $record = OtpVerification::where('phone_or_email', $email)
-                ->where('purpose', 'guest_booking')
-                ->unexpired()
-                ->unverified()
-                ->latest('id')
-                ->first();
-            if (!$record) {
-                return ApiResponse::validationError(['guest_email_otp' => ['Invalid or expired OTP']]);
-            }
-            if ($record->isLockedOut()) {
-                return ApiResponse::validationError(['guest_email_otp' => ['Too many invalid attempts. Please request a new OTP.']]);
-            }
-            if ($record->otp !== $otp) {
-                $record->incrementAttempts();
-                return ApiResponse::validationError(['guest_email_otp' => ['Invalid or expired OTP']]);
-            }
-            $record->markAsVerified();
-        }
-
         $dto = BookingData::from($request->validated());
         $booking = $this->service->create($dto);
         return $this->created(BookingResource::make($booking), 'Booking created successfully. Confirmation email sent.');
@@ -312,21 +286,8 @@ class BookingController extends Controller
     {
         try {
             $email = (string)$request->guest_email;
-            $otp = (string)random_int(100000, 999999);
-            OtpVerification::create([
-                'phone_or_email' => $email,
-                'otp' => $otp,
-                'type' => 'email',
-                'purpose' => 'guest_booking',
-                'expires_at' => now()->addMinutes(10),
-                'attempts' => 0,
-            ]);
-            Mail::raw('Your booking verification code is: ' . $otp, function ($message) use ($email) {
-                $message->to($email)
-                    ->subject('Your Booking OTP Code')
-                    ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-            return $this->ok(['message' => 'OTP sent']);
+            $result = $this->service->sendGuestBookingOtp($email);
+            return $this->ok($result);
         } catch (\Exception $e) {
             return ApiResponse::error($e->getMessage(), 'Failed to send OTP', 'OTP_SEND_ERROR', 422);
         }
@@ -349,31 +310,8 @@ class BookingController extends Controller
     {
         $email = (string)$request->guest_email;
         $otp = (string)$request->guest_email_otp;
-        $record = OtpVerification::where('phone_or_email', $email)
-            ->where('purpose', 'guest_booking')
-            ->unexpired()
-            ->unverified()
-            ->latest('id')
-            ->first();
-        if (!$record) {
-            return ApiResponse::validationError(['guest_email_otp' => ['Invalid or expired OTP']]);
-        }
-        if ($record->isLockedOut()) {
-            return ApiResponse::validationError(['guest_email_otp' => ['Too many invalid attempts. Please request a new OTP.']]);
-        }
-        if ($record->otp !== $otp) {
-            $record->incrementAttempts();
-            return ApiResponse::validationError(['guest_email_otp' => ['Invalid or expired OTP']]);
-        }
-        $record->markAsVerified();
-
         $perPage = (int)$request->input('per_page', 15);
-        $items = Booking::whereNull('user_id')
-            ->where('guest_email', $email)
-            ->latest('id')
-            ->paginate($perPage)
-            ->through(fn ($model) => BookingResource::make($model));
-
+        $items = $this->service->guestBookings($email, $otp, $perPage);
         return $this->paginated($items, 'Guest bookings retrieved successfully');
     }
 }

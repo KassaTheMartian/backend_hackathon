@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\Post\PostResource;
-use App\Models\Post;
 use App\Services\Contracts\PostServiceInterface;
 use App\Models\PostCategory;
 use App\Models\PostTag;
@@ -80,7 +79,7 @@ class PostController extends Controller
         }
         
         if (!$post) {
-            return $this->notFound('Post');
+            $this->notFound('Post');
         }
         
         // Increment view count

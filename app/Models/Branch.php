@@ -93,11 +93,14 @@ class Branch extends Model
 
         $earthRadius = 6371; // Earth's radius in kilometers
 
-        $latDiff = deg2rad($latitude - $this->latitude);
-        $lonDiff = deg2rad($longitude - $this->longitude);
+        $branchLat = (float) $this->latitude;
+        $branchLon = (float) $this->longitude;
+
+        $latDiff = deg2rad($latitude - $branchLat);
+        $lonDiff = deg2rad($longitude - $branchLon);
 
         $a = sin($latDiff / 2) * sin($latDiff / 2) +
-            cos(deg2rad($this->latitude)) * cos(deg2rad($latitude)) *
+            cos(deg2rad($branchLat)) * cos(deg2rad($latitude)) *
             sin($lonDiff / 2) * sin($lonDiff / 2);
 
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));

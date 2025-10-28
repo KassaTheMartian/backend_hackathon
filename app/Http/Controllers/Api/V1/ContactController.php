@@ -4,13 +4,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Contact\StoreContactRequest;
-use App\Http\Requests\Contact\UpdateContactRequest;
-use App\Http\Requests\Contact\ReplyContactRequest;
 use App\Http\Resources\Contact\ContactResource;
-use App\Models\ContactSubmission;
 use App\Services\Contracts\ContactServiceInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
@@ -38,7 +34,7 @@ class ContactController extends Controller
      *             @OA\Property(property="phone", type="string"),
      *             @OA\Property(property="subject", type="string"),
      *             @OA\Property(property="message", type="string"),
-     *             @OA\Property(property="type", type="string", enum={"general", "complaint", "suggestion", "support"})
+     *             @OA\Property(property="type", type="string", enum={"general", "inquiry", "complaint", "suggestion"})
      *         )
      *     ),
      *     @OA\Response(response=201, description="Created", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
@@ -53,10 +49,6 @@ class ContactController extends Controller
     public function store(StoreContactRequest $request): JsonResponse
     {
         $submission = $this->service->createSubmission($request->validated());
-        
-        return $this->created([
-            'id' => $submission->id,
-            'reference_code' => 'CT' . date('Ymd') . str_pad($submission->id, 3, '0', STR_PAD_LEFT),
-        ], 'Thank you for contacting us. We will respond soon.');
+        return $this->created(ContactResource::make($submission), 'Thank you for contacting us. We will respond soon.');
     }
 }

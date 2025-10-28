@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Chatbot\SendMessageRequest;
 use App\Http\Requests\Chatbot\CreateSessionRequest;
 use App\Http\Resources\Chatbot\ChatSessionResource;
-use App\Models\ChatSession;
-use App\Models\ChatMessage;
 use App\Services\Contracts\ChatbotServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

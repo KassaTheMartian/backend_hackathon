@@ -15,7 +15,6 @@ use App\Http\Responses\ApiResponse;
 use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -193,8 +192,11 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $this->authService->logout();
-        return $this->ok(null, 'Logged out successfully');
+        $success = $this->authService->logout();
+        if (!$success) {
+            return ApiResponse::unauthorized();
+        }
+        return $this->noContent('Logged out successfully');
     }
 
     /**
@@ -363,32 +365,14 @@ class AuthController extends Controller
     public function testEmail(Request $request): JsonResponse
     {
         try {
-            $email = $request->input('email');
-            
+            $email = (string) $request->input('email');
             if (!$email) {
                 return ApiResponse::error('Email is required', 'Validation Error', 'VALIDATION_ERROR', 422);
             }
-
-            // Gửi email test
-            Mail::raw('Đây là email test từ Beauty Clinic API! 🎉', function ($message) use ($email) {
-                $message->to($email)
-                        ->subject('Test Email - Beauty Clinic API')
-                        ->from(config('mail.from.address'), config('mail.from.name'));
-            });
-
-            return $this->ok([
-                'message' => 'Test email sent successfully',
-                'to' => $email,
-                'timestamp' => now()->toISOString()
-            ], 'Email sent successfully');
-
+            $result = $this->authService->sendTestEmail($email);
+            return $this->ok($result, 'Email sent successfully');
         } catch (\Exception $e) {
-            return ApiResponse::error(
-                'Failed to send email: ' . $e->getMessage(), 
-                'Email Sending Failed', 
-                'EMAIL_ERROR', 
-                500
-            );
+            return ApiResponse::error('Failed to send email: ' . $e->getMessage(), 'Email Sending Failed', 'EMAIL_ERROR', 500);
         }
     }
 }

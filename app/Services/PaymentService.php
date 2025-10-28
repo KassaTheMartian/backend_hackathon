@@ -5,10 +5,29 @@ namespace App\Services;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\Contracts\PaymentServiceInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class PaymentService implements PaymentServiceInterface
 {
+    public function list(Request $request): LengthAwarePaginator
+    {
+        $query = Payment::query();
+        if ($request->user()) {
+            $query->whereHas('booking', function ($q) use ($request) {
+                $q->where('user_id', $request->user()->id);
+            });
+        }
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+        if ($method = $request->query('payment_method')) {
+            $query->where('payment_method', $method);
+        }
+        $perPage = (int)($request->query('per_page', 15));
+        return $query->latest('id')->paginate($perPage);
+    }
     /**
      * Create payment intent for Stripe.
      */
@@ -25,6 +44,16 @@ class PaymentService implements PaymentServiceInterface
         ];
 
         return $paymentIntent;
+    }
+
+    public function createPaymentIntentById(int $bookingId): array
+    {
+        $booking = Booking::findOrFail($bookingId);
+        $user = request()->user();
+        if ($user && $booking->user_id !== $user->id && !$user->isAdmin()) {
+            throw new \Exception('You do not have permission to pay for this booking');
+        }
+        return $this->createPaymentIntent($booking);
     }
 
     /**
@@ -52,6 +81,16 @@ class PaymentService implements PaymentServiceInterface
         ]);
 
         return $payment;
+    }
+
+    public function confirmPaymentById(int $bookingId, string $paymentIntentId, string $paymentMethod): Payment
+    {
+        $booking = Booking::findOrFail($bookingId);
+        $user = request()->user();
+        if ($user && $booking->user_id !== $user->id && !$user->isAdmin()) {
+            throw new \Exception('You do not have permission to confirm this payment');
+        }
+        return $this->confirmPayment($booking, $paymentIntentId, $paymentMethod);
     }
 
     /**

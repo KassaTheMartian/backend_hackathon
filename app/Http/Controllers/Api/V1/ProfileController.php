@@ -8,7 +8,6 @@ use App\Http\Requests\Profile\ChangePasswordRequest;
 use App\Http\Requests\Profile\UpdateAvatarRequest;
 use App\Http\Requests\Profile\UpdateLanguageRequest;
 use App\Http\Resources\User\UserResource;
-use App\Models\User;
 use App\Services\Contracts\ProfileServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

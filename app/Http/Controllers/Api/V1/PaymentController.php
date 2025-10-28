@@ -11,8 +11,6 @@ use App\Http\Requests\Payment\VnpayIpnRequest;
 use App\Http\Requests\Payment\VnpayRefundRequest;
 use App\Http\Requests\Payment\VnpayQueryRequest;
 use App\Http\Resources\Payment\PaymentResource;
-use App\Models\Booking;
-use App\Models\Payment;
 use App\Services\Contracts\PaymentServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -52,12 +50,7 @@ class PaymentController extends Controller
      */
     public function createIntent(CreatePaymentIntentRequest $request): JsonResponse
     {
-        $booking = Booking::findOrFail($request->booking_id);
-        if ($request->user() && $booking->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return $this->forbidden('You do not have permission to pay for this booking');
-        }
-        
-        $paymentIntent = $this->service->createPaymentIntent($booking);
+        $paymentIntent = $this->service->createPaymentIntentById((int)$request->booking_id);
         
         return $this->ok($paymentIntent, 'Payment intent created successfully');
     }
@@ -87,15 +80,10 @@ class PaymentController extends Controller
      */
     public function confirm(ProcessPaymentRequest $request): JsonResponse
     {
-        $booking = Booking::findOrFail($request->booking_id);
-        if ($request->user() && $booking->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
-            return $this->forbidden('You do not have permission to confirm this payment');
-        }
-        
-        $payment = $this->service->confirmPayment(
-            $booking,
-            $request->payment_intent_id,
-            $request->payment_method
+        $payment = $this->service->confirmPaymentById(
+            (int)$request->booking_id,
+            (string)$request->payment_intent_id,
+            (string)$request->payment_method
         );
         
         return $this->ok(PaymentResource::make($payment), 'Payment confirmed successfully');
@@ -148,20 +136,7 @@ class PaymentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Payment::query();
-        if ($request->user()) {
-            $query->whereHas('booking', function ($q) use ($request) {
-                $q->where('user_id', $request->user()->id);
-            });
-        }
-        if ($status = $request->query('status')) {
-            $query->where('status', $status);
-        }
-        if ($method = $request->query('payment_method')) {
-            $query->where('payment_method', $method);
-        }
-        $perPage = (int)($request->query('per_page', 15));
-        $items = $query->latest('id')->paginate($perPage)
+        $items = $this->service->list($request)
             ->through(fn ($model) => PaymentResource::make($model));
 
         return $this->paginated($items, 'Payments retrieved successfully');

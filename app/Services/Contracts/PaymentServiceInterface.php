@@ -4,18 +4,35 @@ namespace App\Services\Contracts;
 
 use App\Models\Booking;
 use App\Models\Payment;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
 
 interface PaymentServiceInterface
 {
+    /**
+     * List payments with filters and scoping.
+     */
+    public function list(Request $request): LengthAwarePaginator;
+
     /**
      * Create payment intent for Stripe.
      */
     public function createPaymentIntent(Booking $booking): array;
 
     /**
+     * Create payment intent by booking id with permission checks.
+     */
+    public function createPaymentIntentById(int $bookingId): array;
+
+    /**
      * Confirm payment.
      */
     public function confirmPayment(Booking $booking, string $paymentIntentId, string $paymentMethod): Payment;
+
+    /**
+     * Confirm payment by booking id with permission checks.
+     */
+    public function confirmPaymentById(int $bookingId, string $paymentIntentId, string $paymentMethod): Payment;
 
     /**
      * Handle Stripe webhook.

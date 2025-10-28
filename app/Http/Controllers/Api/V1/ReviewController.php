@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Review\ReviewResource;
 use App\Http\Requests\Review\StoreReviewRequest;
 use App\Http\Requests\Review\UpdateReviewRequest;
-use App\Models\Review;
 use App\Services\Contracts\ReviewServiceInterface;
 use App\Data\Review\ReviewData;
 use Illuminate\Http\JsonResponse;
@@ -123,10 +122,7 @@ class ReviewController extends Controller
         if (!$request->user() || !$request->user()->isAdmin()) {
             return $this->forbidden('Admin only');
         }
-        $items = Review::with(['user','service','staff','branch'])
-            ->where('is_approved', false)
-            ->latest('id')
-            ->paginate((int)$request->query('per_page', 15))
+        $items = $this->service->pending($request)
             ->through(fn ($model) => ReviewResource::make($model));
         return $this->paginated($items, 'Pending reviews retrieved successfully');
     }
@@ -220,11 +216,7 @@ class ReviewController extends Controller
                 'admin_response' => ['admin_response is required']
             ]);
         }
-        $review->update([
-            'admin_response' => $message,
-            'responded_at' => now(),
-            'responded_by' => $request->user()->id,
-        ]);
-        return $this->ok(ReviewResource::make($review->fresh()), 'Response saved');
+        $updated = $this->service->respondToReview($review, $message);
+        return $this->ok(ReviewResource::make($updated), 'Response saved');
     }
 }

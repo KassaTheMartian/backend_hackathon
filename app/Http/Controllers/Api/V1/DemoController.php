@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Demo\StoreDemoRequest;
 use App\Http\Requests\Demo\UpdateDemoRequest;
 use App\Http\Resources\Demo\DemoResource;
-use App\Models\Demo;
 use App\Services\Contracts\DemoServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -74,7 +73,7 @@ class DemoController extends Controller
         
         $dto = DemoData::from($request->validated());
         $demo = $this->service->create($dto);
-        return $this->created(DemoResource::make(parameters: $demo), 'Demo created successfully');
+        return $this->created(DemoResource::make($demo), 'Demo created successfully');
     }
 
     /**

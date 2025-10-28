@@ -60,4 +60,9 @@ interface AuthServiceInterface
      * Reset password using OTP.
      */
     public function resetPasswordWithOtp(string $email, string $otp, string $password): array;
+
+    /**
+     * Send a test email.
+     */
+    public function sendTestEmail(string $email): array;
 }

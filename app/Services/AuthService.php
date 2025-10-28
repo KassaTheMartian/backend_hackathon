@@ -300,4 +300,19 @@ class AuthService implements AuthServiceInterface
 
         return ['message' => 'Password reset successfully'];
     }
+
+    public function sendTestEmail(string $email): array
+    {
+        Mail::raw('Đây là email test từ Beauty Clinic API! 🎉', function ($message) use ($email) {
+            $message->to($email)
+                ->subject('Test Email - Beauty Clinic API')
+                ->from(config('mail.from.address'), config('mail.from.name'));
+        });
+
+        return [
+            'message' => 'Test email sent successfully',
+            'to' => $email,
+            'timestamp' => now()->toISOString(),
+        ];
+    }
 }
