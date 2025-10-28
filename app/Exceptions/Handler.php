@@ -10,6 +10,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -186,11 +187,11 @@ class Handler extends ExceptionHandler
 
         // Log to different channels based on exception type
         if ($e instanceof \Error || $e instanceof \ParseError) {
-            \Log::channel('api')->critical('Critical error occurred', $context);
+            Log::channel('api')->critical('Critical error occurred', $context);
         } elseif ($e instanceof \PDOException) {
-            \Log::channel('api')->error('Database error occurred', $context);
+            Log::channel('api')->error('Database error occurred', $context);
         } else {
-            \Log::channel('api')->error('Unexpected error occurred', $context);
+            Log::channel('api')->error('Unexpected error occurred', $context);
         }
     }
 
