@@ -30,28 +30,7 @@ class BookingController extends Controller
         //
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/v1/bookings",
-     *     summary="List bookings",
-     *     tags={"Bookings"},
-     *     
-     *     @OA\Parameter(name="page", in="query", @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Display a listing of bookings.
-     *
-     * @param Request $request The HTTP request
-     * @return JsonResponse The paginated list of bookings
-     */
-    public function index(Request $request): JsonResponse
-    {
-        
-        $items = $this->service->list($request)->through(fn ($model) => BookingResource::make($model));
-        return $this->paginated($items, 'Bookings retrieved successfully');
-    }
+    // Removed index() listing; use GET /api/v1/my-bookings instead
 
     /**
      * @OA\Post(
@@ -85,34 +64,10 @@ class BookingController extends Controller
     {
         $dto = BookingData::from($request->validated());
         $booking = $this->service->create($dto);
-        return $this->created(BookingResource::make($booking), 'Booking created successfully. Confirmation email sent.');
+        return $this->created(BookingResource::make($booking), __('bookings.created'));
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/v1/bookings/{id}",
-     *     summary="Get booking by id",
-     *     tags={"Bookings"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Display the specified booking.
-     *
-     * @param int $id The booking ID
-     * @return JsonResponse The booking response
-     */
-    public function show(int $id): JsonResponse
-    {
-        $booking = $this->service->find($id);
-        if (!$booking) {
-            $this->notFound('Booking');
-        }
-        
-        return $this->ok(BookingResource::make($booking), 'Booking retrieved successfully');
-    }
+    // Removed show() endpoint
 
     /**
      * @OA\Put(
@@ -153,7 +108,7 @@ class BookingController extends Controller
         
         $dto = UpdateBookingData::from($request->validated());
         $booking = $this->service->update($id, $dto);
-        return $this->ok(BookingResource::make($booking), 'Booking updated successfully');
+        return $this->ok(BookingResource::make($booking), __('bookings.updated'));
     }
 
     /**
@@ -189,7 +144,7 @@ class BookingController extends Controller
         }
         
         $booking = $this->service->cancel($id, $request->cancellation_reason);
-        return $this->ok(BookingResource::make($booking), 'Booking cancelled successfully');
+        return $this->ok(BookingResource::make($booking), __('bookings.cancelled'));
     }
 
     /**
@@ -211,7 +166,7 @@ class BookingController extends Controller
     public function myBookings(Request $request): JsonResponse
     {
         $items = $this->service->myBookings($request)->through(fn ($model) => BookingResource::make($model));
-        return $this->paginated($items, 'My bookings retrieved successfully');
+        return $this->paginated($items, __('bookings.my_list'));
     }
 
     /**
@@ -236,7 +191,7 @@ class BookingController extends Controller
             $request->input('staff_id'),
             (int)$request->input('granularity', 15)
         );
-        return $this->ok($result, 'Available slots retrieved successfully');
+        return $this->ok($result, __('bookings.availability'));
     }
 
     /**
@@ -264,7 +219,7 @@ class BookingController extends Controller
         if (!$booking) {
             $this->notFound('Booking');
         }
-        return $this->ok(BookingResource::make($booking), 'Booking rescheduled successfully');
+        return $this->ok(BookingResource::make($booking), __('bookings.rescheduled'));
     }
 
     /**
@@ -287,9 +242,9 @@ class BookingController extends Controller
         try {
             $email = (string)$request->guest_email;
             $result = $this->service->sendGuestBookingOtp($email);
-            return $this->ok($result);
+            return $this->ok($result, __('bookings.otp_sent'));
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 'Failed to send OTP', 'OTP_SEND_ERROR', 422);
+            return ApiResponse::error($e->getMessage(), __('bookings.otp_send_failed'), 'OTP_SEND_ERROR', 422);
         }
     }
 
@@ -312,6 +267,6 @@ class BookingController extends Controller
         $otp = (string)$request->guest_email_otp;
         $perPage = (int)$request->input('per_page', 15);
         $items = $this->service->guestBookings($email, $otp, $perPage);
-        return $this->paginated($items, 'Guest bookings retrieved successfully');
+        return $this->paginated($items, __('bookings.guest_list'));
     }
 }

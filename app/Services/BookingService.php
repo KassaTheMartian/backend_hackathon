@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Data\Booking\BookingData;
 use App\Data\Booking\UpdateBookingData;
 use App\Mail\OtpMail;
+use App\Mail\BookingConfirmationMail;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\OtpRepositoryInterface;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
@@ -67,31 +68,12 @@ class BookingService implements BookingServiceInterface
 	{
 		$payload = $data->toArray();
 		
-		// Handle authenticated user vs guest
-		if (Auth::check()) {
-			// Authenticated user - use current user info
-			$payload['user_id'] = Auth::id();
-			// Clear guest fields if provided
-			unset($payload['guest_name'], $payload['guest_email'], $payload['guest_phone']);
-		} else {
-			// Guest user - require guest info (already validated in Request)
-			$payload['user_id'] = null;
-			// Verify guest email OTP via repository
-			$email = (string) ($payload['guest_email'] ?? '');
-			$otp = (string) ($payload['guest_email_otp'] ?? '');
-			$record = $this->otpRepository->findLatestValid($email, 'guest_booking');
-			if (!$record) {
-				throw new \Exception('Invalid or expired OTP');
-			}
-			if ($record->isLockedOut()) {
-				throw new \Exception('Too many invalid attempts. Please request a new OTP.');
-			}
-			if ($record->otp !== $otp) {
-				$this->otpRepository->incrementAttempts($record->id);
-				throw new \Exception('Invalid or expired OTP');
-			}
-			$this->otpRepository->markAsVerified($record->id);
-		}
+        // Only allow authenticated users to create bookings; guest flow handled elsewhere
+        if (!Auth::check()) {
+            throw new \Exception(__('bookings.user_not_authenticated'));
+        }
+        $payload['user_id'] = Auth::id();
+        unset($payload['guest_name'], $payload['guest_email'], $payload['guest_phone']);
 		
 		// Get duration and price from service via repository
 		$service = $this->services->find($data->service_id);
@@ -109,15 +91,23 @@ class BookingService implements BookingServiceInterface
 			$payload['booking_time'],
 			$payload['staff_id'] ?? null
 		);
-		if (!$available) {
-			throw new \Exception('Selected time slot is not available');
+        if (!$available) {
+            throw new \Exception(__('bookings.time_slot_unavailable'));
 		}
 
 		// Set default status
 		$payload['status'] = 'pending';
 		$payload['payment_status'] = 'pending';
 		
-		return $this->bookings->create($payload);
+        $booking = $this->bookings->create($payload);
+
+        // Send confirmation email to user
+        $recipient = Auth::user()?->email;
+        if ($recipient) {
+            Mail::to($recipient)->send(new BookingConfirmationMail($booking));
+        }
+
+        return $booking;
 	}
 
 	/**
@@ -151,8 +141,8 @@ class BookingService implements BookingServiceInterface
 			$time = $payload['booking_time'] ?? $existing->booking_time;
 			$staffId = array_key_exists('staff_id', $payload) ? $payload['staff_id'] : $existing->staff_id;
 			$available = $this->isTimeSlotAvailable($branchId, $date, $time, $staffId);
-			if (!$available) {
-				throw new \Exception('Selected time slot is not available');
+            if (!$available) {
+                throw new \Exception(__('bookings.time_slot_unavailable'));
 			}
 		}
 		return $this->bookings->update($id, $payload);
@@ -184,8 +174,8 @@ class BookingService implements BookingServiceInterface
 	public function myBookings(Request $request): LengthAwarePaginator
 	{
 		$user = Auth::user();
-		if (!$user) {
-			throw new \Exception('User not authenticated');
+        if (!$user) {
+            throw new \Exception(__('bookings.user_not_authenticated'));
 		}
 		$request->merge(['user_id' => $user->id]);
 		return $this->bookings->paginateWithFilters($request);
@@ -203,8 +193,8 @@ class BookingService implements BookingServiceInterface
 	{
 		// Get service via repository
 		$service = $this->services->find($serviceId);
-		if (!$service) {
-			throw new \Exception('Service not found');
+        if (!$service) {
+            throw new \Exception(__('bookings.service_not_found'));
 		}
 		
 		$start = \Carbon\Carbon::parse($date . ' 08:00');
@@ -229,13 +219,13 @@ class BookingService implements BookingServiceInterface
 		if (!$booking) {
 			return null;
 		}
-		if (\Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->booking_time) < now()->addHours(4)) {
-			throw new \Exception('Reschedule cutoff exceeded');
+        if (\Carbon\Carbon::parse($booking->booking_date . ' ' . $booking->booking_time) < now()->addHours(4)) {
+            throw new \Exception(__('bookings.reschedule_cutoff_exceeded'));
 		}
 		$branchId = $booking->branch_id;
 		$staff = $staffId ?? $booking->staff_id;
-		if (!$this->isTimeSlotAvailable($branchId, $bookingDate, $bookingTime, $staff)) {
-			throw new \Exception('Selected time slot is not available');
+        if (!$this->isTimeSlotAvailable($branchId, $bookingDate, $bookingTime, $staff)) {
+            throw new \Exception(__('bookings.time_slot_unavailable'));
 		}
 		return $this->bookings->update($id, [
 			'booking_date' => $bookingDate,
@@ -260,7 +250,7 @@ class BookingService implements BookingServiceInterface
 		// Send email with beautiful template
 		Mail::to($email)->send(new OtpMail($otp, 'guest_booking', 10));
 
-		return ['message' => 'OTP sent'];
+        return ['message' => __('bookings.otp_sent')];
 	}
 
 	// Get guest bookings by email with OTP verification
@@ -269,15 +259,15 @@ class BookingService implements BookingServiceInterface
 		// Verify OTP via repository
 		$record = $this->otpRepository->findLatestValid($email, 'guest_booking');
 
-		if (!$record) {
-			throw new \Exception('Invalid or expired OTP');
+        if (!$record) {
+            throw new \Exception(__('bookings.otp_invalid_or_expired'));
 		}
 		if ($record->isLockedOut()) {
-			throw new \Exception('Too many invalid attempts. Please request a new OTP.');
+            throw new \Exception(__('bookings.otp_locked'));
 		}
 		if ($record->otp !== $otp) {
 			$this->otpRepository->incrementAttempts($record->id);
-			throw new \Exception('Invalid or expired OTP');
+            throw new \Exception(__('bookings.otp_invalid_or_expired'));
 		}
 		$this->otpRepository->markAsVerified($record->id);
 

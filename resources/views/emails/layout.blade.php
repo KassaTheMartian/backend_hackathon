@@ -180,7 +180,7 @@
     <div class="email-container">
         <div class="email-header">
             <h1>💎 Beauty Clinic</h1>
-            <p>Nơi Vẻ Đẹp Được Tôn Vinh</p>
+            <p>Nơi Vẻ Đẹp Được Tôn Vinh - Where Beauty Is Celebrated</p>
         </div>
         
         <div class="email-body">

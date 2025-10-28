@@ -28,7 +28,7 @@ class BookingConfirmationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Xác nhận Đặt lịch - Beauty Clinic',
+            subject: __('emails.booking.subject'),
         );
     }
 

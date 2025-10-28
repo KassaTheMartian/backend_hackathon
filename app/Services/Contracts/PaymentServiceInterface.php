@@ -14,30 +14,7 @@ interface PaymentServiceInterface
      */
     public function list(Request $request): LengthAwarePaginator;
 
-    /**
-     * Create payment intent for Stripe.
-     */
-    public function createPaymentIntent(Booking $booking): array;
-
-    /**
-     * Create payment intent by booking id with permission checks.
-     */
-    public function createPaymentIntentById(int $bookingId): array;
-
-    /**
-     * Confirm payment.
-     */
-    public function confirmPayment(Booking $booking, string $paymentIntentId, string $paymentMethod): Payment;
-
-    /**
-     * Confirm payment by booking id with permission checks.
-     */
-    public function confirmPaymentById(int $bookingId, string $paymentIntentId, string $paymentMethod): Payment;
-
-    /**
-     * Handle Stripe webhook.
-     */
-    public function handleWebhook($request): void;
+    // Removed Stripe-related methods from interface
 
     /**
      * VNPay: Create payment URL and Payment record.

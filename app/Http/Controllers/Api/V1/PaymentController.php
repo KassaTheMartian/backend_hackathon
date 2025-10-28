@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Payment\CreatePaymentIntentRequest;
-use App\Http\Requests\Payment\ProcessPaymentRequest;
+// Removed Stripe requests
 use App\Http\Requests\Payment\CreateVnpayPaymentRequest;
 use App\Http\Requests\Payment\VnpayReturnRequest;
 use App\Http\Requests\Payment\VnpayIpnRequest;
@@ -27,94 +26,11 @@ class PaymentController extends Controller
         //
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/v1/payments/create-intent",
-     *     summary="Create payment intent",
-     *     tags={"Payments"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"booking_id"},
-     *             @OA\Property(property="booking_id", type="integer")
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Create payment intent for Stripe.
-     *
-     * @param CreatePaymentIntentRequest $request The create payment intent request
-     * @return JsonResponse The payment intent response
-     */
-    public function createIntent(CreatePaymentIntentRequest $request): JsonResponse
-    {
-        $paymentIntent = $this->service->createPaymentIntentById((int)$request->booking_id);
-        
-        return $this->ok($paymentIntent, 'Payment intent created successfully');
-    }
+    // Removed Stripe createIntent endpoint
 
-    /**
-     * @OA\Post(
-     *     path="/api/v1/payments/confirm",
-     *     summary="Confirm payment",
-     *     tags={"Payments"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"booking_id", "payment_intent_id", "payment_method"},
-     *             @OA\Property(property="booking_id", type="integer"),
-     *             @OA\Property(property="payment_intent_id", type="string"),
-     *             @OA\Property(property="payment_method", type="string", enum={"stripe", "card", "online"})
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Confirm payment.
-     *
-     * @param ProcessPaymentRequest $request The confirm payment request
-     * @return JsonResponse The payment confirmation response
-     */
-    public function confirm(ProcessPaymentRequest $request): JsonResponse
-    {
-        $payment = $this->service->confirmPaymentById(
-            (int)$request->booking_id,
-            (string)$request->payment_intent_id,
-            (string)$request->payment_method
-        );
-        
-        return $this->ok(PaymentResource::make($payment), 'Payment confirmed successfully');
-    }
+    // Removed Stripe confirm endpoint
 
-    /**
-     * @OA\Post(
-     *     path="/api/v1/payments/webhook",
-     *     summary="Handle Stripe webhook",
-     *     tags={"Payments"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="type", type="string"),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Handle Stripe webhook.
-     *
-     * @param Request $request The webhook request
-     * @return JsonResponse The webhook response
-     */
-    public function webhook(Request $request): JsonResponse
-    {
-        $this->service->handleWebhook($request);
-        
-        return $this->ok(null, 'Webhook processed successfully');
-    }
+    // Removed Stripe webhook endpoint
 
     /**
      * @OA\Get(

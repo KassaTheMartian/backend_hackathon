@@ -48,7 +48,7 @@ class AuthController extends Controller
         try {
             $credentials = $request->validated();
             $result = $this->authService->login($credentials['email'], $credentials['password']);
-            return $this->ok($result, 'Login successful');
+            return $this->ok($result, __('auth.login_success'));
         } catch (\Exception $e) {
             return ApiResponse::unauthorized($e->getMessage());
         }
@@ -81,9 +81,9 @@ class AuthController extends Controller
         try {
             $validated = $request->validated();
             $result = $this->authService->register($validated);
-            return $this->created($result, 'Registration successful. Please verify your email.');
+            return $this->created($result, __('auth.registration_success'));
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 'Registration failed', 'REGISTRATION_ERROR', 422);
+            return ApiResponse::error($e->getMessage(), __('auth.registration_failed'), 'REGISTRATION_ERROR', 422);
         }
     }
 
@@ -110,9 +110,9 @@ class AuthController extends Controller
         $validated = $request->validated();
         try {
             $result = $this->authService->verifyEmailOtp($validated['email'], $validated['otp'], 'verify_email');
-            return $this->ok($result, 'Email verified');
+            return $this->ok($result, __('auth.email_verified_success'));
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 'Verification failed', 'OTP_ERROR', 422);
+            return ApiResponse::error($e->getMessage(), __('auth.verification_failed'), 'OTP_ERROR', 422);
         }
     }
 
@@ -169,7 +169,7 @@ class AuthController extends Controller
         if (!$success) {
             return ApiResponse::unauthorized();
         }
-        return $this->noContent('Logged out successfully');
+        return $this->noContent(__('auth.logout_success'));
     }
 
     /**
@@ -189,9 +189,9 @@ class AuthController extends Controller
     {
         $success = $this->authService->logoutAll();
         if (!$success) {
-            return ApiResponse::unauthorized('User not authenticated');
+            return ApiResponse::unauthorized(__('auth.user_not_authenticated'));
         }
-        return $this->ok(['message' => 'Logged out from all devices']);
+        return $this->ok(['message' => __('auth.logout_all_success')]);
     }
 
     /**
@@ -214,7 +214,7 @@ class AuthController extends Controller
         $validated = $request->validated();
         try {
             $result = $this->authService->sendPasswordResetOtp($validated['email']);
-            return $this->ok($result, 'OTP sent');
+            return $this->ok($result, __('auth.otp_sent'));
         } catch (\Exception $e) {
             return ApiResponse::notFound($e->getMessage());
         }
@@ -243,9 +243,9 @@ class AuthController extends Controller
         $validated = $request->validated();
         try {
             $result = $this->authService->resetPasswordWithOtp($validated['email'], $validated['otp'], $validated['password']);
-            return $this->ok($result, 'Password reset successfully');
+            return $this->ok($result, __('auth.password_reset_success'));
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 'Password Reset Failed', 'RESET_PASSWORD_ERROR', 400);
+            return ApiResponse::error($e->getMessage(), __('auth.password_reset_failed'), 'RESET_PASSWORD_ERROR', 400);
         }
     }
 
@@ -275,12 +275,12 @@ class AuthController extends Controller
         try {
             $email = (string) $request->input('email');
             if (!$email) {
-                return ApiResponse::error('Email is required', 'Validation Error', 'VALIDATION_ERROR', 422);
+                return ApiResponse::error(__('auth.email_required'), __('auth.validation_error'), 'VALIDATION_ERROR', 422);
             }
             $result = $this->authService->sendTestEmail($email);
-            return $this->ok($result, 'Email sent successfully');
+            return $this->ok($result, __('auth.test_email_sent'));
         } catch (\Exception $e) {
-            return ApiResponse::error('Failed to send email: ' . $e->getMessage(), 'Email Sending Failed', 'EMAIL_ERROR', 500);
+            return ApiResponse::error(__('auth.email_send_failed', ['message' => $e->getMessage()]), __('auth.email_sending_failed'), 'EMAIL_ERROR', 500);
         }
     }
 }

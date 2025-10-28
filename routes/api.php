@@ -59,12 +59,6 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::get('/chatbot/sessions/{id}', [V1ChatbotController::class, 'show']);
         Route::delete('/chatbot/sessions/{id}', [V1ChatbotController::class, 'destroy']);
         Route::delete('/chatbot/sessions/{id}/messages', [V1ChatbotController::class, 'clearMessages']);
-
-        // Bookings
-        Route::get('/bookings', [V1BookingController::class, 'index']);
-        Route::post('/bookings', [V1BookingController::class, 'store']);
-        Route::get('/bookings/{id}', [V1BookingController::class, 'show']);
-        Route::put('/bookings/{id}', [V1BookingController::class, 'update']);
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
         Route::post('/bookings/{id}/reschedule', [V1BookingController::class, 'reschedule']);
         Route::get('/availability', [V1BookingController::class, 'availability']);
@@ -74,12 +68,7 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         // Payments - list (scope to user)
         Route::middleware('auth:sanctum')->get('/payments', [V1PaymentController::class, 'index']);
 
-        // Payments - Stripe (protected)
-        Route::middleware('auth:sanctum')->group(function () {
-            Route::post('/payments/create-intent', [V1PaymentController::class, 'createIntent']);
-            Route::post('/payments/confirm', [V1PaymentController::class, 'confirm']);
-        });
-        Route::post('/payments/webhook', [V1PaymentController::class, 'webhook']);
+        // Removed Stripe payment routes (create-intent, confirm, webhook)
 
         // Payments - VNPay
         Route::post('/payments/vnpay/create', [V1PaymentController::class, 'vnpayCreate']);
@@ -90,7 +79,9 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
 
         // Authenticated routes
         Route::middleware('auth:sanctum')->group(function () {
-            // My Bookings
+            // Bookings
+            Route::post('/bookings', [V1BookingController::class, 'store']);
+            Route::put('/bookings/{id}', [V1BookingController::class, 'update']);
             Route::get('/my-bookings', [V1BookingController::class, 'myBookings']);
             
             // Reviews
