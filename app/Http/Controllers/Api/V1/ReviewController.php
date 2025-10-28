@@ -107,4 +107,124 @@ class ReviewController extends Controller
         
         return $this->ok(ReviewResource::make($review), 'Review retrieved successfully');
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/reviews/pending",
+     *     summary="List pending reviews (admin)",
+     *     tags={"Reviews"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     */
+    public function pending(Request $request): JsonResponse
+    {
+        if (!$request->user() || !$request->user()->isAdmin()) {
+            return $this->forbidden('Admin only');
+        }
+        $items = Review::with(['user','service','staff','branch'])
+            ->where('is_approved', false)
+            ->latest('id')
+            ->paginate((int)$request->query('per_page', 15))
+            ->through(fn ($model) => ReviewResource::make($model));
+        return $this->paginated($items, 'Pending reviews retrieved successfully');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/reviews/{id}/approve",
+     *     summary="Approve review (admin)",
+     *     tags={"Reviews"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     */
+    public function approve(Request $request, int $id): JsonResponse
+    {
+        if (!$request->user() || !$request->user()->isAdmin()) {
+            return $this->forbidden('Admin only');
+        }
+        $review = $this->service->find($id);
+        if (!$review) {
+            $this->notFound('Review');
+        }
+        $approved = $this->service->approveReview($review);
+        return $this->ok(ReviewResource::make($approved), 'Review approved');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/reviews/{id}/reject",
+     *     summary="Reject review (admin)",
+     *     tags={"Reviews"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(@OA\Property(property="reason", type="string"))
+     *     ),
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     */
+    public function reject(Request $request, int $id): JsonResponse
+    {
+        if (!$request->user() || !$request->user()->isAdmin()) {
+            return $this->forbidden('Admin only');
+        }
+        $review = $this->service->find($id);
+        if (!$review) {
+            $this->notFound('Review');
+        }
+        $reason = (string)$request->input('reason', '');
+        $rejected = $this->service->rejectReview($review, $reason);
+        return $this->ok(ReviewResource::make($rejected), 'Review rejected');
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/reviews/{id}/respond",
+     *     summary="Respond to a review (admin)",
+     *     tags={"Reviews"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"admin_response"},
+     *             @OA\Property(property="admin_response", type="string", maxLength=1000)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=403, description="Forbidden", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     */
+    public function respond(Request $request, int $id): JsonResponse
+    {
+        if (!$request->user() || !$request->user()->isAdmin()) {
+            return $this->forbidden('Admin only');
+        }
+        $review = $this->service->find($id);
+        if (!$review) {
+            $this->notFound('Review');
+        }
+        $message = trim((string)$request->input('admin_response', ''));
+        if ($message === '') {
+            return \App\Http\Responses\ApiResponse::validationError([
+                'admin_response' => ['admin_response is required']
+            ]);
+        }
+        $review->update([
+            'admin_response' => $message,
+            'responded_at' => now(),
+            'responded_by' => $request->user()->id,
+        ]);
+        return $this->ok(ReviewResource::make($review->fresh()), 'Response saved');
+    }
 }

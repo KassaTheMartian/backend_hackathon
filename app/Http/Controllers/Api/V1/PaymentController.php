@@ -53,6 +53,9 @@ class PaymentController extends Controller
     public function createIntent(CreatePaymentIntentRequest $request): JsonResponse
     {
         $booking = Booking::findOrFail($request->booking_id);
+        if ($request->user() && $booking->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            return $this->forbidden('You do not have permission to pay for this booking');
+        }
         
         $paymentIntent = $this->service->createPaymentIntent($booking);
         
@@ -85,6 +88,9 @@ class PaymentController extends Controller
     public function confirm(ProcessPaymentRequest $request): JsonResponse
     {
         $booking = Booking::findOrFail($request->booking_id);
+        if ($request->user() && $booking->user_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            return $this->forbidden('You do not have permission to confirm this payment');
+        }
         
         $payment = $this->service->confirmPayment(
             $booking,

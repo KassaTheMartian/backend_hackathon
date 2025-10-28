@@ -73,4 +73,12 @@ class OtpVerification extends Model
     {
         $this->increment('attempts');
     }
+
+    /**
+     * Determine if attempts have exceeded a lockout threshold.
+     */
+    public function isLockedOut(int $maxAttempts = 5): bool
+    {
+        return $this->attempts >= $maxAttempts;
+    }
 }

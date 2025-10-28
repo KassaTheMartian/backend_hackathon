@@ -42,6 +42,14 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->ip());
         });
 
+        // OTP send limiter - stricter to prevent abuse
+        RateLimiter::for('otp', function (Request $request) {
+            return [
+                Limit::perMinute(3)->by(($request->input('email') ?: $request->input('guest_email') ?: $request->ip()) . '|m1'),
+                Limit::perMinutes(10, 10)->by(($request->input('email') ?: $request->input('guest_email') ?: $request->ip()) . '|m10'),
+            ];
+        });
+
         // Demo rate limiter - for demo endpoints
         RateLimiter::for('demo', function (Request $request) {
             return Limit::perMinute(100)->by($request->user()?->id ?: $request->ip());

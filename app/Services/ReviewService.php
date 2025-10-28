@@ -45,6 +45,14 @@ class ReviewService implements ReviewServiceInterface
         // Fetch booking to get service_id, staff_id, branch_id
         $booking = \App\Models\Booking::findOrFail($reviewData['booking_id']);
         
+        // Prevent duplicate review per booking by same user
+        $exists = Review::where('booking_id', $booking->id)
+            ->where('user_id', $userId)
+            ->exists();
+        if ($exists) {
+            throw new \Exception('You have already reviewed this booking.');
+        }
+
         // Merge user_id and booking-related fields
         $data = array_merge($reviewData, [
             'user_id' => $userId,

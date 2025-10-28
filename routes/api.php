@@ -21,11 +21,11 @@ Route::middleware(['throttle:api'])->group(function () {
         // Auth
         Route::post('/auth/login', [V1AuthController::class, 'login']);
         Route::post('/auth/register', [V1AuthController::class, 'register']);
-        Route::post('/auth/send-otp', [V1AuthController::class, 'sendOtp']);
+        Route::post('/auth/send-otp', [V1AuthController::class, 'sendOtp'])->middleware('throttle:otp');
         Route::post('/auth/verify-otp', [V1AuthController::class, 'verifyOtp']);
         Route::post('/auth/forgot-password', [V1AuthController::class, 'forgotPassword']);
         Route::post('/auth/reset-password', [V1AuthController::class, 'resetPassword']);
-        Route::post('/auth/send-reset-otp', [V1AuthController::class, 'sendResetOtp']);
+        Route::post('/auth/send-reset-otp', [V1AuthController::class, 'sendResetOtp'])->middleware('throttle:otp');
         Route::post('/auth/reset-password-otp', [V1AuthController::class, 'resetPasswordWithOtp']);
         Route::post('/auth/test-email', [V1AuthController::class, 'testEmail']);
         Route::middleware('auth:sanctum')->group(function () {
@@ -49,6 +49,8 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::get('/posts', [V1PostController::class, 'index']);
         Route::get('/posts/featured', [V1PostController::class, 'featured']);
         Route::get('/posts/{id}', [V1PostController::class, 'show']);
+        Route::get('/post-categories', [V1PostController::class, 'categories']);
+        Route::get('/post-tags', [V1PostController::class, 'tags']);
 
         Route::post('/contact', [V1ContactController::class, 'store']);
 
@@ -67,15 +69,17 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
         Route::post('/bookings/{id}/reschedule', [V1BookingController::class, 'reschedule']);
         Route::get('/availability', [V1BookingController::class, 'availability']);
-        Route::post('/guest-booking/send-otp', [V1BookingController::class, 'sendGuestBookingOtp']);
+        Route::post('/guest-booking/send-otp', [V1BookingController::class, 'sendGuestBookingOtp'])->middleware('throttle:otp');
         Route::get('/guest-bookings', [V1BookingController::class, 'guestBookings']);
 
         // Payments - list (scope to user)
         Route::middleware('auth:sanctum')->get('/payments', [V1PaymentController::class, 'index']);
 
-        // Payments - Stripe
-        Route::post('/payments/create-intent', [V1PaymentController::class, 'createIntent']);
-        Route::post('/payments/confirm', [V1PaymentController::class, 'confirm']);
+        // Payments - Stripe (protected)
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/payments/create-intent', [V1PaymentController::class, 'createIntent']);
+            Route::post('/payments/confirm', [V1PaymentController::class, 'confirm']);
+        });
         Route::post('/payments/webhook', [V1PaymentController::class, 'webhook']);
 
         // Payments - VNPay
@@ -92,6 +96,10 @@ Route::middleware(['throttle:api'])->group(function () {
             
             // Reviews
             Route::post('/reviews', [V1ReviewController::class, 'store']);
+            Route::get('/reviews/pending', [V1ReviewController::class, 'pending']);
+            Route::post('/reviews/{id}/approve', [V1ReviewController::class, 'approve']);
+            Route::post('/reviews/{id}/reject', [V1ReviewController::class, 'reject']);
+            Route::post('/reviews/{id}/respond', [V1ReviewController::class, 'respond']);
 
             // Profile
             Route::get('/profile', [V1ProfileController::class, 'show']);

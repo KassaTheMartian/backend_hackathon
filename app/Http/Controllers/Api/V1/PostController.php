@@ -8,6 +8,8 @@ use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\Post\PostResource;
 use App\Models\Post;
 use App\Services\Contracts\PostServiceInterface;
+use App\Models\PostCategory;
+use App\Models\PostTag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -110,5 +112,33 @@ class PostController extends Controller
             PostResource::collection($posts),
             'Featured posts retrieved successfully'
         );
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/post-categories",
+     *     summary="List post categories",
+     *     tags={"Posts"},
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     */
+    public function categories(): JsonResponse
+    {
+        $items = PostCategory::query()->where('is_active', true)->orderBy('name')->get(['id','name','slug']);
+        return $this->ok($items, 'Post categories retrieved successfully');
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/post-tags",
+     *     summary="List post tags",
+     *     tags={"Posts"},
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     */
+    public function tags(): JsonResponse
+    {
+        $items = PostTag::query()->orderBy('name')->get(['id','name','slug']);
+        return $this->ok($items, 'Post tags retrieved successfully');
     }
 }

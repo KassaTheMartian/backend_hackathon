@@ -16,4 +16,8 @@ interface ReviewServiceInterface
     public function createFromBooking(array $reviewData, int $userId): Model;
 
     public function find(int $id): ?Model;
+
+    public function approveReview(\App\Models\Review $review): \App\Models\Review;
+
+    public function rejectReview(\App\Models\Review $review, string $reason): \App\Models\Review;
 }

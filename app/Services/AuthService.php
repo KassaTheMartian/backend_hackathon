@@ -236,6 +236,9 @@ class AuthService implements AuthServiceInterface
         if (!$record) {
             throw new \Exception('OTP not found or expired');
         }
+        if ($record->isLockedOut()) {
+            throw new \Exception('Too many invalid attempts. Please request a new OTP.');
+        }
 
         if ($record->otp !== $otp) {
             $record->incrementAttempts();
@@ -274,6 +277,9 @@ class AuthService implements AuthServiceInterface
 
         if (!$record) {
             throw new \Exception('OTP not found or expired');
+        }
+        if ($record->isLockedOut()) {
+            throw new \Exception('Too many invalid attempts. Please request a new OTP.');
         }
         if ($record->otp !== $otp) {
             $record->incrementAttempts();

@@ -99,6 +99,9 @@ class BookingController extends Controller
             if (!$record) {
                 return ApiResponse::validationError(['guest_email_otp' => ['Invalid or expired OTP']]);
             }
+            if ($record->isLockedOut()) {
+                return ApiResponse::validationError(['guest_email_otp' => ['Too many invalid attempts. Please request a new OTP.']]);
+            }
             if ($record->otp !== $otp) {
                 $record->incrementAttempts();
                 return ApiResponse::validationError(['guest_email_otp' => ['Invalid or expired OTP']]);
@@ -354,6 +357,9 @@ class BookingController extends Controller
             ->first();
         if (!$record) {
             return ApiResponse::validationError(['guest_email_otp' => ['Invalid or expired OTP']]);
+        }
+        if ($record->isLockedOut()) {
+            return ApiResponse::validationError(['guest_email_otp' => ['Too many invalid attempts. Please request a new OTP.']]);
         }
         if ($record->otp !== $otp) {
             $record->incrementAttempts();

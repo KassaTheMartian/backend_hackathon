@@ -40,6 +40,11 @@ abstract class Controller
         throw new ResourceNotFoundException($name);
     }
 
+    protected function forbidden(string $message = 'Forbidden'): JsonResponse
+    {
+        return ApiResponse::forbidden($message);
+    }
+
     protected function getPerPage(Request $request, int $default = 15, int $max = 100): int
     {
         $perPage = (int) $request->integer('per_page', $default);
