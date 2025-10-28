@@ -60,6 +60,7 @@ class AuthService implements AuthServiceInterface
                 'phone' => $user->phone,
                 'avatar' => $user->avatar,
                 'language_preference' => $user->language_preference ?? 'vi',
+                'is_admin' => (bool) $user->is_admin,
             ],
             'token' => $token,
             'token_type' => 'Bearer',
