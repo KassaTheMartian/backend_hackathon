@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Mail\BookingConfirmationMail;
 use App\Models\Booking;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,26 +29,28 @@ class SendBookingConfirmation implements ShouldQueue
     public function handle(): void
     {
         try {
-            // In a real implementation, you would send an email here
-            // For now, we'll just log the action
+            // Load relationships needed for email
+            $this->booking->load(['user', 'service', 'branch', 'staff']);
             
-            Log::info('Sending booking confirmation', [
+            // Get recipient email
+            $recipientEmail = $this->booking->user_id ? 
+                $this->booking->user->email : 
+                $this->booking->guest_email;
+
+            // Send beautiful booking confirmation email
+            Mail::to($recipientEmail)->send(new BookingConfirmationMail($this->booking));
+            
+            Log::info('Booking confirmation email sent successfully', [
                 'booking_id' => $this->booking->id,
                 'booking_code' => $this->booking->booking_code,
-                'email' => $this->booking->user_id ? 
-                    $this->booking->user->email : 
-                    $this->booking->guest_email,
-            ]);
-
-            // Update booking status
-            $this->booking->update([
-                'confirmation_sent' => true,
+                'email' => $recipientEmail,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Failed to send booking confirmation', [
+            Log::error('Failed to send booking confirmation email', [
                 'booking_id' => $this->booking->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
             
             throw $e;

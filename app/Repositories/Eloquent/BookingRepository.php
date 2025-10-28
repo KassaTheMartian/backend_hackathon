@@ -188,5 +188,18 @@ class BookingRepository extends BaseRepository implements BookingRepositoryInter
             'cancellation_rate' => $totalBookings > 0 ? round(($cancelledBookings / $totalBookings) * 100, 2) : 0,
         ];
     }
+
+    /**
+     * Get guest bookings by email.
+     */
+    public function getGuestBookingsByEmail(string $email, int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model
+            ->whereNull('user_id')
+            ->where('guest_email', $email)
+            ->with(['branch', 'service', 'staff', 'payment'])
+            ->latest('id')
+            ->paginate($perPage);
+    }
 }
 

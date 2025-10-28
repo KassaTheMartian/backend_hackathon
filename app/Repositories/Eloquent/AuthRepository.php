@@ -24,17 +24,35 @@ class AuthRepository implements AuthRepositoryInterface
     /**
      * Create a new user.
      *
-     * @param array $attributes The user attributes
+     * @param array $attributes The user attributes (password should already be hashed)
      * @return User The created user
      */
     public function create(array $attributes): User
     {
-        // Hash password if it's not already hashed
-        if (isset($attributes['password']) && !Hash::needsRehash($attributes['password'])) {
-            $attributes['password'] = Hash::make($attributes['password']);
-        }
-
         return User::create($attributes);
+    }
+
+    /**
+     * Update user by ID.
+     *
+     * @param int $userId The user ID
+     * @param array $attributes The attributes to update
+     * @return bool True if update was successful
+     */
+    public function update(int $userId, array $attributes): bool
+    {
+        return User::where('id', $userId)->update($attributes);
+    }
+
+    /**
+     * Find user by ID.
+     *
+     * @param int $userId The user ID
+     * @return User|null The user if found, null otherwise
+     */
+    public function findById(int $userId): ?User
+    {
+        return User::find($userId);
     }
 
     /**

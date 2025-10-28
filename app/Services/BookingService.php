@@ -4,15 +4,16 @@ namespace App\Services;
 
 use App\Data\Booking\BookingData;
 use App\Data\Booking\UpdateBookingData;
+use App\Mail\OtpMail;
 use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\OtpRepositoryInterface;
+use App\Repositories\Contracts\ServiceRepositoryInterface;
 use App\Services\Contracts\BookingServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\OtpVerification; // added
-use Illuminate\Support\Facades\Mail; // added
-use App\Models\Booking; // added
+use Illuminate\Support\Facades\Mail;
 
 class BookingService implements BookingServiceInterface
 {
@@ -20,9 +21,14 @@ class BookingService implements BookingServiceInterface
 	 * Create a new BookingService instance.
 	 *
 	 * @param BookingRepositoryInterface $bookings The booking repository
+	 * @param OtpRepositoryInterface $otpRepository The OTP repository
+	 * @param ServiceRepositoryInterface $services The service repository
 	 */
-	public function __construct(private readonly BookingRepositoryInterface $bookings)
-	{
+	public function __construct(
+		private readonly BookingRepositoryInterface $bookings,
+		private readonly OtpRepositoryInterface $otpRepository,
+		private readonly ServiceRepositoryInterface $services
+	) {
 	}
 
 	/**
@@ -70,15 +76,10 @@ class BookingService implements BookingServiceInterface
 		} else {
 			// Guest user - require guest info (already validated in Request)
 			$payload['user_id'] = null;
-			// Verify guest email OTP
+			// Verify guest email OTP via repository
 			$email = (string) ($payload['guest_email'] ?? '');
 			$otp = (string) ($payload['guest_email_otp'] ?? '');
-			$record = OtpVerification::where('phone_or_email', $email)
-				->where('purpose', 'guest_booking')
-				->unexpired()
-				->unverified()
-				->latest('id')
-				->first();
+			$record = $this->otpRepository->findLatestValid($email, 'guest_booking');
 			if (!$record) {
 				throw new \Exception('Invalid or expired OTP');
 			}
@@ -86,14 +87,14 @@ class BookingService implements BookingServiceInterface
 				throw new \Exception('Too many invalid attempts. Please request a new OTP.');
 			}
 			if ($record->otp !== $otp) {
-				$record->incrementAttempts();
+				$this->otpRepository->incrementAttempts($record->id);
 				throw new \Exception('Invalid or expired OTP');
 			}
-			$record->markAsVerified();
+			$this->otpRepository->markAsVerified($record->id);
 		}
 		
-		// Get duration and price from service
-		$service = \App\Models\Service::find($data->service_id);
+		// Get duration and price from service via repository
+		$service = $this->services->find($data->service_id);
 		if ($service) {
 			$payload['duration'] = $service->duration;
 			$payload['service_price'] = $service->price;
@@ -200,7 +201,12 @@ class BookingService implements BookingServiceInterface
 
 	public function availableSlots(int $branchId, int $serviceId, string $date, ?int $staffId = null, int $granularity = 15): array
 	{
-		$service = \App\Models\Service::findOrFail($serviceId);
+		// Get service via repository
+		$service = $this->services->find($serviceId);
+		if (!$service) {
+			throw new \Exception('Service not found');
+		}
+		
 		$start = \Carbon\Carbon::parse($date . ' 08:00');
 		$end = \Carbon\Carbon::parse($date . ' 20:00');
 		$slots = [];
@@ -242,7 +248,7 @@ class BookingService implements BookingServiceInterface
 	public function sendGuestBookingOtp(string $email): array
 	{
 		$otp = (string) random_int(100000, 999999);
-		OtpVerification::create([
+		$this->otpRepository->create([
 			'phone_or_email' => $email,
 			'otp' => $otp,
 			'type' => 'email',
@@ -251,11 +257,8 @@ class BookingService implements BookingServiceInterface
 			'attempts' => 0,
 		]);
 
-		Mail::raw('Your booking verification code is: ' . $otp, function ($message) use ($email) {
-			$message->to($email)
-				->subject('Your Booking OTP Code')
-				->from(config('mail.from.address'), config('mail.from.name'));
-		});
+		// Send email with beautiful template
+		Mail::to($email)->send(new OtpMail($otp, 'guest_booking', 10));
 
 		return ['message' => 'OTP sent'];
 	}
@@ -263,12 +266,8 @@ class BookingService implements BookingServiceInterface
 	// Get guest bookings by email with OTP verification
 	public function guestBookings(string $email, string $otp, int $perPage = 15): LengthAwarePaginator
 	{
-		$record = OtpVerification::where('phone_or_email', $email)
-			->where('purpose', 'guest_booking')
-			->unexpired()
-			->unverified()
-			->latest('id')
-			->first();
+		// Verify OTP via repository
+		$record = $this->otpRepository->findLatestValid($email, 'guest_booking');
 
 		if (!$record) {
 			throw new \Exception('Invalid or expired OTP');
@@ -277,15 +276,13 @@ class BookingService implements BookingServiceInterface
 			throw new \Exception('Too many invalid attempts. Please request a new OTP.');
 		}
 		if ($record->otp !== $otp) {
-			$record->incrementAttempts();
+			$this->otpRepository->incrementAttempts($record->id);
 			throw new \Exception('Invalid or expired OTP');
 		}
-		$record->markAsVerified();
+		$this->otpRepository->markAsVerified($record->id);
 
-		return Booking::whereNull('user_id')
-			->where('guest_email', $email)
-			->latest('id')
-			->paginate($perPage)
+		// Get guest bookings via repository
+		return $this->bookings->getGuestBookingsByEmail($email, $perPage)
 			->through(fn ($model) => \App\Http\Resources\Booking\BookingResource::make($model));
 	}
 }

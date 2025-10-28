@@ -17,12 +17,14 @@ class PostCategory extends Model
         'description',
         'parent_id',
         'display_order',
+        'is_active',
     ];
 
     protected $casts = [
         'name' => 'array',
         'description' => 'array',
         'display_order' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -55,6 +57,14 @@ class PostCategory extends Model
     public function scopeRoot($query)
     {
         return $query->whereNull('parent_id');
+    }
+
+    /**
+     * Scope a query to only include active categories.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 
     /**

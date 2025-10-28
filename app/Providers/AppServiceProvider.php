@@ -12,6 +12,7 @@ use App\Repositories\Contracts\BranchRepositoryInterface;
 use App\Repositories\Contracts\ChatRepositoryInterface;
 use App\Repositories\Contracts\ContactRepositoryInterface;
 use App\Repositories\Contracts\DemoRepositoryInterface;
+use App\Repositories\Contracts\OtpRepositoryInterface;
 use App\Repositories\Contracts\PostRepositoryInterface;
 use App\Repositories\Contracts\PromotionRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
@@ -26,6 +27,7 @@ use App\Repositories\Eloquent\BranchRepository;
 use App\Repositories\Eloquent\ChatRepository;
 use App\Repositories\Eloquent\ContactRepository;
 use App\Repositories\Eloquent\DemoRepository as EloquentDemoRepository;
+use App\Repositories\Eloquent\OtpRepository;
 use App\Repositories\Eloquent\PostRepository;
 use App\Repositories\Eloquent\PromotionRepository;
 use App\Repositories\Eloquent\ReviewRepository;
@@ -75,6 +77,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ContactRepositoryInterface::class, ContactRepository::class);
         $this->app->bind(ChatRepositoryInterface::class, ChatRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(OtpRepositoryInterface::class, OtpRepository::class);
         
         // Service bindings
         $this->app->bind(AuthServiceInterface::class, AuthService::class);

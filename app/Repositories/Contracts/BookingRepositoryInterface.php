@@ -48,5 +48,10 @@ interface BookingRepositoryInterface extends BaseRepositoryInterface
      * Get booking statistics.
      */
     public function getStats(array $filters): array;
+
+    /**
+     * Get guest bookings by email.
+     */
+    public function getGuestBookingsByEmail(string $email, int $perPage = 15): LengthAwarePaginator;
 }
 

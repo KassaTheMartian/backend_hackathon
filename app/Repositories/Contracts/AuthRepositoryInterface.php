@@ -13,9 +13,19 @@ interface AuthRepositoryInterface
     public function findByEmail(string $email): ?User;
 
     /**
+     * Find user by ID
+     */
+    public function findById(int $userId): ?User;
+
+    /**
      * Create a new user
      */
     public function create(array $attributes): User;
+
+    /**
+     * Update user by ID
+     */
+    public function update(int $userId, array $attributes): bool;
 
     /**
      * Create a new token for user

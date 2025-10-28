@@ -123,7 +123,7 @@ class PostController extends Controller
      */
     public function categories(): JsonResponse
     {
-        $items = PostCategory::query()->where('is_active', true)->orderBy('name')->get(['id','name','slug']);
+        $items = PostCategory::query()->active()->orderBy('name')->get(['id','name','slug']);
         return $this->ok($items, 'Post categories retrieved successfully');
     }
 
