@@ -4,7 +4,9 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Staff;
 use App\Repositories\Contracts\StaffRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 /**
  * Class StaffRepository
@@ -22,13 +24,21 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
     }
 
     /**
+     * Whitelist relations for eager loading via include param.
+     */
+    protected function allowedIncludes(): array
+    {
+        return ['user', 'branch', 'services'];
+    }
+
+    /**
      * Get all active staff members.
      *
      * @return Collection
      */
     public function getActive(): Collection
     {
-        return $this->model->active()->get();
+        return $this->model->with('user')->active()->get();
     }
 
     /**
@@ -39,7 +49,7 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
      */
     public function getForBranch(int $branchId): Collection
     {
-        return $this->model->forBranch($branchId)->active()->get();
+        return $this->model->with('user')->forBranch($branchId)->active()->get();
     }
 
     /**
@@ -50,7 +60,76 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
      */
     public function getForService(int $serviceId): Collection
     {
-        return $this->model->forService($serviceId)->active()->get();
+        return $this->model->with('user')->forService($serviceId)->active()->get();
+    }
+
+    public function paginateWithRequest(Request $request, array $sortable = [], array $filterable = []): LengthAwarePaginator
+    {
+        $query = $this->model->newQuery()->with('user');
+
+        $includes = $this->resolveIncludes($request);
+        if (!empty($includes)) {
+            $query->with($includes);
+        }
+
+        foreach ($filterable as $field) {
+            if ($request->filled($field)) {
+                $value = $request->input($field);
+                $query->where($field, 'like', "%{$value}%");
+            }
+        }
+
+        foreach ($request->all() as $key => $value) {
+            if (str_starts_with($key, 'is_') && $value !== null) {
+                $query->where($key, filter_var($value, FILTER_VALIDATE_BOOL));
+            }
+        }
+
+        $sort = $request->input('sort');
+        $direction = strtolower($request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        if ($sort && in_array($sort, $sortable, true)) {
+            $query->orderBy($sort, $direction);
+        } else {
+            $query->orderByDesc('id');
+        }
+
+        $perPage = (int) $request->input('per_page', 15);
+        return $query->paginate($perPage)->appends($request->query());
+    }
+
+    public function paginateForBranch(Request $request, int $branchId, array $sortable = [], array $filterable = []): LengthAwarePaginator
+    {
+        $requestClone = Request::createFrom($request);
+        $query = $this->model->newQuery()->with('user')->forBranch($branchId);
+
+        $includes = $this->resolveIncludes($requestClone);
+        if (!empty($includes)) {
+            $query->with($includes);
+        }
+
+        foreach ($filterable as $field) {
+            if ($requestClone->filled($field)) {
+                $value = $requestClone->input($field);
+                $query->where($field, 'like', "%{$value}%");
+            }
+        }
+
+        foreach ($requestClone->all() as $key => $value) {
+            if (str_starts_with($key, 'is_') && $value !== null) {
+                $query->where($key, filter_var($value, FILTER_VALIDATE_BOOL));
+            }
+        }
+
+        $sort = $requestClone->input('sort');
+        $direction = strtolower($requestClone->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+        if ($sort && in_array($sort, $sortable, true)) {
+            $query->orderBy($sort, $direction);
+        } else {
+            $query->orderByDesc('id');
+        }
+
+        $perPage = (int) $requestClone->input('per_page', 15);
+        return $query->paginate($perPage)->appends($requestClone->query());
     }
 
     /**
@@ -78,6 +157,17 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
     }
 
     /**
+     * Get staff member by ID with user relationship.
+     *
+     * @param int $id
+     * @return Staff|null
+     */
+    public function getById(int $id): ?Staff
+    {
+        return $this->model->with('user')->find($id);
+    }
+
+    /**
      * Update staff rating.
      *
      * @param Staff $staff
@@ -100,6 +190,7 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
     public function getAvailableForBooking(int $branchId, int $serviceId, string $date, string $time): Collection
     {
         return $this->model
+            ->with('user')
             ->forBranch($branchId)
             ->forService($serviceId)
             ->active()

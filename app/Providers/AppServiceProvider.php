@@ -46,6 +46,7 @@ use App\Services\Contracts\PostServiceInterface;
 use App\Services\Contracts\ProfileServiceInterface;
 use App\Services\Contracts\ReviewServiceInterface;
 use App\Services\Contracts\ServiceServiceInterface;
+use App\Services\Contracts\StaffServiceInterface;
 
 use App\Services\AuthService;
 use App\Services\BookingService;
@@ -57,6 +58,7 @@ use App\Services\PostService;
 use App\Services\ProfileService;
 use App\Services\ReviewService;
 use App\Services\ServiceService;
+use App\Services\StaffService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -86,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DemoServiceInterface::class, DemoService::class);
         $this->app->bind(BookingServiceInterface::class, BookingService::class);
         $this->app->bind(ServiceServiceInterface::class, ServiceService::class);
+        $this->app->bind(StaffServiceInterface::class, StaffService::class);
         $this->app->bind(BranchServiceInterface::class, BranchService::class);
         $this->app->bind(ReviewServiceInterface::class, ReviewService::class);
         $this->app->bind(PostServiceInterface::class, PostService::class);

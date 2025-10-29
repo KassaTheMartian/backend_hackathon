@@ -15,13 +15,9 @@ class Staff extends Model
     protected $fillable = [
         'user_id',
         'branch_id',
-        'name',
-        'email',
-        'phone',
         'position',
         'specialization',
         'bio',
-        'avatar',
         'years_of_experience',
         'certifications',
         'rating',
@@ -114,5 +110,37 @@ class Staff extends Model
         $this->total_reviews = $reviews->count();
         $this->rating = $reviews->avg('rating') ?? 0;
         $this->save();
+    }
+
+    /**
+     * Accessor for name - forwards to user relationship
+     */
+    public function getNameAttribute(): ?string
+    {
+        return $this->user?->name;
+    }
+
+    /**
+     * Accessor for email - forwards to user relationship
+     */
+    public function getEmailAttribute(): ?string
+    {
+        return $this->user?->email;
+    }
+
+    /**
+     * Accessor for phone - forwards to user relationship
+     */
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->user?->phone;
+    }
+
+    /**
+     * Accessor for avatar - forwards to user relationship
+     */
+    public function getAvatarAttribute(): ?string
+    {
+        return $this->user?->avatar;
     }
 }

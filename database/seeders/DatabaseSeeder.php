@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,        // Services
             BranchSeeder::class,         // Branches
             StaffSeeder::class,          // Staff Members
+            StaffServiceSeeder::class,   // Staff-Service assignments
             BookingSeeder::class,        // Bookings
             ReviewSeeder::class,         // Reviews (phải sau BookingSeeder)
             PostSeeder::class,           // Posts (Blog/News)

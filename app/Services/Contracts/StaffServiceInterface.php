@@ -3,7 +3,9 @@
 namespace App\Services\Contracts;
 
 use App\Models\Staff;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 interface StaffServiceInterface
 {
@@ -15,12 +17,22 @@ interface StaffServiceInterface
     public function getActiveStaff(): Collection;
 
     /**
+     * Paginated list of staff.
+     */
+    public function list(Request $request): LengthAwarePaginator;
+
+    /**
      * Get staff for branch.
      *
      * @param int $branchId The branch ID.
      * @return Collection
      */
     public function getStaffForBranch(int $branchId): Collection;
+
+    /**
+     * Paginated list of staff for a branch.
+     */
+    public function listForBranch(Request $request, int $branchId): LengthAwarePaginator;
 
     /**
      * Get staff for service.

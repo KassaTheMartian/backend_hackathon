@@ -24,9 +24,6 @@ class StaffFactory extends Factory
         return [
             'user_id' => User::factory(),
             'branch_id' => Branch::factory(),
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->phoneNumber(),
             'position' => $this->faker->randomElement(['Senior Therapist', 'Junior Therapist', 'Manager', 'Receptionist']),
             'specialization' => $this->faker->randomElements([
                 'Facial Treatment',
@@ -39,7 +36,6 @@ class StaffFactory extends Factory
                 'vi' => $this->faker->paragraph(),
                 'en' => $this->faker->paragraph(),
             ],
-            'avatar' => $this->faker->imageUrl(400, 400),
             'years_of_experience' => $this->faker->numberBetween(1, 20),
             'certifications' => [
                 $this->faker->word() . ' Certification',

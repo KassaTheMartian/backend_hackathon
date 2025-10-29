@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\PostController as V1PostController;
 use App\Http\Controllers\Api\V1\ContactController as V1ContactController;
 use App\Http\Controllers\Api\V1\ProfileController as V1ProfileController;
 use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
+use App\Http\Controllers\Api\V1\StaffController as V1StaffController;
 
 // Apply locale + rate limiting middleware to all API routes
 Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->group(function () {
@@ -41,6 +42,8 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::get('/branches', action: [V1BranchController::class, 'index']);
         Route::get('/branches/{id}', action: [V1BranchController::class, 'show']);
         Route::get('/branches/{id}/available-slots', action: [V1BranchController::class, 'availableSlots']);
+        Route::get('/staff', action: [V1StaffController::class, 'index']);
+        Route::get('/branches/{branch}/staff', action: [V1StaffController::class, 'byBranch']);
 
         Route::get('/reviews', action: [V1ReviewController::class, 'index']);
         Route::get('/reviews/{id}', action: [V1ReviewController::class, 'show']);

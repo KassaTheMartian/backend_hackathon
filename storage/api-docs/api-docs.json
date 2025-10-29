@@ -2792,6 +2792,160 @@
                     }
                 }
             }
+        },
+        "/api/v1/staff": {
+            "get": {
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "List staff (public)",
+                "operationId": "49eec1fde10366bcb2415cd52bf5c702",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sortable fields: id,rating,years_of_experience",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "asc|desc",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "include",
+                        "in": "query",
+                        "description": "Comma-separated relations: user,branch,services",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "position",
+                        "in": "query",
+                        "description": "Filter by position (LIKE)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/branches/{branch}/staff": {
+            "get": {
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "List staff by branch (public)",
+                "operationId": "554bf0c39bef172bb8ab8c510a84f993",
+                "parameters": [
+                    {
+                        "name": "branch",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sortable fields: id,rating,years_of_experience",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "asc|desc",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "include",
+                        "in": "query",
+                        "description": "Comma-separated relations: user,branch,services",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "position",
+                        "in": "query",
+                        "description": "Filter by position (LIKE)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -3021,6 +3175,23 @@
                 }
             }
         },
+        "parameters": {
+            "AcceptLanguage": {
+                "name": "Accept-Language",
+                "in": "header",
+                "description": "Preferred language for localized fields (vi,en,ja,zh)",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "vi",
+                        "en",
+                        "ja",
+                        "zh"
+                    ]
+                }
+            }
+        },
         "securitySchemes": {
             "sanctum": {
                 "type": "apiKey",
@@ -3037,43 +3208,47 @@
         },
         {
             "name": "Auth",
-            "description": "Auth"
+            "description": "Authentication and authorization"
         },
         {
             "name": "Bookings",
-            "description": "Bookings"
+            "description": "Booking management"
         },
         {
             "name": "Branches",
-            "description": "Branches"
+            "description": "Branch management"
         },
         {
             "name": "Chatbot",
-            "description": "Chatbot"
+            "description": "Chatbot interactions"
         },
         {
             "name": "Contacts",
-            "description": "Contacts"
+            "description": "Contact management"
         },
         {
             "name": "Payments",
-            "description": "Payments"
+            "description": "Payment processing"
         },
         {
             "name": "Posts",
-            "description": "Posts"
+            "description": "Post management"
         },
         {
             "name": "Profile",
-            "description": "Profile"
+            "description": "User profile management"
         },
         {
             "name": "Reviews",
-            "description": "Reviews"
+            "description": "Review management"
         },
         {
             "name": "Services",
-            "description": "Services"
+            "description": "Service management"
+        },
+        {
+            "name": "Staff",
+            "description": "Staff directory and profiles"
         }
     ]
 }

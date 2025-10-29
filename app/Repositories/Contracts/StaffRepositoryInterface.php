@@ -3,7 +3,9 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Staff;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 interface StaffRepositoryInterface extends BaseRepositoryInterface
 {
@@ -29,6 +31,16 @@ interface StaffRepositoryInterface extends BaseRepositoryInterface
      * @return Collection
      */
     public function getForService(int $serviceId): Collection;
+
+    /**
+     * Paginate staff with request filters.
+     */
+    public function paginateWithRequest(Request $request, array $sortable = [], array $filterable = []): LengthAwarePaginator;
+
+    /**
+     * Paginate staff by branch with request filters.
+     */
+    public function paginateForBranch(Request $request, int $branchId, array $sortable = [], array $filterable = []): LengthAwarePaginator;
 
     /**
      * Assign services to staff member.

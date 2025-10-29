@@ -19,6 +19,17 @@ namespace App;
  * @OA\Tag(name="Demos", description="Demo resources")
  * @OA\Tag(name="Users", description="User resources")
  * @OA\Tag(name="Health", description="Health checks and diagnostics")
+ * @OA\Tag(name="Auth", description="Authentication and authorization")
+ * @OA\Tag(name="Bookings", description="Booking management")
+ * @OA\Tag(name="Branches", description="Branch management")
+ * @OA\Tag(name="Chatbot", description="Chatbot interactions")
+ * @OA\Tag(name="Contacts", description="Contact management")
+ * @OA\Tag(name="Payments", description="Payment processing")
+ * @OA\Tag(name="Posts", description="Post management")
+ * @OA\Tag(name="Profile", description="User profile management")
+ * @OA\Tag(name="Reviews", description="Review management")
+ * @OA\Tag(name="Services", description="Service management")
+ * @OA\Tag(name="Staff", description="Staff directory and profiles")
  *
  * @OA\SecurityScheme(
  *   securityScheme="sanctum",
@@ -26,6 +37,15 @@ namespace App;
  *   in="header",
  *   name="Authorization",
  *   description="Send as: Bearer <token>"
+ * )
+ *
+ * @OA\Parameter(
+ *   parameter="AcceptLanguage",
+ *   name="Accept-Language",
+ *   in="header",
+ *   required=false,
+ *   description="Preferred language for localized fields (vi,en,ja,zh)",
+ *   @OA\Schema(type="string", enum={"vi","en","ja","zh"})
  * )
  *
  * @OA\Schema(

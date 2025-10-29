@@ -82,6 +82,7 @@ class BranchRepository extends BaseRepository implements BranchRepositoryInterfa
         return $this->model
             ->find($branchId)
             ->staff()
+            ->with('user')
             ->active()
             ->whereHas('services', function ($query) use ($serviceId) {
                 $query->where('services.id', $serviceId);
