@@ -53,7 +53,7 @@ class PaymentService implements PaymentServiceInterface
             'vnp_Amount' => $amount * 100,
             'vnp_CurrCode' => 'VND',
             'vnp_TxnRef' => $txnRef,
-            'vnp_OrderInfo' => 'Thanh toan don hang ' . $txnRef,
+            'vnp_OrderInfo' => __('payments.order_info', ['txn_ref' => $txnRef]),
             'vnp_OrderType' => 'other',
             'vnp_Locale' => $language ?: 'vi',
             'vnp_ReturnUrl' => config('vnpay.return_url'),
@@ -104,21 +104,21 @@ class PaymentService implements PaymentServiceInterface
         unset($checkParams['vnp_SecureHash'], $checkParams['vnp_SecureHashType']);
         $computed = $this->vnpHash($checkParams);
         if (strtolower($secureHash) !== strtolower($computed)) {
-            return ['success' => false, 'message' => 'Invalid signature'];
+            return ['success' => false, 'message' => __('payments.invalid_signature')];
         }
 
         $txnRef = $params['vnp_TxnRef'];
         $payment = Payment::where('transaction_id', $txnRef)->first();
         if (!$payment) {
-            return ['success' => false, 'message' => 'Transaction not found'];
+            return ['success' => false, 'message' => __('payments.transaction_not_found')];
         }
 
         // TMN and amount checks
         if (($params['vnp_TmnCode'] ?? null) !== config('vnpay.tmn_code')) {
-            return ['success' => false, 'message' => 'Invalid merchant'];
+            return ['success' => false, 'message' => __('payments.invalid_merchant')];
         }
         if ((int)($params['vnp_Amount'] ?? 0) !== ((int)$payment->amount * 100)) {
-            return ['success' => false, 'message' => 'Invalid amount'];
+            return ['success' => false, 'message' => __('payments.invalid_amount')];
         }
 
         // Idempotency
@@ -151,31 +151,31 @@ class PaymentService implements PaymentServiceInterface
         unset($checkParams['vnp_SecureHash'], $checkParams['vnp_SecureHashType']);
         $computed = $this->vnpHash($checkParams);
         if (strtolower($secureHash) !== strtolower($computed)) {
-            return ['RspCode' => '97', 'Message' => 'Invalid Checksum'];
+            return ['RspCode' => '97', 'Message' => __('payments.invalid_checksum')];
         }
 
         $txnRef = $params['vnp_TxnRef'];
         $payment = Payment::where('transaction_id', $txnRef)->first();
         if (!$payment) {
-            return ['RspCode' => '01', 'Message' => 'Order not found'];
+            return ['RspCode' => '01', 'Message' => __('payments.order_not_found')];
         }
 
         if (($params['vnp_TmnCode'] ?? null) !== config('vnpay.tmn_code')) {
-            return ['RspCode' => '03', 'Message' => 'Invalid merchant'];
+            return ['RspCode' => '03', 'Message' => __('payments.invalid_merchant')];
         }
         if ((int)($params['vnp_Amount'] ?? 0) !== ((int)$payment->amount * 100)) {
-            return ['RspCode' => '04', 'Message' => 'Invalid amount'];
+            return ['RspCode' => '04', 'Message' => __('payments.invalid_amount')];
         }
 
         // Idempotency
         if (in_array($payment->status, ['completed', 'refunded'])) {
-            return ['RspCode' => '00', 'Message' => 'Confirm Success'];
+            return ['RspCode' => '00', 'Message' => __('payments.confirm_success')];
         }
 
         $status = ($params['vnp_ResponseCode'] ?? null) === '00' ? 'completed' : 'failed';
         $payment->update(['status' => $status]);
 
-        return ['RspCode' => '00', 'Message' => 'Confirm Success'];
+        return ['RspCode' => '00', 'Message' => __('payments.confirm_success')];
     }
 
     public function vnpayRefund(string $transactionId, int $amount, string $reason, ?string $guestEmail, ?string $guestPhone): array
@@ -186,7 +186,7 @@ class PaymentService implements PaymentServiceInterface
         return [
             'success' => true,
             'payment' => $payment,
-            'gateway_response' => ['vnp_ResponseCode' => '00', 'vnp_ResponseMessage' => 'Success'],
+            'gateway_response' => ['vnp_ResponseCode' => '00', 'vnp_ResponseMessage' => __('payments.success')],
         ];
     }
 
@@ -198,7 +198,7 @@ class PaymentService implements PaymentServiceInterface
             'payment' => $payment,
             'gateway_response' => [
                 'vnp_ResponseCode' => $payment->status === 'completed' ? '00' : '02',
-                'vnp_ResponseMessage' => $payment->status === 'completed' ? 'Success' : 'Pending/Failed',
+                'vnp_ResponseMessage' => $payment->status === 'completed' ? __('payments.success') : __('payments.pending_failed'),
                 'vnp_TransactionStatus' => $payment->status === 'completed' ? '00' : '01',
             ],
         ];

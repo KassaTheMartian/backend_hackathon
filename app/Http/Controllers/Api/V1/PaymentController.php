@@ -55,7 +55,7 @@ class PaymentController extends Controller
         $items = $this->service->list($request)
             ->through(fn ($model) => PaymentResource::make($model));
 
-        return $this->paginated($items, 'Payments retrieved successfully');
+        return $this->paginated($items, __('payments.list_retrieved'));
     }
 
     /**
@@ -90,7 +90,7 @@ class PaymentController extends Controller
             $request->input('guest_email'),
             $request->input('guest_phone'),
         );
-        return $this->ok($data, 'Payment URL created successfully');
+        return $this->ok($data, __('payments.url_created'));
     }
 
     /**
@@ -104,7 +104,7 @@ class PaymentController extends Controller
     public function vnpayReturn(VnpayReturnRequest $request): JsonResponse
     {
         $result = $this->service->vnpayReturn($request->all());
-        return $this->ok($result, $result['success'] ? 'Payment processed successfully' : 'Payment failed');
+        return $this->ok($result, $result['success'] ? __('payments.processed_success') : __('payments.processed_failed'));
     }
 
     /**
@@ -138,7 +138,7 @@ class PaymentController extends Controller
             $request->input('guest_email'),
             $request->input('guest_phone'),
         );
-        return $this->ok($result, 'Refund processed successfully');
+        return $this->ok($result, __('payments.refund_success'));
     }
 
     /**
@@ -156,6 +156,6 @@ class PaymentController extends Controller
             $request->input('guest_email'),
             $request->input('guest_phone'),
         );
-        return $this->ok($result, 'Transaction query successful');
+        return $this->ok($result, __('payments.query_success'));
     }
 }

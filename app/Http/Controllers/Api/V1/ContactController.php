@@ -49,6 +49,6 @@ class ContactController extends Controller
     public function store(StoreContactRequest $request): JsonResponse
     {
         $submission = $this->service->createSubmission($request->validated());
-        return $this->created(ContactResource::make($submission), 'Thank you for contacting us. We will respond soon.');
+        return $this->created(ContactResource::make($submission), __('contacts.submission_created'));
     }
 }

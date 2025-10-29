@@ -44,7 +44,7 @@ class ReviewController extends Controller
     public function index(Request $request): JsonResponse
     {
         $items = $this->service->list($request)->through(fn ($model) => ReviewResource::make($model));
-        return $this->paginated($items, 'Reviews retrieved successfully');
+        return $this->paginated($items, __('reviews.list_retrieved'));
     }
 
     /**
@@ -79,7 +79,7 @@ class ReviewController extends Controller
             $request->user()->id
         );
         
-        return $this->created(ReviewResource::make($review), 'Review submitted successfully. Waiting for approval.');
+        return $this->created(ReviewResource::make($review), __('reviews.submitted_pending'));
     }
 
     /**
@@ -101,10 +101,10 @@ class ReviewController extends Controller
     {
         $review = $this->service->find($id);
         if (!$review) {
-            $this->notFound('Review');
+            $this->notFound(__('reviews.resource_review'));
         }
         
-        return $this->ok(ReviewResource::make($review), 'Review retrieved successfully');
+        return $this->ok(ReviewResource::make($review), __('reviews.retrieved'));
     }
 
     /**
@@ -120,11 +120,11 @@ class ReviewController extends Controller
     public function pending(Request $request): JsonResponse
     {
         if (!$request->user() || !$request->user()->isAdmin()) {
-            return $this->forbidden('Admin only');
+            return $this->forbidden(__('reviews.admin_only'));
         }
         $items = $this->service->pending($request)
             ->through(fn ($model) => ReviewResource::make($model));
-        return $this->paginated($items, 'Pending reviews retrieved successfully');
+        return $this->paginated($items, __('reviews.pending_list_retrieved'));
     }
 
     /**
@@ -142,14 +142,14 @@ class ReviewController extends Controller
     public function approve(Request $request, int $id): JsonResponse
     {
         if (!$request->user() || !$request->user()->isAdmin()) {
-            return $this->forbidden('Admin only');
+            return $this->forbidden(__('reviews.admin_only'));
         }
         $review = $this->service->find($id);
         if (!$review) {
-            $this->notFound('Review');
+            $this->notFound(__('reviews.resource_review'));
         }
         $approved = $this->service->approveReview($review);
-        return $this->ok(ReviewResource::make($approved), 'Review approved');
+        return $this->ok(ReviewResource::make($approved), __('reviews.approved'));
     }
 
     /**
@@ -171,15 +171,15 @@ class ReviewController extends Controller
     public function reject(Request $request, int $id): JsonResponse
     {
         if (!$request->user() || !$request->user()->isAdmin()) {
-            return $this->forbidden('Admin only');
+            return $this->forbidden(__('reviews.admin_only'));
         }
         $review = $this->service->find($id);
         if (!$review) {
-            $this->notFound('Review');
+            $this->notFound(__('reviews.resource_review'));
         }
         $reason = (string)$request->input('reason', '');
         $rejected = $this->service->rejectReview($review, $reason);
-        return $this->ok(ReviewResource::make($rejected), 'Review rejected');
+        return $this->ok(ReviewResource::make($rejected), __('reviews.rejected'));
     }
 
     /**
@@ -204,19 +204,19 @@ class ReviewController extends Controller
     public function respond(Request $request, int $id): JsonResponse
     {
         if (!$request->user() || !$request->user()->isAdmin()) {
-            return $this->forbidden('Admin only');
+            return $this->forbidden(__('reviews.admin_only'));
         }
         $review = $this->service->find($id);
         if (!$review) {
-            $this->notFound('Review');
+            $this->notFound(__('reviews.resource_review'));
         }
         $message = trim((string)$request->input('admin_response', ''));
         if ($message === '') {
             return \App\Http\Responses\ApiResponse::validationError([
-                'admin_response' => ['admin_response is required']
+                'admin_response' => [__('reviews.admin_response_required')]
             ]);
         }
         $updated = $this->service->respondToReview($review, $message);
-        return $this->ok(ReviewResource::make($updated), 'Response saved');
+        return $this->ok(ReviewResource::make($updated), __('reviews.response_saved'));
     }
 }

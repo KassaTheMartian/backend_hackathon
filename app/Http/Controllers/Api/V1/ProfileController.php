@@ -44,11 +44,11 @@ class ProfileController extends Controller
         $user = $this->service->getProfile($request->user()->id);
         
         if (!$user) {
-            $this->notFound('User');
+            $this->notFound(__('profile.resource_user'));
         }
         
         
-        return $this->ok(UserResource::make($user), 'Profile retrieved successfully');
+        return $this->ok(UserResource::make($user), __('profile.profile_retrieved'));
     }
 
     /**
@@ -84,11 +84,11 @@ class ProfileController extends Controller
         $user = $this->service->updateProfile($request->user()->id, $request->validated());
         
         if (!$user) {
-            $this->notFound('User');
+            $this->notFound(__('profile.resource_user'));
         }
         
         
-        return $this->ok(UserResource::make($user), 'Profile updated successfully');
+        return $this->ok(UserResource::make($user), __('profile.profile_updated'));
     }
 
     /**
@@ -120,11 +120,11 @@ class ProfileController extends Controller
         $user = $this->service->updateAvatar($request->user()->id, $request->file('avatar'));
         
         if (!$user) {
-            $this->notFound('User');
+            $this->notFound(__('profile.resource_user'));
         }
         
         
-        return $this->ok(UserResource::make($user), 'Avatar updated successfully');
+        return $this->ok(UserResource::make($user), __('profile.avatar_updated'));
     }
 
     /**
@@ -146,11 +146,11 @@ class ProfileController extends Controller
         $user = $this->service->deleteAvatar($request->user()->id);
         
         if (!$user) {
-            $this->notFound('User');
+            $this->notFound(__('profile.resource_user'));
         }
         
         
-        return $this->ok(UserResource::make($user), 'Avatar deleted successfully');
+        return $this->ok(UserResource::make($user), __('profile.avatar_deleted'));
     }
 
     /**
@@ -188,11 +188,11 @@ class ProfileController extends Controller
         
         if (!$success) {
             return \App\Http\Responses\ApiResponse::validationError([
-                'current_password' => ['Current password is incorrect']
+                'current_password' => [__('profile.current_password_incorrect')]
             ]);
         }
         
-        return $this->ok(null, 'Password changed successfully');
+        return $this->ok(null, __('profile.password_changed'));
     }
 
     /**
@@ -222,11 +222,11 @@ class ProfileController extends Controller
         $user = $this->service->updateLanguagePreference($request->user()->id, $request->language);
         
         if (!$user) {
-            $this->notFound('User');
+            $this->notFound(__('profile.resource_user'));
         }
         
         
-        return $this->ok(UserResource::make($user), 'Language preference updated successfully');
+        return $this->ok(UserResource::make($user), __('profile.language_updated'));
     }
 
     /**
@@ -247,7 +247,7 @@ class ProfileController extends Controller
     {
         $stats = $this->service->getUserStats($request->user()->id);
         
-        return $this->ok($stats, 'User statistics retrieved successfully');
+        return $this->ok($stats, __('profile.stats_retrieved'));
     }
 
     /**
@@ -269,11 +269,11 @@ class ProfileController extends Controller
         $user = $this->service->deactivateAccount($request->user()->id);
         
         if (!$user) {
-            $this->notFound('User');
+            $this->notFound(__('profile.resource_user'));
         }
         
         
-        return $this->ok(UserResource::make($user), 'Account deactivated successfully');
+        return $this->ok(UserResource::make($user), __('profile.account_deactivated'));
     }
 
     /**
@@ -295,11 +295,11 @@ class ProfileController extends Controller
         $user = $this->service->reactivateAccount($request->user()->id);
         
         if (!$user) {
-            $this->notFound('User');
+            $this->notFound(__('profile.resource_user'));
         }
         
         
-        return $this->ok(UserResource::make($user), 'Account reactivated successfully');
+        return $this->ok(UserResource::make($user), __('profile.account_reactivated'));
     }
 
     /**
@@ -320,6 +320,6 @@ class ProfileController extends Controller
     {
         $promotions = $this->service->getUserPromotions($request->user()->id);
         
-        return $this->ok($promotions, 'Promotions retrieved successfully');
+        return $this->ok($promotions, __('profile.promotions_retrieved'));
     }
 }

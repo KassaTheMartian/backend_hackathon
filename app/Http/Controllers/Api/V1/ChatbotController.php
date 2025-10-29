@@ -42,7 +42,7 @@ class ChatbotController extends Controller
         $sessions = $this->service->getUserSessions($request->user()->id);
         $items = $sessions->map(fn ($model) => ChatSessionResource::make($model));
         
-        return $this->ok($items, 'Chat sessions retrieved successfully');
+        return $this->ok($items, __('chatbot.sessions_retrieved'));
     }
 
     /**
@@ -69,7 +69,7 @@ class ChatbotController extends Controller
     public function createSession(CreateSessionRequest $request): JsonResponse
     {
         $session = $this->service->createSession($request->user()->id, $request->title);
-        return $this->created(ChatSessionResource::make($session), 'Chat session created successfully');
+        return $this->created(ChatSessionResource::make($session), __('chatbot.session_created'));
     }
 
     /**
@@ -92,11 +92,11 @@ class ChatbotController extends Controller
     {
         $session = $this->service->getSessionById($id);
         if (!$session) {
-            $this->notFound('Chat session');
+            $this->notFound(__('chatbot.resource_chat_session'));
         }
         
         
-        return $this->ok(ChatSessionResource::make($session), 'Chat session retrieved successfully');
+        return $this->ok(ChatSessionResource::make($session), __('chatbot.session_retrieved'));
     }
 
     /**
@@ -119,7 +119,7 @@ class ChatbotController extends Controller
     {
         $session = $this->service->getSessionById($id);
         if (!$session) {
-            $this->notFound('Chat session');
+            $this->notFound(__('chatbot.resource_chat_session'));
         }
         
         
@@ -134,7 +134,7 @@ class ChatbotController extends Controller
             ];
         });
         
-        return $this->ok($items, 'Chat messages retrieved successfully');
+        return $this->ok($items, __('chatbot.messages_retrieved'));
     }
 
     /**
@@ -166,7 +166,7 @@ class ChatbotController extends Controller
     {
         $session = $this->service->getSessionById($id);
         if (!$session) {
-            $this->notFound('Chat session');
+            $this->notFound(__('chatbot.resource_chat_session'));
         }
         
         
@@ -180,7 +180,7 @@ class ChatbotController extends Controller
             'updated_at' => $response->updated_at,
         ];
         
-        return $this->ok($messageData, 'Message sent successfully');
+        return $this->ok($messageData, __('chatbot.message_sent'));
     }
 
     /**
@@ -203,12 +203,12 @@ class ChatbotController extends Controller
     {
         $session = $this->service->getSessionById($id);
         if (!$session) {
-            $this->notFound('Chat session');
+            $this->notFound(__('chatbot.resource_chat_session'));
         }
         
         
         $deleted = $this->service->deleteSession($id);
-        return $this->noContent('Chat session deleted successfully');
+        return $this->noContent(__('chatbot.session_deleted'));
     }
 
     /**
@@ -231,11 +231,11 @@ class ChatbotController extends Controller
     {
         $session = $this->service->getSessionById($id);
         if (!$session) {
-            $this->notFound('Chat session');
+            $this->notFound(__('chatbot.resource_chat_session'));
         }
         
         
         $cleared = $this->service->clearSessionMessages($id);
-        return $this->noContent('Chat messages cleared successfully');
+        return $this->noContent(__('chatbot.messages_cleared'));
     }
 }

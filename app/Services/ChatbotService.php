@@ -66,7 +66,7 @@ class ChatbotService implements ChatbotServiceInterface
         $mode = $mode ?: $this->inferMode($userMessage);
 
         if ($mode === 'human') {
-            $response = 'Đã chuyển sang nhân viên hỗ trợ. Vui lòng đợi trong giây lát...';
+            $response = __('chatbot.switched_to_human');
             return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
         }
 
@@ -116,22 +116,22 @@ class ChatbotService implements ChatbotServiceInterface
         $message = strtolower($userMessage);
         
         if (str_contains($message, 'hello') || str_contains($message, 'hi')) {
-            return 'Hello! How can I help you today?';
+            return __('chatbot.greet');
         }
         
         if (str_contains($message, 'booking') || str_contains($message, 'appointment')) {
-            return 'I can help you with booking information. What service are you interested in?';
+            return __('chatbot.intent_booking');
         }
         
         if (str_contains($message, 'price') || str_contains($message, 'cost')) {
-            return 'You can find our service prices on our website. Would you like me to help you with a specific service?';
+            return __('chatbot.intent_price');
         }
         
         if (str_contains($message, 'location') || str_contains($message, 'address')) {
-            return 'We have multiple branches. You can find our locations on our website. Which area are you looking for?';
+            return __('chatbot.intent_location');
         }
         
-        return 'Thank you for your message. Our team will get back to you soon. Is there anything else I can help you with?';
+        return __('chatbot.generic_reply');
     }
 
     private function inferMode(string $message): string
@@ -157,15 +157,15 @@ class ChatbotService implements ChatbotServiceInterface
             $services = $this->suggestServicesLocally($userMessage);
         }
         $payload = json_encode(['services' => $services], JSON_UNESCAPED_UNICODE);
-        return 'Gợi ý dịch vụ phù hợp. Vui lòng chọn để đặt lịch.' . "\n" . 'SUGGEST:' . $payload;
+        return __('chatbot.booking_suggestion_prefix') . "\n" . 'SUGGEST:' . $payload;
     }
 
     private function generateFaqAnswer(string $userMessage): string
     {
         $faqs = [
-            'cách đặt lịch' => 'Bạn có thể đặt lịch qua menu Dịch vụ → Chọn dịch vụ → Chọn chi nhánh → Chọn thời gian.',
-            'huỷ lịch' => 'Bạn có thể huỷ trong mục Lịch hẹn của tôi trước 24h.',
-            'thanh toán' => 'Hỗ trợ VNPay và Stripe. Bạn có thể thanh toán online hoặc tại quầy.',
+            __('chatbot.faq_how_to_book_q') => __('chatbot.faq_how_to_book_a'),
+            __('chatbot.faq_cancel_q') => __('chatbot.faq_cancel_a'),
+            __('chatbot.faq_payment_q') => __('chatbot.faq_payment_a'),
         ];
         $m = mb_strtolower($userMessage);
         foreach ($faqs as $k => $v) {
@@ -173,7 +173,7 @@ class ChatbotService implements ChatbotServiceInterface
                 return $v;
             }
         }
-        return 'Bạn muốn hỏi về đặt lịch, huỷ lịch hay thanh toán?';
+        return __('chatbot.faq_default');
     }
 
     /**

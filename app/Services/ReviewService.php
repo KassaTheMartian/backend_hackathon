@@ -50,9 +50,9 @@ class ReviewService implements ReviewServiceInterface
 		$exists = Review::where('booking_id', $booking->id)
 			->where('user_id', $userId)
 			->exists();
-		if ($exists) {
-			throw new \Exception('You have already reviewed this booking.');
-		}
+        if ($exists) {
+            throw new \Exception(__('reviews.duplicate_review'));
+        }
 
 		// Merge user_id and booking-related fields
 		$data = array_merge($reviewData, [

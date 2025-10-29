@@ -50,7 +50,7 @@ class PostController extends Controller
         $posts = $this->service->getPosts($request->all());
         $items = $posts->through(fn($post) => PostResource::make($post));
         
-        return $this->paginated($items, 'Posts retrieved successfully');
+        return $this->paginated($items, __('posts.list_retrieved'));
     }
 
     /**
@@ -79,13 +79,13 @@ class PostController extends Controller
         }
         
         if (!$post) {
-            $this->notFound('Post');
+            $this->notFound(__('posts.resource_post'));
         }
         
         // Increment view count
         $this->service->incrementViews($post);
         
-        return $this->ok(PostResource::make($post), 'Post retrieved successfully');
+        return $this->ok(PostResource::make($post), __('posts.retrieved'));
     }
 
     /**
@@ -109,7 +109,7 @@ class PostController extends Controller
         
         return $this->ok(
             PostResource::collection($posts),
-            'Featured posts retrieved successfully'
+            __('posts.featured_retrieved')
         );
     }
 
@@ -124,7 +124,7 @@ class PostController extends Controller
     public function categories(): JsonResponse
     {
         $items = PostCategory::query()->active()->orderBy('name')->get(['id','name','slug']);
-        return $this->ok($items, 'Post categories retrieved successfully');
+        return $this->ok($items, __('posts.categories_retrieved'));
     }
 
     /**
@@ -138,6 +138,6 @@ class PostController extends Controller
     public function tags(): JsonResponse
     {
         $items = PostTag::query()->orderBy('name')->get(['id','name','slug']);
-        return $this->ok($items, 'Post tags retrieved successfully');
+        return $this->ok($items, __('posts.tags_retrieved'));
     }
 }
