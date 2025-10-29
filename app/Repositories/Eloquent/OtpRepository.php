@@ -5,6 +5,9 @@ namespace App\Repositories\Eloquent;
 use App\Models\OtpVerification;
 use App\Repositories\Contracts\OtpRepositoryInterface;
 
+/**
+ * Class OtpRepository
+ */
 class OtpRepository implements OtpRepositoryInterface
 {
     /**

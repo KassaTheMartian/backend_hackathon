@@ -9,15 +9,29 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
+/**
+ * Abstract base repository class.
+ */
 abstract class BaseRepository implements BaseRepositoryInterface
 {
+    /** @var Model */
     protected Model $model;
 
+    /**
+     * Create a new repository instance.
+     *
+     * @param Model $model
+     */
     public function __construct(Model $model)
     {
         $this->model = $model;
     }
 
+    /**
+     * Get a new query builder instance.
+     *
+     * @return Builder
+     */
     protected function query(): Builder
     {
         return $this->model->newQuery();
@@ -56,11 +70,25 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return $this->query()->orderByDesc('id')->get();
     }
 
+    /**
+     * Paginate the results.
+     *
+     * @param int $perPage
+     * @return LengthAwarePaginator
+     */
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         return $this->query()->orderByDesc('id')->paginate($perPage);
     }
 
+    /**
+     * Paginate with request filters.
+     *
+     * @param Request $request
+     * @param array $sortable
+     * @param array $filterable
+     * @return LengthAwarePaginator
+     */
     public function paginateWithRequest(Request $request, array $sortable = [], array $filterable = []): LengthAwarePaginator
     {
         $query = $this->query();
@@ -96,21 +124,46 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return $query->paginate($perPage)->appends($request->query());
     }
 
+    /**
+     * Find a model by ID.
+     *
+     * @param int $id
+     * @return Model|null
+     */
     public function find(int $id): ?Model
     {
         return $this->query()->find($id);
     }
 
+    /**
+     * Get a model by ID.
+     *
+     * @param int $id
+     * @return Model|null
+     */
     public function getById(int $id): ?Model
     {
         return $this->find($id);
     }
 
+    /**
+     * Create a new model.
+     *
+     * @param array $attributes
+     * @return Model
+     */
     public function create(array $attributes): Model
     {
         return $this->query()->create($attributes);
     }
 
+    /**
+     * Update a model by ID.
+     *
+     * @param int $id
+     * @param array $attributes
+     * @return Model|null
+     */
     public function update(int $id, array $attributes): ?Model
     {
         $entity = $this->find($id);
@@ -122,6 +175,12 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return $entity;
     }
 
+    /**
+     * Delete a model by ID.
+     *
+     * @param int $id
+     * @return bool
+     */
     public function delete(int $id): bool
     {
         $entity = $this->find($id);

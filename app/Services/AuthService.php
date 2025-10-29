@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Service for handling authentication operations.
+ *
+ * Manages user login, registration, OTP verification, and token management.
+ */
 class AuthService implements AuthServiceInterface
 {
     /**
@@ -112,9 +117,9 @@ class AuthService implements AuthServiceInterface
     }
 
     /**
-     * Get the current authenticated user.
+     * Get current authenticated user.
      *
-     * @return User|null The current authenticated user or null if not authenticated
+     * @return User|null
      */
     public function getCurrentUser(): ?User
     {
@@ -153,6 +158,13 @@ class AuthService implements AuthServiceInterface
 
     // Removed legacy token-based reset methods in favor of OTP-only flow
 
+    /**
+     * Send OTP to email for verification.
+     *
+     * @param string $email The email address.
+     * @param string $purpose The purpose of the OTP.
+     * @return array
+     */
     public function sendEmailOtp(string $email, string $purpose = 'verify_email'): array
     {
         // Business Logic: Generate OTP
@@ -174,6 +186,14 @@ class AuthService implements AuthServiceInterface
         return ['message' => __("auth.otp_sent")];
     }
 
+    /**
+     * Verify OTP and mark email as verified.
+     *
+     * @param string $email The email address.
+     * @param string $otp The OTP code.
+     * @param string $purpose The purpose of the OTP.
+     * @return array
+     */
     public function verifyEmailOtp(string $email, string $otp, string $purpose = 'verify_email'): array
     {
         // Business Logic: Find and validate OTP via repository
@@ -203,6 +223,12 @@ class AuthService implements AuthServiceInterface
         return ['message' => __("auth.email_verified_success")];
     }
 
+    /**
+     * Send OTP for password reset.
+     *
+     * @param string $email The email address.
+     * @return array
+     */
     public function sendPasswordResetOtp(string $email): array
     {
         // Database Operation: Ensure user exists
@@ -215,6 +241,14 @@ class AuthService implements AuthServiceInterface
         return $this->sendEmailOtp($email, 'password_reset');
     }
 
+    /**
+     * Reset password using OTP.
+     *
+     * @param string $email The email address.
+     * @param string $otp The OTP code.
+     * @param string $password The new password.
+     * @return array
+     */
     public function resetPasswordWithOtp(string $email, string $otp, string $password): array
     {
         // Business Logic: Validate OTP via repository
@@ -250,6 +284,12 @@ class AuthService implements AuthServiceInterface
         return ['message' => __("auth.password_reset_success")];
     }
 
+    /**
+     * Send a test email.
+     *
+     * @param string $email The email address.
+     * @return array
+     */
     public function sendTestEmail(string $email): array
     {
         Mail::to($email)->send(new OtpMail('123456', 'verify_email', 10));

@@ -16,6 +16,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * Service for handling booking operations.
+ *
+ * Manages booking creation, updates, cancellations, and availability checks.
+ */
 class BookingService implements BookingServiceInterface
 {
 	/**
@@ -183,12 +188,28 @@ class BookingService implements BookingServiceInterface
 
 	/**
 	 * Check time slot availability.
+	 *
+	 * @param int $branchId The branch ID.
+	 * @param string $date The date.
+	 * @param string $time The time.
+	 * @param int|null $staffId The staff ID.
+	 * @return bool
 	 */
 	public function isTimeSlotAvailable(int $branchId, string $date, string $time, ?int $staffId = null): bool
 	{
 		return $this->bookings->isTimeSlotAvailable($branchId, $date, $time, $staffId);
 	}
 
+	/**
+	 * Get available slots for booking.
+	 *
+	 * @param int $branchId The branch ID.
+	 * @param int $serviceId The service ID.
+	 * @param string $date The date.
+	 * @param int|null $staffId The staff ID.
+	 * @param int $granularity The granularity in minutes.
+	 * @return array
+	 */
 	public function availableSlots(int $branchId, int $serviceId, string $date, ?int $staffId = null, int $granularity = 15): array
 	{
 		// Get service via repository
@@ -213,6 +234,15 @@ class BookingService implements BookingServiceInterface
 		];
 	}
 
+	/**
+	 * Reschedule a booking.
+	 *
+	 * @param int $id The booking ID.
+	 * @param string $bookingDate The new booking date.
+	 * @param string $bookingTime The new booking time.
+	 * @param int|null $staffId The new staff ID.
+	 * @return Model|null
+	 */
 	public function reschedule(int $id, string $bookingDate, string $bookingTime, ?int $staffId = null): ?Model
 	{
 		$booking = $this->bookings->find($id);
@@ -234,7 +264,12 @@ class BookingService implements BookingServiceInterface
 		]);
 	}
 
-	// Send OTP to guest email for booking verification
+	/**
+	 * Send OTP to guest email for booking verification.
+	 *
+	 * @param string $email The guest email.
+	 * @return array
+	 */
 	public function sendGuestBookingOtp(string $email): array
 	{
 		$otp = (string) random_int(100000, 999999);
@@ -253,7 +288,14 @@ class BookingService implements BookingServiceInterface
         return ['message' => __('bookings.otp_sent')];
 	}
 
-	// Get guest bookings by email with OTP verification
+	/**
+	 * Get guest bookings by email after OTP verification.
+	 *
+	 * @param string $email The guest email.
+	 * @param string $otp The OTP code.
+	 * @param int $perPage The number of items per page.
+	 * @return LengthAwarePaginator
+	 */
 	public function guestBookings(string $email, string $otp, int $perPage = 15): LengthAwarePaginator
 	{
 		// Verify OTP via repository

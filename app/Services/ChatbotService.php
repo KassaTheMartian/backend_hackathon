@@ -2,253 +2,320 @@
 
 namespace App\Services;
 
+use App\Repositories\Contracts\BranchRepositoryInterface;
+use App\Repositories\Contracts\ServiceRepositoryInterface;
+use App\Services\Contracts\ChatbotServiceInterface;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
-use App\Models\Service as ServiceModel;
-use App\Repositories\Contracts\ChatRepositoryInterface;
-use App\Services\Contracts\ChatbotServiceInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
+/**
+ * Service for handling chatbot interactions with AI.
+ *
+ * Manages chat sessions, processes messages, and integrates with external AI services.
+ */
 class ChatbotService implements ChatbotServiceInterface
 {
+    /**
+     * Create a new ChatbotService instance.
+     *
+     * @param BranchRepositoryInterface $branchRepository The branch repository
+     * @param ServiceRepositoryInterface $serviceRepository The service repository
+     */
     public function __construct(
-        private ChatRepositoryInterface $chatRepository
-    ) {}
-
-    /**
-     * Get chat sessions for user.
-     */
-    public function getUserSessions(int $userId): Collection
-    {
-        return $this->chatRepository->getUserSessions($userId);
+        private readonly BranchRepositoryInterface $branchRepository,
+        private readonly ServiceRepositoryInterface $serviceRepository
+    ) {
     }
 
     /**
-     * Get session by ID.
+     * Process chat message and generate response.
+     *
+     * @param string $message User's message
+     * @param string $locale Language (vi or en)
+     * @param int|null $userId User ID if authenticated
+     * @return array Response data
+     * @throws \Exception
      */
-    public function getSessionById(int $id): ?ChatSession
-    {
-        return $this->chatRepository->getSessionById($id);
-    }
-
-    /**
-     * Create a new chat session.
-     */
-    public function createSession(int $userId, string $title = null): ChatSession
-    {
-        return $this->chatRepository->createSession($userId, $title);
-    }
-
-    /**
-     * Get messages for session.
-     */
-    public function getSessionMessages(int $sessionId): Collection
-    {
-        return $this->chatRepository->getSessionMessages($sessionId);
-    }
-
-    /**
-     * Send a message.
-     */
-    public function sendMessage(int $sessionId, string $content, string $type = 'user'): ChatMessage
-    {
-        return $this->chatRepository->sendMessage($sessionId, $content, $type);
-    }
-
-    /**
-     * Process bot response.
-     */
-    public function processBotResponse(int $sessionId, string $userMessage, ?string $mode = null): ChatMessage
-    {
-        // Mode routing: booking | faq | human | default
-        $mode = $mode ?: $this->inferMode($userMessage);
-
-        if ($mode === 'human') {
-            $response = __('chatbot.switched_to_human');
-            return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
-        }
-
-        if ($mode === 'booking') {
-            $response = $this->generateBookingSuggestions($userMessage);
-            return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
-        }
-
-        if ($mode === 'faq') {
-            $response = $this->generateFaqAnswer($userMessage);
-            return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
-        }
-
-        $response = $this->generateBotResponse($userMessage);
-        return $this->chatRepository->sendMessage($sessionId, $response, 'bot');
-    }
-
-    /**
-     * Delete a session.
-     */
-    public function deleteSession(int $id): bool
-    {
-        $session = $this->chatRepository->getSessionById($id);
-        if (!$session) {
-            return false;
-        }
-        return $this->chatRepository->deleteSession($session);
-    }
-
-    /**
-     * Clear session messages.
-     */
-    public function clearSessionMessages(int $id): bool
-    {
-        $session = $this->chatRepository->getSessionById($id);
-        if (!$session) {
-            return false;
-        }
-        return $this->chatRepository->clearSessionMessages($session);
-    }
-
-    /**
-     * Generate simple bot response.
-     */
-    private function generateBotResponse(string $userMessage): string
-    {
-        $message = strtolower($userMessage);
-        
-        if (str_contains($message, 'hello') || str_contains($message, 'hi')) {
-            return __('chatbot.greet');
-        }
-        
-        if (str_contains($message, 'booking') || str_contains($message, 'appointment')) {
-            return __('chatbot.intent_booking');
-        }
-        
-        if (str_contains($message, 'price') || str_contains($message, 'cost')) {
-            return __('chatbot.intent_price');
-        }
-        
-        if (str_contains($message, 'location') || str_contains($message, 'address')) {
-            return __('chatbot.intent_location');
-        }
-        
-        return __('chatbot.generic_reply');
-    }
-
-    private function inferMode(string $message): string
-    {
-        $m = strtolower($message);
-        if (str_contains($m, 'nhân viên') || str_contains($m, 'human') || str_contains($m, 'agent')) {
-            return 'human';
-        }
-        if (str_contains($m, 'đặt lịch') || str_contains($m, 'booking') || str_contains($m, 'dịch vụ')) {
-            return 'booking';
-        }
-        if (str_contains($m, 'cách đặt') || str_contains($m, 'hướng dẫn') || str_contains($m, 'faq')) {
-            return 'faq';
-        }
-        return 'default';
-    }
-
-    private function generateBookingSuggestions(string $userMessage): string
-    {
-        // Try Gemini first if configured, otherwise fallback to local search
-        $services = $this->suggestServicesWithGemini($userMessage);
-        if (!$services) {
-            $services = $this->suggestServicesLocally($userMessage);
-        }
-        $payload = json_encode(['services' => $services], JSON_UNESCAPED_UNICODE);
-        return __('chatbot.booking_suggestion_prefix') . "\n" . 'SUGGEST:' . $payload;
-    }
-
-    private function generateFaqAnswer(string $userMessage): string
-    {
-        $faqs = [
-            __('chatbot.faq_how_to_book_q') => __('chatbot.faq_how_to_book_a'),
-            __('chatbot.faq_cancel_q') => __('chatbot.faq_cancel_a'),
-            __('chatbot.faq_payment_q') => __('chatbot.faq_payment_a'),
-        ];
-        $m = mb_strtolower($userMessage);
-        foreach ($faqs as $k => $v) {
-            if (str_contains($m, $k)) {
-                return $v;
-            }
-        }
-        return __('chatbot.faq_default');
-    }
-
-    /**
-     * Call Gemini to get suggestions in fixed JSON schema, validated against local catalog.
-     */
-    private function suggestServicesWithGemini(string $userMessage): ?array
+    public function chat(string $message, string $locale = 'vi', ?int $userId = null, ?string $sessionKey = null): array
     {
         $apiKey = config('services.gemini.key');
+
         if (!$apiKey) {
-            return null;
+            throw new \Exception(__('chatbot.api_key_missing'));
         }
+
+    // Resolve chat session (user or guest with sessionKey)
+    $session = $this->resolveSession($userId, $sessionKey);
+
+    // Get last conversation messages (5 pairs = 10 messages)
+    $lastMessages = $session->messages()->take(10)->get()->reverse()->values();
+
+    // Build conversation history string
+    $conversationHistory = $this->buildConversationContents($lastMessages, $locale);
+
+    // Get context for the chatbot
+    $context = $this->getContext($locale);
+
+        // Prepare system instruction
+        $systemInstruction = $this->getSystemInstruction($locale);
+
+        // Prepare the full prompt (include conversation history to provide memory)
+        $fullPrompt = $systemInstruction . "\n\n";
+        if (!empty($conversationHistory)) {
+            $fullPrompt .= "Conversation history:\n" . $conversationHistory . "\n\n";
+        }
+        $fullPrompt .= $context . "\n\nUser: " . $message;
+
         try {
-            $prompt = 'You are a booking assistant for a beauty clinic. Given the user message, return ONLY a JSON object with this exact shape: {"services":[{"service_id":number,"name":string}]}. Rules: Suggest 1-5 services most relevant; service_id and name must exist in our catalog. User message: "' . $userMessage . '"';
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', [
-                'contents' => [[
-                    'parts' => [['text' => $prompt]],
-                ]],
-            ]);
+            // Call Gemini API
+            $geminiConfig = config('chatbot.gemini');
+            $response = Http::timeout($geminiConfig['timeout'])
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'x-goog-api-key' => $apiKey,
+                ])
+                ->post($geminiConfig['api_url'], [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $fullPrompt]
+                            ]
+                        ]
+                    ],
+                    'generationConfig' => [
+                        'temperature' => $geminiConfig['generation_config']['temperature'],
+                        'topK' => $geminiConfig['generation_config']['top_k'],
+                        'topP' => $geminiConfig['generation_config']['top_p'],
+                        'maxOutputTokens' => $geminiConfig['generation_config']['max_output_tokens'],
+                    ],
+                    'safetySettings' => [
+                        [
+                            'category' => 'HARM_CATEGORY_HARASSMENT',
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                        ],
+                        [
+                            'category' => 'HARM_CATEGORY_HATE_SPEECH',
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                        ],
+                        [
+                            'category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                        ],
+                        [
+                            'category' => 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                        ],
+                    ],
+                ]);
+
             if (!$response->successful()) {
-                return null;
+                Log::error('Gemini API error', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                throw new \Exception(__('chatbot.api_error'));
             }
-            $raw = $response->json();
-            $candidateText = $raw['candidates'][0]['content']['parts'][0]['text'] ?? '';
-            if (!$candidateText) {
-                return null;
+
+            $data = $response->json();
+
+            // Extract response text
+            $responseText = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+            if (empty($responseText)) {
+                throw new \Exception(__('chatbot.no_response'));
             }
-            $jsonStart = strpos($candidateText, '{');
-            $jsonEnd = strrpos($candidateText, '}');
-            if ($jsonStart === false || $jsonEnd === false || $jsonEnd <= $jsonStart) {
-                return null;
+
+            // Persist the user message and assistant reply to DB
+            try {
+                // Save user message
+                ChatMessage::create([
+                    'chat_session_id' => $session->id,
+                    'user_id' => $userId,
+                    'role' => 'user',
+                    'message' => $message,
+                ]);
+
+                // Save assistant message
+                ChatMessage::create([
+                    'chat_session_id' => $session->id,
+                    'user_id' => $userId,
+                    'role' => 'assistant',
+                    'message' => trim($responseText),
+                ]);
+
+                // Update session activity
+                $session->update(['last_activity' => Carbon::now()]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to persist chat messages', ['error' => $e->getMessage()]);
             }
-            $jsonString = substr($candidateText, $jsonStart, $jsonEnd - $jsonStart + 1);
-            $decoded = json_decode($jsonString, true);
-            if (!is_array($decoded) || !isset($decoded['services']) || !is_array($decoded['services'])) {
-                return null;
-            }
-            $validated = [];
-            $ids = collect($decoded['services'])->pluck('service_id')->filter()->unique()->take(5)->values();
-            $existing = ServiceModel::whereIn('id', $ids)->get(['id', 'name'])->keyBy('id');
-            foreach ($decoded['services'] as $svc) {
-                $sid = (int)($svc['service_id'] ?? 0);
-                if ($sid && isset($existing[$sid])) {
-                    $validated[] = [
-                        'service_id' => $sid,
-                        'name' => (string)$existing[$sid]->name,
-                    ];
-                }
-                if (count($validated) >= 5) break;
-            }
-            return $validated ?: null;
-        } catch (\Throwable $e) {
-            return null;
+
+            return [
+                'message' => trim($responseText),
+                'user_id' => $userId,
+                'locale' => $locale,
+                'session_key' => $session->session_key,
+            ];
+
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Gemini API connection error', ['error' => $e->getMessage()]);
+            throw new \Exception(__('chatbot.connection_error'));
+        } catch (\Exception $e) {
+            Log::error('Chatbot error', ['error' => $e->getMessage()]);
+            throw $e;
         }
     }
 
     /**
-     * Fallback: local keyword search on Service model.
+     * Get conversation context for the chatbot.
+     *
+     * @param string $locale Language code (vi, en, etc.)
+     * @return string Context string
      */
-    private function suggestServicesLocally(string $userMessage): array
+    public function getContext(string $locale = 'vi'): string
     {
-        $q = trim($userMessage);
-        $query = ServiceModel::query();
-        if ($q !== '') {
-            $query->where(function ($sub) use ($q) {
-                $sub->where('name', 'like', '%' . $q . '%')
-                    ->orWhere('description', 'like', '%' . $q . '%');
-            });
+        // Get business information from config
+        $businessInfo = config('chatbot.business');
+        
+        // Get branches using existing repository
+        $branches = $this->branchRepository->getActive();
+        
+        // Get services using existing repository
+        $services = $this->serviceRepository->all()
+            ->where('is_active', true)
+            ->sortBy('display_order');
+
+        // Build context string using translations
+        $context = "=== " . __('chatbot.context.business_info', [], $locale) . " ===\n";
+        $context .= __('chatbot.context.business_name', [], $locale) . ': ' . ($businessInfo['name'][$locale] ?? $businessInfo['name']['vi']) . "\n";
+        $context .= __('chatbot.context.description', [], $locale) . ': ' . ($businessInfo['description'][$locale] ?? $businessInfo['description']['vi']) . "\n";
+        $context .= __('chatbot.context.specialties', [], $locale) . ': ' . ($businessInfo['specialties'][$locale] ?? $businessInfo['specialties']['vi']) . "\n";
+        $context .= "Email: " . $businessInfo['email'] . "\n";
+        $context .= __('chatbot.context.phone', [], $locale) . ': ' . $businessInfo['phone'] . "\n";
+        $context .= "Hotline: " . $businessInfo['hotline'] . "\n\n";
+
+        // Branches with their specific working hours
+        $context .= "=== " . __('chatbot.context.branches', [], $locale) . " ===\n";
+        foreach ($branches as $branch) {
+            $branchName = is_array($branch->name) ? ($branch->name[$locale] ?? $branch->name['vi']) : $branch->name;
+            $branchAddress = is_array($branch->address) ? ($branch->address[$locale] ?? $branch->address['vi']) : $branch->address;
+            
+            // Format working hours from branch's opening_hours field
+            $branchHours = 'N/A';
+            if ($branch->opening_hours && is_array($branch->opening_hours)) {
+                $branchHours = $this->formatWorkingHours($branch->opening_hours, $locale);
+            }
+            
+            $context .= "- {$branchName}\n";
+            $context .= "  " . __('chatbot.context.address', [], $locale) . ': ' . $branchAddress . "\n";
+            $context .= "  " . __('chatbot.context.phone', [], $locale) . ': ' . ($branch->phone ?? 'N/A') . "\n";
+            $context .= "  " . __('chatbot.context.working_hours', [], $locale) . ":\n" . $branchHours . "\n";
         }
-        $services = $query->limit(5)->get(['id', 'name']);
-        if ($services->isEmpty()) {
-            $services = ServiceModel::limit(5)->get(['id', 'name']);
+
+        // Services
+        $context .= "=== " . __('chatbot.context.services', [], $locale) . " ===\n";
+        foreach ($services as $service) {
+            $serviceName = is_array($service->name) ? ($service->name[$locale] ?? $service->name['vi']) : $service->name;
+            $serviceDesc = is_array($service->description) ? ($service->description[$locale] ?? $service->description['vi']) : $service->description;
+            
+            $context .= "- {$serviceName}\n";
+            if ($serviceDesc) {
+                $context .= "  " . __('chatbot.context.description', [], $locale) . ': ' . $serviceDesc . "\n";
+            }
+            $context .= "  " . __('chatbot.context.price', [], $locale) . ': ' . number_format($service->price, 0, ',', '.') . " VNĐ\n";
+            $context .= "  " . __('chatbot.context.duration', [], $locale) . ': ' . $service->duration . " " . __('chatbot.context.minutes', [], $locale) . "\n";
+            if ($service->category) {
+                $categoryName = is_array($service->category->name) ? ($service->category->name[$locale] ?? $service->category->name['vi']) : $service->category->name;
+                $context .= "  " . __('chatbot.context.category', [], $locale) . ': ' . $categoryName . "\n";
+            }
+            $context .= "\n";
         }
-        return $services->map(fn ($s) => ['service_id' => $s->id, 'name' => $s->name])->all();
+
+        return $context;
+    }
+
+    /**
+     * Get system instruction for the chatbot.
+     *
+     * @param string $locale Language code (vi, en, etc.)
+     * @return string System instruction
+     */
+    private function getSystemInstruction(string $locale = 'vi'): string
+    {
+        return config("chatbot.system_instructions.{$locale}");
+    }
+
+    /**
+     * Format working hours array into readable string.
+     *
+     * @param array $openingHours Opening hours data
+     * @param string $locale Language code (vi, en, etc.)
+     * @return string Formatted working hours
+     */
+    private function formatWorkingHours(array $openingHours, string $locale = 'vi'): string
+    {
+        $formatted = [];
+        foreach ($openingHours as $day => $hours) {
+            $dayName = __("chatbot.days.{$day}", [], $locale);
+            if (is_array($hours) && count($hours) === 2) {
+                $formatted[] = "    {$dayName}: {$hours[0]} - {$hours[1]}";
+            }
+        }
+
+        return implode("\n", $formatted);
+    }
+
+    /**
+     * Resolve chat session for a user or a guest session key. If session does not exist, create one.
+     *
+     * @param int|null $userId
+     * @param string|null $sessionKey
+     * @return \App\Models\ChatSession
+     */
+    private function resolveSession(?int $userId, ?string $sessionKey)
+    {
+        // If user authenticated, prefer user-linked session
+        if ($userId) {
+            $session = ChatSession::firstOrCreate(
+                ['user_id' => $userId],
+                ['session_key' => (string) Str::uuid()]
+            );
+            return $session;
+        }
+
+        // Guest: try to find by session_key
+        if ($sessionKey) {
+            $session = ChatSession::where('session_key', $sessionKey)->first();
+            if ($session) {
+                return $session;
+            }
+        }
+
+        // Create a new guest session with generated key
+        $newKey = (string) Str::uuid();
+        return ChatSession::create(['session_key' => $newKey]);
+    }
+
+    /**
+     * Build a conversation string from a collection of ChatMessage models.
+     * Keeps chronological order (oldest first).
+     *
+     * @param \Illuminate\Support\Collection $messages
+     * @param string $locale
+     * @return string
+     */
+    private function buildConversationContents($messages, string $locale = 'vi'): string
+    {
+        $parts = [];
+        foreach ($messages as $m) {
+            $role = $m->role === 'assistant' ? 'Assistant' : 'User';
+            // Optionally localize role labels in future
+            $parts[] = $role . ': ' . trim($m->message);
+        }
+
+        return implode("\n", $parts);
     }
 }

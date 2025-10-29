@@ -10,8 +10,8 @@ use App\Http\Controllers\Api\V1\PaymentController as V1PaymentController;
 use App\Http\Controllers\Api\V1\ReviewController as V1ReviewController;
 use App\Http\Controllers\Api\V1\PostController as V1PostController;
 use App\Http\Controllers\Api\V1\ContactController as V1ContactController;
-use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
 use App\Http\Controllers\Api\V1\ProfileController as V1ProfileController;
+use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
 
 // Apply locale + rate limiting middleware to all API routes
 Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->group(function () {
@@ -53,12 +53,9 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
 
         Route::post('/contact', [V1ContactController::class, 'store']);
 
-        Route::post('/chatbot/message', [V1ChatbotController::class, 'sendMessage']);
-        Route::get('/chatbot/sessions', [V1ChatbotController::class, 'sessions']);
-        Route::post('/chatbot/sessions', [V1ChatbotController::class, 'createSession']);
-        Route::get('/chatbot/sessions/{id}', [V1ChatbotController::class, 'show']);
-        Route::delete('/chatbot/sessions/{id}', [V1ChatbotController::class, 'destroy']);
-        Route::delete('/chatbot/sessions/{id}/messages', [V1ChatbotController::class, 'clearMessages']);
+        // Chatbot - available for both guests and authenticated users
+        Route::post('/chatbot', [V1ChatbotController::class, 'chat']);
+
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
         Route::post('/bookings/{id}/reschedule', [V1BookingController::class, 'reschedule']);
         Route::get('/availability', [V1BookingController::class, 'availability']);

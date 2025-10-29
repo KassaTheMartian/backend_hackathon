@@ -9,10 +9,10 @@ use App\Exceptions\Handler;
 use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\BranchRepositoryInterface;
-use App\Repositories\Contracts\ChatRepositoryInterface;
 use App\Repositories\Contracts\ContactRepositoryInterface;
 use App\Repositories\Contracts\DemoRepositoryInterface;
 use App\Repositories\Contracts\OtpRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\PostRepositoryInterface;
 use App\Repositories\Contracts\PromotionRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
@@ -24,10 +24,10 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\AuthRepository as EloquentAuthRepository;
 use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\BranchRepository;
-use App\Repositories\Eloquent\ChatRepository;
 use App\Repositories\Eloquent\ContactRepository;
 use App\Repositories\Eloquent\DemoRepository as EloquentDemoRepository;
 use App\Repositories\Eloquent\OtpRepository;
+use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\PostRepository;
 use App\Repositories\Eloquent\PromotionRepository;
 use App\Repositories\Eloquent\ReviewRepository;
@@ -39,6 +39,7 @@ use App\Repositories\Eloquent\UserRepository;
 use App\Services\Contracts\AuthServiceInterface;
 use App\Services\Contracts\BookingServiceInterface;
 use App\Services\Contracts\BranchServiceInterface;
+use App\Services\Contracts\ChatbotServiceInterface;
 use App\Services\Contracts\ContactServiceInterface;
 use App\Services\Contracts\DemoServiceInterface;
 use App\Services\Contracts\PostServiceInterface;
@@ -49,6 +50,7 @@ use App\Services\Contracts\ServiceServiceInterface;
 use App\Services\AuthService;
 use App\Services\BookingService;
 use App\Services\BranchService;
+use App\Services\ChatbotService;
 use App\Services\ContactService;
 use App\Services\DemoService;
 use App\Services\PostService;
@@ -75,9 +77,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PromotionRepositoryInterface::class, PromotionRepository::class);
         $this->app->bind(PostRepositoryInterface::class, PostRepository::class);
         $this->app->bind(ContactRepositoryInterface::class, ContactRepository::class);
-        $this->app->bind(ChatRepositoryInterface::class, ChatRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(OtpRepositoryInterface::class, OtpRepository::class);
+        $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
         
         // Service bindings
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
@@ -89,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PostServiceInterface::class, PostService::class);
         $this->app->bind(ContactServiceInterface::class, ContactService::class);
         $this->app->bind(ProfileServiceInterface::class, ProfileService::class);
+        $this->app->bind(ChatbotServiceInterface::class, ChatbotService::class);
         
         // Register custom exception handler
         $this->app->singleton(ExceptionHandler::class, Handler::class);

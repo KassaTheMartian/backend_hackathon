@@ -17,6 +17,7 @@ return [
     'user_not_authenticated' => 'Người dùng chưa đăng nhập',
     'service_not_found' => 'Không tìm thấy dịch vụ',
     'reschedule_cutoff_exceeded' => 'Vượt quá thời hạn cho phép đổi lịch',
+    'not_found' => 'Không tìm thấy đặt lịch',
 ];
 
 

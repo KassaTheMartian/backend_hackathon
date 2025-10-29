@@ -2,52 +2,23 @@
 
 namespace App\Services\Contracts;
 
-use App\Models\ChatSession;
-use App\Models\ChatMessage;
-use Illuminate\Database\Eloquent\Collection;
-
 interface ChatbotServiceInterface
 {
     /**
-     * Get chat sessions for user.
+     * Process chat message and generate response.
+     *
+     * @param string $message User's message
+     * @param string $locale Language (vi or en)
+     * @param int|null $userId User ID if authenticated
+     * @return array Response data
      */
-    public function getUserSessions(int $userId): Collection;
+    public function chat(string $message, string $locale = 'vi', ?int $userId = null, ?string $sessionKey = null): array;
 
     /**
-     * Get session by ID.
+     * Get conversation context for the chatbot.
+     *
+     * @param string $locale Language (vi or en)
+     * @return string Context string
      */
-    public function getSessionById(int $id): ?ChatSession;
-
-    /**
-     * Create a new chat session.
-     */
-    public function createSession(int $userId, string $title = null): ChatSession;
-
-    /**
-     * Get messages for session.
-     */
-    public function getSessionMessages(int $sessionId): Collection;
-
-    /**
-     * Send a message.
-     */
-    public function sendMessage(int $sessionId, string $content, string $type = 'user'): ChatMessage;
-
-    /**
-     * Process bot response with optional mode:
-     * - booking: suggest services for booking
-     * - faq: answer booking-related FAQs
-     * - human: escalate to staff
-     */
-    public function processBotResponse(int $sessionId, string $userMessage, ?string $mode = null): ChatMessage;
-
-    /**
-     * Delete a session.
-     */
-    public function deleteSession(int $id): bool;
-
-    /**
-     * Clear session messages.
-     */
-    public function clearSessionMessages(int $id): bool;
+    public function getContext(string $locale = 'vi'): string;
 }

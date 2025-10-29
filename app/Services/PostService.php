@@ -8,6 +8,11 @@ use App\Services\Contracts\PostServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Service for handling post operations.
+ *
+ * Manages blog posts, publishing, and content management.
+ */
 class PostService implements PostServiceInterface
 {
     public function __construct(

@@ -2,36 +2,60 @@
 
 namespace App\Services;
 
-use App\Models\Booking;
 use App\Models\Payment;
+use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Services\Contracts\PaymentServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Service for handling payment operations.
+ *
+ * Manages VNPay payment processing, refunds, and transaction queries.
+ */
 class PaymentService implements PaymentServiceInterface
 {
+    public function __construct(
+        protected PaymentRepositoryInterface $paymentRepository,
+        protected BookingRepositoryInterface $bookingRepository
+    ) {
+    }
+    /**
+     * List payments with filters and scoping.
+     *
+     * @param Request $request The HTTP request.
+     * @return LengthAwarePaginator
+     */
     public function list(Request $request): LengthAwarePaginator
     {
-        $query = Payment::query();
+        $filters = [
+            'per_page' => (int)($request->query('per_page', 15)),
+        ];
+        
         if ($request->user()) {
-            $query->whereHas('booking', function ($q) use ($request) {
-                $q->where('user_id', $request->user()->id);
-            });
+            $filters['user_id'] = $request->user()->id;
         }
         if ($status = $request->query('status')) {
-            $query->where('status', $status);
+            $filters['status'] = $status;
         }
         if ($method = $request->query('payment_method')) {
-            $query->where('payment_method', $method);
+            $filters['payment_method'] = $method;
         }
-        $perPage = (int)($request->query('per_page', 15));
-        return $query->latest('id')->paginate($perPage);
+        
+        return $this->paymentRepository->getWithFilters($filters);
     }
     // Removed Stripe-related methods (createPaymentIntent, confirmPayment, webhook)
 
     /**
      * VNPay helpers
+     */
+    /**
+     * Generate VNPay hash.
+     *
+     * @param array $params The parameters.
+     * @return string
      */
     protected function vnpHash(array $params): string
     {
@@ -44,6 +68,15 @@ class PaymentService implements PaymentServiceInterface
         return hash_hmac('sha512', $data, (string)config('vnpay.hash_secret'));
     }
 
+    /**
+     * Get base VNPay parameters.
+     *
+     * @param string $txnRef The transaction reference.
+     * @param int $amount The amount.
+     * @param string|null $bankCode The bank code.
+     * @param string|null $language The language.
+     * @return array
+     */
     protected function vnpBaseParams(string $txnRef, int $amount, ?string $bankCode = null, ?string $language = 'vi'): array
     {
         $params = [
@@ -67,16 +100,30 @@ class PaymentService implements PaymentServiceInterface
         return $params;
     }
 
+    /**
+     * Create VNPay payment URL and record.
+     *
+     * @param int $bookingId The booking ID.
+     * @param string|null $bankCode The bank code.
+     * @param string|null $language The language.
+     * @param string|null $guestEmail The guest email.
+     * @param string|null $guestPhone The guest phone.
+     * @return array
+     */
     public function vnpayCreate(int $bookingId, ?string $bankCode, ?string $language, ?string $guestEmail, ?string $guestPhone): array
     {
-        $booking = Booking::findOrFail($bookingId);
+        $booking = $this->bookingRepository->find($bookingId);
+        if (!$booking) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException(__('payments.booking_not_found'));
+        }
+        
         $txnRef = 'BK' . $booking->id . '_' . now()->format('YmdHis');
         $params = $this->vnpBaseParams($txnRef, (int)$booking->total_amount, $bankCode, $language);
         $hash = $this->vnpHash($params);
         $params['vnp_SecureHash'] = $hash;
         $url = rtrim(config('vnpay.url'), '?') . '?' . http_build_query($params);
 
-        $payment = Payment::create([
+        $payment = $this->paymentRepository->create([
             'booking_id' => $booking->id,
             'amount' => $booking->total_amount,
             'currency' => 'VND',
@@ -97,6 +144,12 @@ class PaymentService implements PaymentServiceInterface
         ];
     }
 
+    /**
+     * Handle VNPay return URL.
+     *
+     * @param array $params The parameters.
+     * @return array
+     */
     public function vnpayReturn(array $params): array
     {
         $secureHash = $params['vnp_SecureHash'] ?? '';
@@ -108,7 +161,7 @@ class PaymentService implements PaymentServiceInterface
         }
 
         $txnRef = $params['vnp_TxnRef'];
-        $payment = Payment::where('transaction_id', $txnRef)->first();
+        $payment = $this->paymentRepository->findByTransactionId($txnRef);
         if (!$payment) {
             return ['success' => false, 'message' => __('payments.transaction_not_found')];
         }
@@ -127,14 +180,17 @@ class PaymentService implements PaymentServiceInterface
         }
 
         $success = ($params['vnp_ResponseCode'] ?? null) === '00';
-        $payment->update([
+        $this->paymentRepository->update($payment->id, [
             'status' => $success ? 'completed' : 'failed',
         ]);
+        
+        // Refresh payment model
+        $payment = $this->paymentRepository->find($payment->id);
 
         if ($success) {
             $booking = $payment->booking;
             if ($booking) {
-                $booking->update([
+                $this->bookingRepository->update($booking->id, [
                     'payment_status' => 'paid',
                     'status' => 'confirmed',
                 ]);
@@ -144,6 +200,12 @@ class PaymentService implements PaymentServiceInterface
         return ['success' => $success, 'payment' => $payment];
     }
 
+    /**
+     * Handle VNPay IPN notification.
+     *
+     * @param array $params The parameters.
+     * @return array
+     */
     public function vnpayIpn(array $params): array
     {
         $secureHash = $params['vnp_SecureHash'] ?? '';
@@ -155,7 +217,7 @@ class PaymentService implements PaymentServiceInterface
         }
 
         $txnRef = $params['vnp_TxnRef'];
-        $payment = Payment::where('transaction_id', $txnRef)->first();
+        $payment = $this->paymentRepository->findByTransactionId($txnRef);
         if (!$payment) {
             return ['RspCode' => '01', 'Message' => __('payments.order_not_found')];
         }
@@ -173,16 +235,34 @@ class PaymentService implements PaymentServiceInterface
         }
 
         $status = ($params['vnp_ResponseCode'] ?? null) === '00' ? 'completed' : 'failed';
-        $payment->update(['status' => $status]);
+        $this->paymentRepository->update($payment->id, ['status' => $status]);
 
         return ['RspCode' => '00', 'Message' => __('payments.confirm_success')];
     }
 
+    /**
+     * Refund VNPay transaction.
+     *
+     * @param string $transactionId The transaction ID.
+     * @param int $amount The amount.
+     * @param string $reason The reason.
+     * @param string|null $guestEmail The guest email.
+     * @param string|null $guestPhone The guest phone.
+     * @return array
+     */
     public function vnpayRefund(string $transactionId, int $amount, string $reason, ?string $guestEmail, ?string $guestPhone): array
     {
         // For hackathon scope, simulate refund success
-        $payment = Payment::where('transaction_id', $transactionId)->firstOrFail();
-        $payment->update(['status' => 'refunded']);
+        $payment = $this->paymentRepository->findByTransactionId($transactionId);
+        if (!$payment) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException(__('payments.transaction_not_found'));
+        }
+        
+        $this->paymentRepository->update($payment->id, ['status' => 'refunded']);
+        
+        // Refresh payment model
+        $payment = $this->paymentRepository->find($payment->id);
+        
         return [
             'success' => true,
             'payment' => $payment,
@@ -190,9 +270,21 @@ class PaymentService implements PaymentServiceInterface
         ];
     }
 
+    /**
+     * Query VNPay transaction status.
+     *
+     * @param string $transactionId The transaction ID.
+     * @param string|null $guestEmail The guest email.
+     * @param string|null $guestPhone The guest phone.
+     * @return array
+     */
     public function vnpayQuery(string $transactionId, ?string $guestEmail, ?string $guestPhone): array
     {
-        $payment = Payment::where('transaction_id', $transactionId)->firstOrFail();
+        $payment = $this->paymentRepository->findByTransactionId($transactionId);
+        if (!$payment) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException(__('payments.transaction_not_found'));
+        }
+        
         return [
             'success' => true,
             'payment' => $payment,

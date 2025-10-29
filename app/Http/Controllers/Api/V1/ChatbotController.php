@@ -3,239 +3,99 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Chatbot\SendMessageRequest;
-use App\Http\Requests\Chatbot\CreateSessionRequest;
-use App\Http\Resources\Chatbot\ChatSessionResource;
+use App\Http\Requests\Chatbot\ChatRequest;
+use App\Http\Responses\ApiResponse;
 use App\Services\Contracts\ChatbotServiceInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ChatbotController extends Controller
 {
     /**
      * Create a new ChatbotController instance.
      *
-     * @param ChatbotServiceInterface $service The chatbot service
+     * @param ChatbotServiceInterface $chatbotService The chatbot service
      */
-    public function __construct(private readonly ChatbotServiceInterface $service)
+    public function __construct(private readonly ChatbotServiceInterface $chatbotService)
     {
         //
     }
 
     /**
-     * @OA\Get(
-     *     path="/api/v1/chatbot/sessions",
-     *     summary="List chat sessions",
-     *     tags={"Chatbot"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Display a listing of chat sessions.
-     *
-     * @param Request $request The HTTP request
-     * @return JsonResponse The list of chat sessions
-     */
-    public function sessions(Request $request): JsonResponse
-    {
-        
-        $sessions = $this->service->getUserSessions($request->user()->id);
-        $items = $sessions->map(fn ($model) => ChatSessionResource::make($model));
-        
-        return $this->ok($items, __('chatbot.sessions_retrieved'));
-    }
-
-    /**
      * @OA\Post(
-     *     path="/api/v1/chatbot/sessions",
-     *     summary="Create chat session",
+     *     path="/api/v1/chatbot",
+     *     summary="Chat with AI assistant",
+     *     description="Send a message to the AI chatbot and receive a response. Available for both authenticated and guest users.",
      *     tags={"Chatbot"},
-     *     security={{"sanctum": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="title", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Created", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Store a newly created chat session.
-     *
-     * @param CreateSessionRequest $request The create session request
-     * @return JsonResponse The created chat session response
-     */
-    public function createSession(CreateSessionRequest $request): JsonResponse
-    {
-        $session = $this->service->createSession($request->user()->id, $request->title);
-        return $this->created(ChatSessionResource::make($session), __('chatbot.session_created'));
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/v1/chatbot/sessions/{id}",
-     *     summary="Get chat session by id",
-     *     tags={"Chatbot"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Display the specified chat session.
-     *
-     * @param int $id The chat session ID
-     * @return JsonResponse The chat session response
-     */
-    public function showSession(int $id): JsonResponse
-    {
-        $session = $this->service->getSessionById($id);
-        if (!$session) {
-            $this->notFound(__('chatbot.resource_chat_session'));
-        }
-        
-        
-        return $this->ok(ChatSessionResource::make($session), __('chatbot.session_retrieved'));
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/v1/chatbot/sessions/{id}/messages",
-     *     summary="Get chat messages for session",
-     *     tags={"Chatbot"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Get chat history for a session.
-     *
-     * @param int $id The chat session ID
-     * @return JsonResponse The chat messages response
-     */
-    public function getHistory(int $id): JsonResponse
-    {
-        $session = $this->service->getSessionById($id);
-        if (!$session) {
-            $this->notFound(__('chatbot.resource_chat_session'));
-        }
-        
-        
-        $messages = $this->service->getSessionMessages($id);
-        $items = $messages->map(function ($message) {
-            return [
-                'id' => $message->id,
-                'content' => $message->content,
-                'type' => $message->type,
-                'created_at' => $message->created_at,
-                'updated_at' => $message->updated_at,
-            ];
-        });
-        
-        return $this->ok($items, __('chatbot.messages_retrieved'));
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/chatbot/sessions/{id}/messages",
-     *     summary="Send message to chatbot",
-     *     tags={"Chatbot"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"message"},
-     *             @OA\Property(property="message", type="string")
+     *             @OA\Property(property="message", type="string", minLength=1, maxLength=1000, example="Tôi muốn biết thông tin về dịch vụ chăm sóc da"),
+     *             @OA\Property(property="session_key", type="string", example="b7f3a9e2-...", description="Optional client-side session key for guest users (store in localStorage/cookie)")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
-     *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     *     @OA\Response(
+     *         response=200, 
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Response generated successfully"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Chúng tôi cung cấp các dịch vụ chăm sóc da..."),
+     *                 @OA\Property(property="user_id", type="integer", nullable=true, example=1),
+     *                 @OA\Property(property="locale", type="string", example="vi")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422, 
+     *         description="Validation Error", 
+     *         @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")
+     *     ),
+     *     @OA\Response(
+     *         response=500, 
+     *         description="Server Error", 
+     *         @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")
+     *     )
      * )
      * 
-     * Send a message to the chatbot.
+     * Process chat message and return AI response.
      *
-     * @param SendMessageRequest $request The send message request
-     * @param int $id The chat session ID
-     * @return JsonResponse The message response
+     * @param ChatRequest $request The chat request
+     * @return JsonResponse The chatbot response
      */
-    public function sendMessage(SendMessageRequest $request, int $id): JsonResponse
+    public function chat(ChatRequest $request): JsonResponse
     {
-        $session = $this->service->getSessionById($id);
-        if (!$session) {
-            $this->notFound(__('chatbot.resource_chat_session'));
-        }
-        
-        
-        $response = $this->service->processBotResponse($id, $request->message, $request->input('mode'));
-        
-        $messageData = [
-            'id' => $response->id,
-            'content' => $response->content,
-            'type' => $response->type,
-            'created_at' => $response->created_at,
-            'updated_at' => $response->updated_at,
-        ];
-        
-        return $this->ok($messageData, __('chatbot.message_sent'));
-    }
+        try {
+            // Get locale from app (already set by SetLocale middleware)
+            $locale = app()->getLocale();
 
-    /**
-     * @OA\Delete(
-     *     path="/api/v1/chatbot/sessions/{id}",
-     *     summary="Delete chat session",
-     *     tags={"Chatbot"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=204, description="No Content"),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Remove the specified chat session from storage.
-     *
-     * @param int $id The chat session ID
-     * @return JsonResponse The deletion response
-     */
-    public function destroySession(int $id): JsonResponse
-    {
-        $session = $this->service->getSessionById($id);
-        if (!$session) {
-            $this->notFound(__('chatbot.resource_chat_session'));
-        }
-        
-        
-        $deleted = $this->service->deleteSession($id);
-        return $this->noContent(__('chatbot.session_deleted'));
-    }
+            // Get user ID if authenticated
+            $userId = $this->user()?->id;
 
-    /**
-     * @OA\Delete(
-     *     path="/api/v1/chatbot/sessions/{id}/messages",
-     *     summary="Clear chat session messages",
-     *     tags={"Chatbot"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=204, description="No Content"),
-     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Clear messages for the specified chat session.
-     *
-     * @param int $id The chat session ID
-     * @return JsonResponse The clear response
-     */
-    public function clearMessages(int $id): JsonResponse
-    {
-        $session = $this->service->getSessionById($id);
-        if (!$session) {
-            $this->notFound(__('chatbot.resource_chat_session'));
+            // session_key: optional for guest clients (can be sent in body or header X-Chat-Session)
+            $sessionKey = $request->input('session_key') ?? $request->header('X-Chat-Session');
+
+            // Process chat message (pass sessionKey so service can load/create session)
+            $response = $this->chatbotService->chat(
+                message: $request->message,
+                locale: $locale,
+                userId: $userId,
+                sessionKey: $sessionKey
+            );
+
+            return $this->ok($response, __('chatbot.response_success'));
+
+        } catch (\Exception $e) {
+            return ApiResponse::error(
+                $e->getMessage(),
+                __('chatbot.response_failed'),
+                'CHATBOT_ERROR',
+                500
+            );
         }
-        
-        
-        $cleared = $this->service->clearSessionMessages($id);
-        return $this->noContent(__('chatbot.messages_cleared'));
     }
 }

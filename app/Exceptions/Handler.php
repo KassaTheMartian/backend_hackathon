@@ -18,6 +18,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Throwable;
 
+/**
+ * Exception Handler for the application.
+ *
+ * Handles rendering exceptions into HTTP responses, with special handling for API requests.
+ */
 class Handler extends ExceptionHandler
 {
     /**

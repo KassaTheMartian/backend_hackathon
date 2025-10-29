@@ -6,8 +6,16 @@ use App\Models\ServiceCategory;
 use App\Repositories\Contracts\ServiceCategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Class ServiceCategoryRepository
+ */
 class ServiceCategoryRepository extends BaseRepository implements ServiceCategoryRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param ServiceCategory $model
+     */
     public function __construct(ServiceCategory $model)
     {
         parent::__construct($model);

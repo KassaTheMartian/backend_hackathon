@@ -1,31 +1,45 @@
 <?php
 
 return [
-    'sessions_retrieved' => 'Lấy danh sách phiên chat thành công',
-    'session_created' => 'Tạo phiên chat thành công',
-    'session_retrieved' => 'Lấy phiên chat thành công',
-    'messages_retrieved' => 'Lấy tin nhắn thành công',
-    'message_sent' => 'Gửi tin nhắn thành công',
-    'session_deleted' => 'Xoá phiên chat thành công',
-    'messages_cleared' => 'Đã xoá tin nhắn trong phiên chat',
-    'resource_chat_session' => 'Phiên chat',
+    // AI Chatbot
+    'response_success' => 'Tạo phản hồi thành công',
+    'response_failed' => 'Tạo phản hồi thất bại',
+    'api_key_missing' => 'Chưa cấu hình khóa API Gemini',
+    'api_error' => 'Lỗi khi giao tiếp với dịch vụ AI',
+    'no_response' => 'Không nhận được phản hồi từ dịch vụ AI',
+    'connection_error' => 'Lỗi kết nối với dịch vụ AI',
+    'message_required' => 'Tin nhắn là bắt buộc',
+    'message_string' => 'Tin nhắn phải là chuỗi ký tự',
+    'message_min' => 'Tin nhắn phải có ít nhất 1 ký tự',
+    'message_max' => 'Tin nhắn không được vượt quá 1000 ký tự',
 
-    'switched_to_human' => 'Đã chuyển sang nhân viên hỗ trợ. Vui lòng đợi trong giây lát...',
-    'booking_suggestion_prefix' => 'Gợi ý dịch vụ phù hợp. Vui lòng chọn để đặt lịch.',
+    // Days of week
+    'days' => [
+        'monday' => 'Thứ Hai',
+        'tuesday' => 'Thứ Ba',
+        'wednesday' => 'Thứ Tư',
+        'thursday' => 'Thứ Năm',
+        'friday' => 'Thứ Sáu',
+        'saturday' => 'Thứ Bảy',
+        'sunday' => 'Chủ Nhật',
+    ],
 
-    'faq_how_to_book_q' => 'cách đặt lịch',
-    'faq_how_to_book_a' => 'Bạn có thể đặt lịch qua Dịch vụ → Chọn dịch vụ → Chọn chi nhánh → Chọn thời gian.',
-    'faq_cancel_q' => 'huỷ lịch',
-    'faq_cancel_a' => 'Bạn có thể huỷ trong mục Lịch hẹn của tôi trước 24 giờ.',
-    'faq_payment_q' => 'thanh toán',
-    'faq_payment_a' => 'Hỗ trợ VNPay và Stripe. Bạn có thể thanh toán online hoặc tại quầy.',
-    'faq_default' => 'Bạn muốn hỏi về đặt lịch, huỷ lịch hay thanh toán?',
-
-    'greet' => 'Xin chào! Tôi có thể giúp gì cho bạn?',
-    'intent_booking' => 'Tôi có thể hỗ trợ thông tin đặt lịch. Bạn quan tâm dịch vụ nào?',
-    'intent_price' => 'Bạn có thể xem bảng giá trên website. Bạn cần tôi hỗ trợ dịch vụ cụ thể nào không?',
-    'intent_location' => 'Chúng tôi có nhiều chi nhánh. Bạn đang tìm khu vực nào?',
-    'generic_reply' => 'Cảm ơn bạn đã nhắn tin. Chúng tôi sẽ phản hồi sớm. Bạn cần hỗ trợ gì thêm không?',
+    // Context labels
+    'context' => [
+        'business_info' => 'THÔNG TIN DOANH NGHIỆP',
+        'business_name' => 'Tên doanh nghiệp',
+        'description' => 'Mô tả',
+        'specialties' => 'Chuyên môn',
+        'phone' => 'Điện thoại',
+        'branches' => 'CHI NHÁNH',
+        'address' => 'Địa chỉ',
+        'working_hours' => 'Giờ làm việc',
+        'services' => 'DỊCH VỤ',
+        'price' => 'Giá',
+        'duration' => 'Thời gian',
+        'minutes' => 'phút',
+        'category' => 'Danh mục',
+    ],
 ];
 
 

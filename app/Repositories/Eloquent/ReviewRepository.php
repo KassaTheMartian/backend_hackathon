@@ -7,8 +7,16 @@ use App\Repositories\Contracts\ReviewRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Class ReviewRepository
+ */
 class ReviewRepository extends BaseRepository implements ReviewRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param Review $model
+     */
     public function __construct(Review $model)
     {
         parent::__construct($model);
@@ -122,6 +130,29 @@ class ReviewRepository extends BaseRepository implements ReviewRepositoryInterfa
         }
 
         return $query->paginate($filters['per_page'] ?? 15);
+    }
+
+    /**
+     * Check if user has already reviewed a booking.
+     */
+    public function hasUserReviewedBooking(int $bookingId, int $userId): bool
+    {
+        return $this->model
+            ->where('booking_id', $bookingId)
+            ->where('user_id', $userId)
+            ->exists();
+    }
+
+    /**
+     * Get pending reviews with pagination.
+     */
+    public function getPending(int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->model
+            ->with(['user', 'service', 'staff', 'branch'])
+            ->where('is_approved', false)
+            ->latest('id')
+            ->paginate($perPage);
     }
 }
 

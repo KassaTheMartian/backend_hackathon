@@ -11,6 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
+/**
+ * Service for handling branch operations.
+ *
+ * Manages branch listings, availability, and location-based queries.
+ */
 class BranchService implements BranchServiceInterface
 {
     use HasLocalization;
@@ -100,6 +105,11 @@ class BranchService implements BranchServiceInterface
     }
     /**
      * Get branches near coordinates.
+     *
+     * @param float $latitude The latitude.
+     * @param float $longitude The longitude.
+     * @param float $radiusKm The radius in kilometers.
+     * @return Collection
      */
     public function getNearbyBranches(float $latitude, float $longitude, float $radiusKm = 10): Collection
     {

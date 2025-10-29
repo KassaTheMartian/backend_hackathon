@@ -12,11 +12,25 @@ use Illuminate\Contracts\Validation\ValidationRule;
  */
 class Translatable implements ValidationRule
 {
+    /**
+     * Create a new translatable validation rule.
+     *
+     * @param bool $requiredDefault Whether the default locale is required
+     * @param int|null $max Maximum length for the field
+     */
     public function __construct(
         private readonly bool $requiredDefault = true,
         private readonly ?int $max = 255
     ) {}
 
+    /**
+     * Validate the translatable field.
+     *
+     * @param string $attribute The attribute name
+     * @param mixed $value The value to validate
+     * @param Closure $fail The closure to call if validation fails
+     * @return void
+     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $supported = config('localization.supported', ['en', 'vi']);

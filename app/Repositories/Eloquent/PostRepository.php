@@ -7,16 +7,39 @@ use App\Repositories\Contracts\PostRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Class PostRepository
+ */
 class PostRepository extends BaseRepository implements PostRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param Post $model
+     */
     public function __construct(Post $model)
     {
         parent::__construct($model);
     }
 
+    /**
+     * Get allowed includes for eager loading.
+     *
+     * @return array
+     */
     protected function allowedIncludes(): array
     {
         return ['category', 'tags', 'author'];
+    }
+
+    /**
+     * Get supported locales from configuration.
+     * 
+     * @return array<string>
+     */
+    protected function getSupportedLocales(): array
+    {
+        return config('localization.supported', ['en', 'vi']);
     }
 
     public function getWithFilters(array $filters = []): LengthAwarePaginator
@@ -36,11 +59,13 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
         }
 
         if (isset($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->whereRaw("JSON_EXTRACT(title, '$.en') LIKE ?", ['%' . $filters['search'] . '%'])
-                  ->orWhereRaw("JSON_EXTRACT(title, '$.vi') LIKE ?", ['%' . $filters['search'] . '%'])
-                  ->orWhereRaw("JSON_EXTRACT(content, '$.en') LIKE ?", ['%' . $filters['search'] . '%'])
-                  ->orWhereRaw("JSON_EXTRACT(content, '$.vi') LIKE ?", ['%' . $filters['search'] . '%']);
+            $supportedLocales = $this->getSupportedLocales();
+            
+            $query->where(function ($q) use ($filters, $supportedLocales) {
+                foreach ($supportedLocales as $locale) {
+                    $q->orWhereRaw("JSON_EXTRACT(title, '$.{$locale}') LIKE ?", ['%' . $filters['search'] . '%'])
+                      ->orWhereRaw("JSON_EXTRACT(content, '$.{$locale}') LIKE ?", ['%' . $filters['search'] . '%']);
+                }
             });
         }
 
@@ -51,12 +76,15 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
 
     public function getBySlug(string $slug): ?Post
     {
-        // Slug is stored as JSON with 'vi' and 'en' keys
-        // Try to find by either Vietnamese or English slug
+        // Slug is stored as JSON with locale keys
+        // Try to find by any supported language slug
+        $supportedLocales = $this->getSupportedLocales();
+        
         return $this->query()
-            ->where(function ($query) use ($slug) {
-                $query->whereRaw('JSON_EXTRACT(slug, "$.vi") = ?', [$slug])
-                      ->orWhereRaw('JSON_EXTRACT(slug, "$.en") = ?', [$slug]);
+            ->where(function ($query) use ($slug, $supportedLocales) {
+                foreach ($supportedLocales as $locale) {
+                    $query->orWhereRaw('JSON_EXTRACT(slug, "$.{$locale}") = ?', [$slug]);
+                }
             })
             ->first();
     }

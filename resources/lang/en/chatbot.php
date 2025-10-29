@@ -1,31 +1,45 @@
 <?php
 
 return [
-    'sessions_retrieved' => 'Chat sessions retrieved successfully',
-    'session_created' => 'Chat session created successfully',
-    'session_retrieved' => 'Chat session retrieved successfully',
-    'messages_retrieved' => 'Chat messages retrieved successfully',
-    'message_sent' => 'Message sent successfully',
-    'session_deleted' => 'Chat session deleted successfully',
-    'messages_cleared' => 'Chat messages cleared successfully',
-    'resource_chat_session' => 'Chat session',
+    // AI Chatbot
+    'response_success' => 'Response generated successfully',
+    'response_failed' => 'Failed to generate response',
+    'api_key_missing' => 'Gemini API key is not configured',
+    'api_error' => 'Error communicating with AI service',
+    'no_response' => 'No response received from AI service',
+    'connection_error' => 'Connection error with AI service',
+    'message_required' => 'Message is required',
+    'message_string' => 'Message must be a string',
+    'message_min' => 'Message must be at least 1 character',
+    'message_max' => 'Message must not exceed 1000 characters',
 
-    'switched_to_human' => 'You are being transferred to a human agent. Please wait...',
-    'booking_suggestion_prefix' => 'Suggested services. Please choose to proceed with booking.',
+    // Days of week
+    'days' => [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday',
+    ],
 
-    'faq_how_to_book_q' => 'how to book',
-    'faq_how_to_book_a' => 'You can book via Services → Choose service → Choose branch → Choose time.',
-    'faq_cancel_q' => 'cancel',
-    'faq_cancel_a' => 'You can cancel in My Appointments at least 24 hours in advance.',
-    'faq_payment_q' => 'payment',
-    'faq_payment_a' => 'We support VNPay and Stripe. You can pay online or at the counter.',
-    'faq_default' => 'Would you like to ask about booking, cancellation, or payment?',
-
-    'greet' => 'Hello! How can I help you today?',
-    'intent_booking' => 'I can help with booking information. What service are you interested in?',
-    'intent_price' => 'You can find prices on our website. Need help with a specific service?',
-    'intent_location' => 'We have multiple branches. Which area are you looking for?',
-    'generic_reply' => 'Thanks for your message. Our team will get back to you soon. Anything else I can help with?',
+    // Context labels
+    'context' => [
+        'business_info' => 'BUSINESS INFORMATION',
+        'business_name' => 'Business name',
+        'description' => 'Description',
+        'specialties' => 'Specialties',
+        'phone' => 'Phone',
+        'branches' => 'BRANCHES',
+        'address' => 'Address',
+        'working_hours' => 'Working hours',
+        'services' => 'SERVICES',
+        'price' => 'Price',
+        'duration' => 'Duration',
+        'minutes' => 'minutes',
+        'category' => 'Category',
+    ],
 ];
 
 

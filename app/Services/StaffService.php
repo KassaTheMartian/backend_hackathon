@@ -6,6 +6,11 @@ use App\Models\Staff;
 use App\Repositories\Contracts\StaffRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Service for handling staff operations.
+ *
+ * Manages staff members, services assignment, and availability.
+ */
 class StaffService
 {
     public function __construct(

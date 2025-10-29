@@ -6,8 +6,16 @@ use App\Models\Staff;
 use App\Repositories\Contracts\StaffRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Class StaffRepository
+ */
 class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param Staff $model
+     */
     public function __construct(Staff $model)
     {
         parent::__construct($model);
@@ -15,6 +23,8 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 
     /**
      * Get all active staff members.
+     *
+     * @return Collection
      */
     public function getActive(): Collection
     {
@@ -23,6 +33,9 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 
     /**
      * Get staff members for a specific branch.
+     *
+     * @param int $branchId
+     * @return Collection
      */
     public function getForBranch(int $branchId): Collection
     {
@@ -31,6 +44,9 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 
     /**
      * Get staff members for a specific service.
+     *
+     * @param int $serviceId
+     * @return Collection
      */
     public function getForService(int $serviceId): Collection
     {
@@ -39,6 +55,10 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 
     /**
      * Assign services to staff member.
+     *
+     * @param Staff $staff
+     * @param array $serviceIds
+     * @return void
      */
     public function assignServices(Staff $staff, array $serviceIds): void
     {
@@ -47,6 +67,10 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 
     /**
      * Remove services from staff member.
+     *
+     * @param Staff $staff
+     * @param array $serviceIds
+     * @return void
      */
     public function removeServices(Staff $staff, array $serviceIds): void
     {
@@ -55,6 +79,9 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 
     /**
      * Update staff rating.
+     *
+     * @param Staff $staff
+     * @return void
      */
     public function updateRating(Staff $staff): void
     {
@@ -63,6 +90,12 @@ class StaffRepository extends BaseRepository implements StaffRepositoryInterface
 
     /**
      * Get available staff for booking.
+     *
+     * @param int $branchId
+     * @param int $serviceId
+     * @param string $date
+     * @param string $time
+     * @return Collection
      */
     public function getAvailableForBooking(int $branchId, int $serviceId, string $date, string $time): Collection
     {

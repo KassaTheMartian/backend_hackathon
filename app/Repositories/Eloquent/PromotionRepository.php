@@ -7,8 +7,16 @@ use App\Models\User;
 use App\Repositories\Contracts\PromotionRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Class PromotionRepository
+ */
 class PromotionRepository extends BaseRepository implements PromotionRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param Promotion $model
+     */
     public function __construct(Promotion $model)
     {
         parent::__construct($model);
