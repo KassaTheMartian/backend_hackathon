@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Service\StoreServiceRequest;
-use App\Http\Requests\Service\UpdateServiceRequest;
 use App\Http\Resources\Service\ServiceResource;
 use App\Services\Contracts\ServiceServiceInterface;
-use App\Data\Service\ServiceData;
+use App\Traits\HasLocalization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    use HasLocalization;
+    
     /**
      * Create a new ServiceController instance.
      *
@@ -30,7 +30,6 @@ class ServiceController extends Controller
      *     tags={"Services"},
      *     @OA\Parameter(name="page", in="query", @OA\Schema(type="integer")),
      *     @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="locale", in="query", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
      * 
@@ -42,7 +41,7 @@ class ServiceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $items = $this->service->list($request)->through(fn ($model) => ServiceResource::make($model));
-        return $this->paginated($items, 'Services retrieved successfully');
+        return $this->paginated($items, __('services.list_retrieved'));
     }
 
     /**
@@ -51,7 +50,6 @@ class ServiceController extends Controller
      *     summary="Get service by id",
      *     tags={"Services"},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Parameter(name="locale", in="query", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
      *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
@@ -65,10 +63,10 @@ class ServiceController extends Controller
     {
         $service = $this->service->find($id);
         if (!$service) {
-            $this->notFound('Service');
+            $this->notFound(__('services.not_found'));
         }
         
-        return $this->ok(ServiceResource::make($service), 'Service retrieved successfully');
+        return $this->ok(ServiceResource::make($service), __('services.retrieved'));
     }
 
     /**
@@ -76,7 +74,6 @@ class ServiceController extends Controller
      *     path="/api/v1/service-categories",
      *     summary="Get service categories",
      *     tags={"Services"},
-     *     @OA\Parameter(name="locale", in="query", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
      * 
@@ -87,7 +84,8 @@ class ServiceController extends Controller
      */
     public function categories(Request $request): JsonResponse
     {
-        $categories = $this->service->categories($request->get('locale', config('localization.default', 'en')));
-        return $this->ok($categories, 'Service categories retrieved successfully');
+        $locale = $this->getLocale($request);
+        $categories = $this->service->categories($locale);
+        return $this->ok($categories, __('services.categories_retrieved'));
     }
 }

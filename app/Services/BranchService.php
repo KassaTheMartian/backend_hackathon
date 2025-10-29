@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
-use App\Data\Branch\BranchData;
-use App\Data\Branch\UpdateBranchData;
 use App\Repositories\Contracts\BranchRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Services\Contracts\BranchServiceInterface;
+use App\Traits\HasLocalization;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -14,6 +13,7 @@ use Illuminate\Support\Collection;
 
 class BranchService implements BranchServiceInterface
 {
+    use HasLocalization;
     /**
      * Create a new BranchService instance.
      *
@@ -39,24 +39,6 @@ class BranchService implements BranchServiceInterface
     }
 
     /**
-     * Create a new branch.
-     *
-     * @param BranchData $data The branch data
-     * @return Model The created branch
-     */
-    public function create(BranchData $data): Model
-    {
-        $payload = $data->toArray();
-        
-        // Set default values
-        if (!array_key_exists('is_active', $payload)) {
-            $payload['is_active'] = true;
-        }
-        
-        return $this->branches->create($payload);
-    }
-
-    /**
      * Find a branch by ID.
      *
      * @param int $id The branch ID
@@ -68,43 +50,21 @@ class BranchService implements BranchServiceInterface
     }
 
     /**
-     * Update a branch.
-     *
-     * @param int $id The branch ID
-     * @param UpdateBranchData $data The branch data
-     * @return Model|null The updated branch if found, null otherwise
-     */
-    public function update(int $id, UpdateBranchData $data): ?Model
-    {
-        return $this->branches->update($id, $data->toArray());
-    }
-
-    /**
-     * Delete a branch.
-     *
-     * @param int $id The branch ID
-     * @return bool True if deleted, false otherwise
-     */
-    public function delete(int $id): bool
-    {
-        return $this->branches->delete($id);
-    }
-
-    /**
      * Get available time slots for a branch.
      *
      * @param int $branchId The branch ID
      * @param string $date The date
      * @param int $serviceId The service ID
      * @param int|null $staffId The staff ID
+     * @param Request|null $request The HTTP request for localization
      * @return array The available slots
      */
-    public function getAvailableSlots(int $branchId, string $date, int $serviceId, ?int $staffId = null): array
+    public function getAvailableSlots(int $branchId, string $date, int $serviceId, ?int $staffId = null, ?Request $request = null): array
     {
         $branch = $this->find($branchId);
         
         if (!$branch) {
-            throw new \Exception('Branch not found');
+            throw new \Exception(__('branches.not_found'));
         }
         
         // Get existing bookings for the date
@@ -129,7 +89,7 @@ class BranchService implements BranchServiceInterface
                 $availableStaff = $this->branches->getAvailableStaff($branchId, $serviceId, $startTime);
                 $slot['staff'] = $availableStaff;
             } else {
-                $slot['reason'] = 'Fully booked';
+                $slot['reason'] = __('branches.fully_booked');
             }
             
             $slots[] = $slot;

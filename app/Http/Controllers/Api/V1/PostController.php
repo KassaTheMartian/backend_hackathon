@@ -9,11 +9,13 @@ use App\Http\Resources\Post\PostResource;
 use App\Services\Contracts\PostServiceInterface;
 use App\Models\PostCategory;
 use App\Models\PostTag;
+use App\Traits\HasLocalization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+    use HasLocalization;
     /**
      * Create a new PostController instance.
      *
@@ -34,7 +36,6 @@ class PostController extends Controller
      *     @OA\Parameter(name="category_id", in="query", @OA\Schema(type="integer")),
      *     @OA\Parameter(name="tag_id", in="query", @OA\Schema(type="integer")),
      *     @OA\Parameter(name="featured", in="query", @OA\Schema(type="boolean")),
-     *     @OA\Parameter(name="locale", in="query", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
      * 
@@ -58,7 +59,6 @@ class PostController extends Controller
      *     summary="Get post by id or slug",
      *     tags={"Posts"},
      *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", description="Post ID or slug")),
-     *     @OA\Parameter(name="locale", in="query", @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
      *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )

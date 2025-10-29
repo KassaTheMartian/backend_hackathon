@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 abstract class Controller
 {
@@ -58,6 +59,6 @@ abstract class Controller
 
     protected function user(): ?Authenticatable
     {
-        return auth()->user();
+        return Auth::user();
     }
 }

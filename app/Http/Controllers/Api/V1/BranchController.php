@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Branch\AvailableSlotsRequest;
 use App\Http\Resources\Branch\BranchResource;
 use App\Services\Contracts\BranchServiceInterface;
+use App\Traits\HasLocalization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BranchController extends Controller
 {
+    use HasLocalization;
     /**
      * Create a new BranchController instance.
      *
@@ -39,7 +41,7 @@ class BranchController extends Controller
     public function index(Request $request): JsonResponse
     {
         $items = $this->service->list($request)->through(fn ($model) => BranchResource::make($model));
-        return $this->paginated($items, 'Branches retrieved successfully');
+        return $this->paginated($items, __('branches.list_retrieved'));
     }
 
     /**
@@ -61,10 +63,10 @@ class BranchController extends Controller
     {
         $branch = $this->service->find($id);
         if (!$branch) {
-            $this->notFound('Branch');
+            $this->notFound(__('branches.not_found'));
         }
         
-        return $this->ok(BranchResource::make($branch), 'Branch retrieved successfully');
+        return $this->ok(BranchResource::make($branch), __('branches.retrieved'));
     }
 
     /**
@@ -88,13 +90,17 @@ class BranchController extends Controller
      */
     public function availableSlots(AvailableSlotsRequest $request, int $id): JsonResponse
     {
-        $slots = $this->service->getAvailableSlots(
-            $id,
-            $request->date,
-            $request->service_id,
-            $request->staff_id
-        );
-        
-        return $this->ok($slots, 'Available slots retrieved successfully');
+        try {
+            $slots = $this->service->getAvailableSlots(
+                $id,
+                $request->date,
+                $request->service_id,
+                $request->staff_id
+            );
+            
+            return $this->ok($slots, __('branches.available_slots_retrieved'));
+        } catch (\Exception $e) {
+            return $this->notFound($e->getMessage());
+        }
     }
 }
