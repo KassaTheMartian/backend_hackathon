@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Demo;
+// use App\Models\Demo;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -31,7 +31,6 @@ class DatabaseSeeder extends Seeder
             ContactSeeder::class,        // Contact submissions
         ]);
 
-        // Create demo data
-        Demo::factory()->count(20)->create();
+        // Demo data removed
     }
 }

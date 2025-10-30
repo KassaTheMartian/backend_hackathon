@@ -16,7 +16,7 @@ namespace App;
  *   @OA\ServerVariable(serverVariable="host", default="localhost:8000")
  * )
  *
- * @OA\Tag(name="Demos", description="Demo resources")
+ *
  * @OA\Tag(name="Users", description="User resources")
  * @OA\Tag(name="Health", description="Health checks and diagnostics")
  * @OA\Tag(name="Auth", description="Authentication and authorization")

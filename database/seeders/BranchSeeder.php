@@ -41,8 +41,8 @@ class BranchSeeder extends Seeder
                     'sunday' => ['08:00', '21:00'],
                 ],
                 'images' => [
-                    'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=800&h=600',
-                    'https://images.unsplash.com/photo-1600335895229-6e75511892c8?w=800&h=600',
+                    '/storage/branches/b1.jpg',
+                    '/storage/branches/b2.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh chính tại trung tâm thành phố với không gian sang trọng, hiện đại. Cung cấp đầy đủ các dịch vụ chăm sóc da mặt và làm đẹp.',
@@ -82,8 +82,8 @@ class BranchSeeder extends Seeder
                     'sunday' => ['10:00', '18:00'],
                 ],
                 'images' => [
-                    'https://images.unsplash.com/photo-1598816284472-0e5e8f7fe0af?w=800&h=600',
-                    'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600',
+                    '/storage/branches/b2.jpg',
+                    '/storage/branches/b3.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh tại khu vực cao cấp Thảo Điền với không gian yên tĩnh, sang trọng. Chuyên về các liệu pháp chăm sóc da cao cấp.',
@@ -123,8 +123,8 @@ class BranchSeeder extends Seeder
                     'sunday' => ['09:00', '19:00'],
                 ],
                 'images' => [
-                    'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=600',
-                    'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&h=600',
+                    '/storage/branches/b3.jpg',
+                    '/storage/branches/b2.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh hiện đại tại khu Nam Sài Gòn với giá cả hợp lý, phục vụ tốt cho cộng đồng địa phương.',
