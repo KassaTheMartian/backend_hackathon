@@ -8,6 +8,7 @@ use App\Http\Requests\Profile\ChangePasswordRequest;
 use App\Http\Requests\Profile\UpdateAvatarRequest;
 use App\Http\Requests\Profile\UpdateLanguageRequest;
 use App\Http\Resources\User\UserResource;
+use App\Http\Resources\Promotion\PromotionResource;
 use App\Services\Contracts\ProfileServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -320,6 +321,6 @@ class ProfileController extends Controller
     {
         $promotions = $this->service->getUserPromotions($request->user()->id);
         
-        return $this->ok($promotions, __('profile.promotions_retrieved'));
+        return $this->ok(PromotionResource::collection($promotions), __('profile.promotions_retrieved'));
     }
 }

@@ -53,7 +53,7 @@ class BranchController extends Controller
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
      *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
-     *
+     * 
      * Display the specified branch by id or slug.
      *
      * @param string $id The branch ID or slug

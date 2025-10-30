@@ -26,12 +26,6 @@ class PaymentController extends Controller
         //
     }
 
-    // Removed Stripe createIntent endpoint
-
-    // Removed Stripe confirm endpoint
-
-    // Removed Stripe webhook endpoint
-
     /**
      * @OA\Get(
      *     path="/api/v1/payments",

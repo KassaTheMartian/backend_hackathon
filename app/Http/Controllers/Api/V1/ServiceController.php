@@ -53,7 +53,7 @@ class ServiceController extends Controller
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
      *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
-     *
+     * 
      * Display the specified service by id or slug.
      *
      * @param string $id The service ID or slug
