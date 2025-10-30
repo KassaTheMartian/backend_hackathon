@@ -34,6 +34,20 @@ class BranchResource extends JsonResource
             'display_order' => $this->display_order,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'services' => $this->whenLoaded('services', function () use ($locale) {
+                return $this->services->map(function ($service) use ($locale) {
+                    return [
+                        'id' => $service->id,
+                        'name' => $this->getLocalizedValue($service->name, $locale),
+                        'price' => $service->price,
+                        'discounted_price' => $service->discounted_price,
+                        'final_price' => $service->final_price,
+                        'duration' => $service->duration,
+                        'is_available' => (bool) ($service->pivot->is_available ?? true),
+                        'custom_price' => $service->pivot->custom_price,
+                    ];
+                })->values();
+            }),
         ];
     }
 }

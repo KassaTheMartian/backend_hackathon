@@ -65,7 +65,8 @@ class BranchController extends Controller
         if (!$branch) {
             $this->notFound(__('branches.not_found'));
         }
-        
+        // Eager load services from branch_services pivot
+        $branch->load(['services']);
         return $this->ok(BranchResource::make($branch), __('branches.retrieved'));
     }
 

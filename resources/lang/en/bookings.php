@@ -17,6 +17,7 @@ return [
     'user_not_authenticated' => 'User not authenticated',
     'service_not_found' => 'Service not found',
     'reschedule_cutoff_exceeded' => 'Reschedule cutoff exceeded',
+    'not_found' => 'Booking not found',
 ];
 
 

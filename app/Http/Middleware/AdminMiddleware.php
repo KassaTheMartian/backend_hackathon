@@ -6,12 +6,19 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Middleware to check if the user is an admin.
+ *
+ * Ensures that only authenticated admin users can access protected routes.
+ */
 class AdminMiddleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param Request $request The incoming request.
+     * @param Closure $next The next middleware.
+     * @return Response The response.
      */
     public function handle(Request $request, Closure $next): Response
     {

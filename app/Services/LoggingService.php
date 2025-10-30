@@ -5,7 +5,13 @@ namespace App\Services;
 use App\Services\Contracts\LoggingServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
+/**
+ * Service for handling application logging.
+ *
+ * Manages API request/response logging, business events, security events, and performance metrics.
+ */
 class LoggingService implements LoggingServiceInterface
 {
     /**
@@ -18,7 +24,7 @@ class LoggingService implements LoggingServiceInterface
             'url' => $request->fullUrl(),
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::user(),
             'request_id' => $request->headers->get('X-Request-Id'),
             'correlation_id' => $request->headers->get('X-Correlation-Id'),
             'start_time' => $startTime,
@@ -45,7 +51,7 @@ class LoggingService implements LoggingServiceInterface
             'url' => $request->fullUrl(),
             'status_code' => $response->getStatusCode(),
             'duration_ms' => round($duration * 1000, 2),
-            'user_id' => auth()->id(),
+            'user_id' => Auth::user(),
             'request_id' => $request->headers->get('X-Request-Id'),
             'correlation_id' => $request->headers->get('X-Correlation-Id'),
         ];
@@ -66,7 +72,7 @@ class LoggingService implements LoggingServiceInterface
     {
         $context = [
             'event' => $event,
-            'user_id' => $userId ?? auth()->id(),
+            'user_id' => $userId ?? Auth::id(),
             'data' => $data,
             'timestamp' => now()->toISOString(),
         ];
@@ -81,7 +87,7 @@ class LoggingService implements LoggingServiceInterface
     {
         $context = [
             'event' => $event,
-            'user_id' => $userId ?? auth()->id(),
+            'user_id' => $userId ?? Auth::id(),
             'ip' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'data' => $data,

@@ -39,7 +39,7 @@ class BookingResource extends JsonResource
                     'address' => $this->branch->address,
                 ];
             }),
-            'staff' => $this->whenLoaded('staff', function () {
+            'staff' => $this->whenLoaded('staff.user', function () {
                 return [
                     'id' => $this->staff->id,
                     'name' => $this->staff->name,

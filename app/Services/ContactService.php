@@ -7,6 +7,11 @@ use App\Repositories\Contracts\ContactRepositoryInterface;
 use App\Services\Contracts\ContactServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
+/**
+ * Service for handling contact submissions.
+ *
+ * Manages contact form submissions, replies, and status updates.
+ */
 class ContactService implements ContactServiceInterface
 {
     public function __construct(

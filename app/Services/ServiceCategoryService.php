@@ -6,6 +6,11 @@ use App\Models\ServiceCategory;
 use App\Repositories\Contracts\ServiceCategoryRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Service for handling service category operations.
+ *
+ * Manages service categories and their organization.
+ */
 class ServiceCategoryService
 {
     public function __construct(

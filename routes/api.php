@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\V1\ContactController as V1ContactController;
 use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
 use App\Http\Controllers\Api\V1\ChatRealTimeController as V1ChatRealTimeController;
 use App\Http\Controllers\Api\V1\ProfileController as V1ProfileController;
+use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
+use App\Http\Controllers\Api\V1\StaffController as V1StaffController;
 
 // Apply locale + rate limiting middleware to all API routes
 Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->group(function () {
@@ -42,6 +44,8 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::get('/branches', action: [V1BranchController::class, 'index']);
         Route::get('/branches/{id}', action: [V1BranchController::class, 'show']);
         Route::get('/branches/{id}/available-slots', action: [V1BranchController::class, 'availableSlots']);
+        Route::get('/staff', action: [V1StaffController::class, 'index']);
+        Route::get('/branches/{branch}/staff', action: [V1StaffController::class, 'byBranch']);
 
         Route::get('/reviews', action: [V1ReviewController::class, 'index']);
         Route::get('/reviews/{id}', action: [V1ReviewController::class, 'show']);
@@ -61,12 +65,9 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::post('/chat/guest/{sessionId}/transfer-human', [V1ChatRealTimeController::class, 'transferToHuman']);
         Route::get('/chat/guest/{sessionId}/messages', [V1ChatRealTimeController::class, 'getNewMessages']);
 
-        Route::post('/chatbot/message', [V1ChatbotController::class, 'sendMessage']);
-        Route::get('/chatbot/sessions', [V1ChatbotController::class, 'sessions']);
-        Route::post('/chatbot/sessions', [V1ChatbotController::class, 'createSession']);
-        Route::get('/chatbot/sessions/{id}', [V1ChatbotController::class, 'show']);
-        Route::delete('/chatbot/sessions/{id}', [V1ChatbotController::class, 'destroy']);
-        Route::delete('/chatbot/sessions/{id}/messages', [V1ChatbotController::class, 'clearMessages']);
+        // Chatbot - available for both guests and authenticated users
+        Route::post('/chatbot', [V1ChatbotController::class, 'chat']);
+
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
         Route::post('/bookings/{id}/reschedule', [V1BookingController::class, 'reschedule']);
         Route::get('/availability', [V1BookingController::class, 'availability']);
@@ -87,11 +88,6 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
 
         // Authenticated routes
         Route::middleware('auth:sanctum')->group(function () {
-            // Chat Real-time staff routes
-            Route::post('/chat/sessions/{id}/staff-message', [V1ChatRealTimeController::class, 'staffSendMessage']);
-            Route::get('/chat/sessions/{id}/messages', [V1ChatRealTimeController::class, 'getSessionMessages']);
-            Route::get('/chat/staff/sessions', [V1ChatRealTimeController::class, 'getStaffSessions']);
-            
             // Bookings
             Route::post('/bookings', [V1BookingController::class, 'store']);
             Route::put('/bookings/{id}', [V1BookingController::class, 'update']);

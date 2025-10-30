@@ -10,6 +10,11 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Service for handling user profile operations.
+ *
+ * Manages profile updates, avatar management, password changes, and user statistics.
+ */
 class ProfileService implements ProfileServiceInterface
 {
     public function __construct(

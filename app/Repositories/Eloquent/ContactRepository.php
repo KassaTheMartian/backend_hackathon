@@ -6,18 +6,37 @@ use App\Models\ContactSubmission;
 use App\Repositories\Contracts\ContactRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
+/**
+ * Class ContactRepository
+ */
 class ContactRepository extends BaseRepository implements ContactRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param ContactSubmission $model
+     */
     public function __construct(ContactSubmission $model)
     {
         parent::__construct($model);
     }
 
+    /**
+     * Get allowed includes for eager loading.
+     *
+     * @return array
+     */
     protected function allowedIncludes(): array
     {
         return [];
     }
 
+    /**
+     * Get contact submissions with filters.
+     *
+     * @param array $filters
+     * @return LengthAwarePaginator
+     */
     public function getWithFilters(array $filters = []): LengthAwarePaginator
     {
         $query = $this->query();
@@ -39,18 +58,37 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
         return $query->paginate($filters['per_page'] ?? 15);
     }
 
+    /**
+     * Mark a submission as read.
+     *
+     * @param ContactSubmission $submission
+     * @return ContactSubmission
+     */
     public function markAsRead(ContactSubmission $submission): ContactSubmission
     {
         $submission->update(['status' => 'read']);
         return $submission;
     }
 
+    /**
+     * Mark a submission as unread.
+     *
+     * @param ContactSubmission $submission
+     * @return ContactSubmission
+     */
     public function markAsUnread(ContactSubmission $submission): ContactSubmission
     {
         $submission->update(['status' => 'unread']);
         return $submission;
     }
 
+    /**
+     * Reply to a submission.
+     *
+     * @param ContactSubmission $submission
+     * @param string $reply
+     * @return ContactSubmission
+     */
     public function reply(ContactSubmission $submission, string $reply): ContactSubmission
     {
         $submission->update([
@@ -61,6 +99,11 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
         return $submission;
     }
 
+    /**
+     * Get the count of unread submissions.
+     *
+     * @return int
+     */
     public function getUnreadCount(): int
     {
         return $this->query()->where('status', 'unread')->count();

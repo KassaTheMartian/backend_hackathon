@@ -123,49 +123,6 @@ return new class extends Migration
             $table->index('user_id');
         });
 
-        // Chat Sessions table
-        Schema::create('chat_sessions', function (Blueprint $table) {
-            $table->id();
-            $table->string('session_id', 100)->unique();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
-            $table->string('guest_name')->nullable();
-            $table->string('guest_email')->nullable();
-            
-            $table->enum('status', ['active', 'closed', 'transferred'])->default('active');
-            $table->foreignId('assigned_to')->nullable()->constrained('staff')->onDelete('set null')->comment('Staff member ID');
-            
-            $table->timestamp('started_at')->useCurrent();
-            $table->timestamp('ended_at')->nullable();
-            
-            $table->json('metadata')->nullable();
-            
-            $table->index('session_id');
-            $table->index('user_id');
-            $table->index('status');
-        });
-
-        // Chat Messages table
-        Schema::create('chat_messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('session_id')->constrained('chat_sessions')->onDelete('cascade');
-            $table->foreignId('sender_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->enum('sender_type', ['user', 'staff', 'bot']);
-            
-            $table->text('message');
-            $table->enum('message_type', ['text', 'image', 'file', 'system'])->default('text');
-            
-            $table->boolean('is_bot')->default(false);
-            $table->decimal('bot_confidence', 3, 2)->nullable();
-            
-            $table->json('metadata')->nullable();
-            
-            $table->timestamp('read_at')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-
-            $table->index('session_id');
-            $table->index('created_at');
-        });
-
         // Contact Submissions table
         Schema::create('contact_submissions', function (Blueprint $table) {
             $table->id();
@@ -234,8 +191,6 @@ return new class extends Migration
         Schema::dropIfExists('activity_logs');
         Schema::dropIfExists('settings');
         Schema::dropIfExists('contact_submissions');
-        Schema::dropIfExists('chat_messages');
-        Schema::dropIfExists('chat_sessions');
         Schema::dropIfExists('promotion_usages');
         Schema::dropIfExists('promotions');
         Schema::dropIfExists('post_tag_pivot');

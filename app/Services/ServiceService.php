@@ -11,6 +11,11 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
+/**
+ * Service for handling service operations.
+ *
+ * Manages beauty services, categories, and availability.
+ */
 class ServiceService implements ServiceServiceInterface
 {
     /**

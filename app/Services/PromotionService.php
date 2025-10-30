@@ -2,11 +2,17 @@
 
 namespace App\Services;
 
+use App\Exceptions\BusinessException;
 use App\Models\Promotion;
 use App\Models\User;
 use App\Repositories\Contracts\PromotionRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
+/**
+ * Service for handling promotion operations.
+ *
+ * Manages promotions, discounts, and coupon validation.
+ */
 class PromotionService
 {
     public function __construct(
@@ -31,30 +37,38 @@ class PromotionService
 
     /**
      * Validate promotion code.
+     * 
+     * @throws BusinessException
      */
     public function validatePromotionCode(string $code, User $user, float $amount = 0): array
     {
         $promotion = $this->getPromotionByCode($code);
         
         if (!$promotion) {
-            return [
-                'valid' => false,
-                'message' => 'Mã khuyến mãi không tồn tại'
-            ];
+            throw new BusinessException(
+                __('promotions.not_found'),
+                'Promotion Not Found',
+                'PROMOTION_NOT_FOUND',
+                404
+            );
         }
 
         if (!$promotion->isValid()) {
-            return [
-                'valid' => false,
-                'message' => 'Mã khuyến mãi đã hết hạn hoặc không còn hiệu lực'
-            ];
+            throw new BusinessException(
+                __('promotions.expired'),
+                'Promotion Expired',
+                'PROMOTION_EXPIRED',
+                422
+            );
         }
 
         if (!$promotion->canBeUsedBy($user, $amount)) {
-            return [
-                'valid' => false,
-                'message' => 'Mã khuyến mãi không thể sử dụng cho đơn hàng này'
-            ];
+            throw new BusinessException(
+                __('promotions.cannot_be_used'),
+                'Promotion Cannot Be Used',
+                'PROMOTION_CANNOT_BE_USED',
+                422
+            );
         }
 
         return [

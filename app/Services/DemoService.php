@@ -9,6 +9,11 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
+/**
+ * Service for handling demo operations.
+ *
+ * Manages demo listings, creation, updates, and deletions with access control.
+ */
 class DemoService implements DemoServiceInterface
 {
     /**

@@ -140,6 +140,50 @@
                 }
             }
         },
+        "/api/v1/auth/verify-otp": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verify OTP and mark email as verified",
+                "operationId": "130b1763a31d0416a0aa3a799ee12827",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "otp"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "otp": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/me": {
             "get": {
                 "tags": [
@@ -231,13 +275,13 @@
                 ]
             }
         },
-        "/api/v1/auth/forgot-password": {
+        "/api/v1/auth/send-reset-otp": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Send password reset link",
-                "operationId": "258f8322e6e587094f858db597dee996",
+                "summary": "Send OTP for password reset",
+                "operationId": "969591b8d031789d488013eaedfcf9d9",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -267,45 +311,35 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
                     }
                 }
             }
         },
-        "/api/v1/auth/reset-password": {
+        "/api/v1/auth/reset-password-otp": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Reset password with token",
-                "operationId": "1032a68842312eda819d0b4888495d2b",
+                "summary": "Reset password using OTP",
+                "operationId": "d625f9cbcbaac0969b79a3449fbd01d2",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "token",
                                     "email",
+                                    "otp",
                                     "password",
                                     "password_confirmation"
                                 ],
                                 "properties": {
-                                    "token": {
-                                        "type": "string"
-                                    },
                                     "email": {
                                         "type": "string",
                                         "format": "email"
+                                    },
+                                    "otp": {
+                                        "type": "string"
                                     },
                                     "password": {
                                         "type": "string"
@@ -322,16 +356,6 @@
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -395,46 +419,6 @@
             }
         },
         "/api/v1/bookings": {
-            "get": {
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "List bookings",
-                "operationId": "2f7e7260c708227e4c44de9d5b59ea36",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
             "post": {
                 "tags": [
                     "Bookings"
@@ -513,51 +497,6 @@
             }
         },
         "/api/v1/bookings/{id}": {
-            "get": {
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "Get booking by id",
-                "operationId": "fd0155f99c405cf6978c540b2fd76f64",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The booking ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
             "put": {
                 "tags": [
                     "Bookings"
@@ -767,6 +706,244 @@
                 ]
             }
         },
+        "/api/v1/availability": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Search available slots",
+                "operationId": "04fab772f2c44dc30b38944f9e31e57c",
+                "parameters": [
+                    {
+                        "name": "branch_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "service_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "staff_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "granularity",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                5,
+                                10,
+                                15,
+                                20,
+                                30
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/{id}/reschedule": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Reschedule a booking",
+                "operationId": "780a46e3475907328dd52dce6c43cff9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "booking_date",
+                                    "booking_time"
+                                ],
+                                "properties": {
+                                    "booking_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "booking_time": {
+                                        "type": "string",
+                                        "format": "time"
+                                    },
+                                    "staff_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/guest-booking/send-otp": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Send OTP for guest booking",
+                "operationId": "a1ce873e9df8932639c968f689049f76",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "guest_email"
+                                ],
+                                "properties": {
+                                    "guest_email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/guest-bookings": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get guest bookings by email with OTP",
+                "operationId": "ce85a506cb8703589b0ac513d8cfd32b",
+                "parameters": [
+                    {
+                        "name": "guest_email",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    },
+                    {
+                        "name": "guest_email_otp",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/branches": {
             "get": {
                 "tags": [
@@ -802,91 +979,6 @@
                         }
                     }
                 }
-            },
-            "post": {
-                "tags": [
-                    "Branches"
-                ],
-                "summary": "Create branch",
-                "operationId": "1a393da87693d1a4f7e0f3a5d3c21ddf",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "address",
-                                    "phone",
-                                    "email",
-                                    "latitude",
-                                    "longitude",
-                                    "opening_hours"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "address": {
-                                        "type": "string"
-                                    },
-                                    "phone": {
-                                        "type": "string"
-                                    },
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "image": {
-                                        "type": "string"
-                                    },
-                                    "latitude": {
-                                        "type": "number"
-                                    },
-                                    "longitude": {
-                                        "type": "number"
-                                    },
-                                    "opening_hours": {
-                                        "type": "string"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/v1/branches/{id}": {
@@ -929,141 +1021,6 @@
                         }
                     }
                 }
-            },
-            "put": {
-                "tags": [
-                    "Branches"
-                ],
-                "summary": "Update branch",
-                "operationId": "5cb0900ca09bbf2406060b68e38ebd7f",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The branch ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "address": {
-                                        "type": "string"
-                                    },
-                                    "phone": {
-                                        "type": "string"
-                                    },
-                                    "email": {
-                                        "type": "string"
-                                    },
-                                    "image": {
-                                        "type": "string"
-                                    },
-                                    "latitude": {
-                                        "type": "number"
-                                    },
-                                    "longitude": {
-                                        "type": "number"
-                                    },
-                                    "opening_hours": {
-                                        "type": "string"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Branches"
-                ],
-                "summary": "Delete branch",
-                "operationId": "5c770151a4391f06dc9379908fdb7e86",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The branch ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/v1/branches/{id}/available-slots": {
@@ -1132,229 +1089,14 @@
                 }
             }
         },
-        "/api/v1/chatbot/sessions": {
-            "get": {
-                "tags": [
-                    "Chatbot"
-                ],
-                "summary": "List chat sessions",
-                "operationId": "18c9a89224e4d8e4208a713ffbe59d74",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
+        "/api/v1/chatbot": {
             "post": {
                 "tags": [
                     "Chatbot"
                 ],
-                "summary": "Create chat session",
-                "operationId": "f88272ffcf77af28232b56083cb727b1",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "title": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/chatbot/sessions/{id}": {
-            "get": {
-                "tags": [
-                    "Chatbot"
-                ],
-                "summary": "Get chat session by id",
-                "operationId": "121cf477935e0d2a9ce13f06f8a8283c",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The chat session ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Chatbot"
-                ],
-                "summary": "Delete chat session",
-                "operationId": "13fd7e7b6669583739f0b2e906271356",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The chat session ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/chatbot/sessions/{id}/messages": {
-            "get": {
-                "tags": [
-                    "Chatbot"
-                ],
-                "summary": "Get chat messages for session",
-                "operationId": "da1eb431b01fb63a75a2a63073d2f540",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The chat session ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Chatbot"
-                ],
-                "summary": "Send message to chatbot",
-                "operationId": "0aef930f69591bb02271b527bb444206",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The chat session ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "summary": "Chat with AI assistant",
+                "description": "Send a message to the AI chatbot and receive a response. Available for both authenticated and guest users.",
+                "operationId": "3a22d0308da71b9333aeca640befa4f8",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1365,7 +1107,15 @@
                                 ],
                                 "properties": {
                                     "message": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "maxLength": 1000,
+                                        "minLength": 1,
+                                        "example": "Tôi muốn biết thông tin về dịch vụ chăm sóc da"
+                                    },
+                                    "session_key": {
+                                        "description": "Optional client-side session key for guest users (store in localStorage/cookie)",
+                                        "type": "string",
+                                        "example": "b7f3a9e2-..."
                                     }
                                 },
                                 "type": "object"
@@ -1375,21 +1125,39 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Response generated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Chúng tôi cung cấp các dịch vụ chăm sóc da..."
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "locale": {
+                                                    "type": "string",
+                                                    "example": "vi"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -1403,37 +1171,9 @@
                                 }
                             }
                         }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Chatbot"
-                ],
-                "summary": "Clear chat session messages",
-                "operationId": "da6cac8ab1498f58927a30514156cbc7",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The chat session ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "Server Error",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1442,66 +1182,10 @@
                             }
                         }
                     }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
+                }
             }
         },
         "/api/v1/contacts": {
-            "get": {
-                "tags": [
-                    "Contacts"
-                ],
-                "summary": "List contact submissions",
-                "operationId": "7ba58fcc6fbe7a027323651586d2fd7f",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "status",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "read",
-                                "unread"
-                            ]
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
             "post": {
                 "tags": [
                     "Contacts"
@@ -1540,9 +1224,9 @@
                                         "type": "string",
                                         "enum": [
                                             "general",
+                                            "inquiry",
                                             "complaint",
-                                            "suggestion",
-                                            "support"
+                                            "suggestion"
                                         ]
                                     }
                                 },
@@ -1573,251 +1257,6 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/v1/contacts/{id}": {
-            "get": {
-                "tags": [
-                    "Contacts"
-                ],
-                "summary": "Get contact submission by id",
-                "operationId": "9ff6ecca2b683fe6e04145d21cd2412e",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The contact submission ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "Contacts"
-                ],
-                "summary": "Update contact submission",
-                "operationId": "8bc3f68d02a3ef418ed0e40785c91da1",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The contact submission ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "status": {
-                                        "type": "string",
-                                        "enum": [
-                                            "read",
-                                            "unread"
-                                        ]
-                                    },
-                                    "priority": {
-                                        "type": "string",
-                                        "enum": [
-                                            "low",
-                                            "medium",
-                                            "high"
-                                        ]
-                                    },
-                                    "notes": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Contacts"
-                ],
-                "summary": "Delete contact submission",
-                "operationId": "b9811eb977a1c3d348dbe900e8bc2f69",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The contact submission ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/contacts/{id}/reply": {
-            "post": {
-                "tags": [
-                    "Contacts"
-                ],
-                "summary": "Reply to contact submission",
-                "operationId": "d408d450ddfc194b258391e3e5dee939",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The contact submission ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "reply"
-                                ],
-                                "properties": {
-                                    "reply": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/v1/demos": {
@@ -2056,13 +1495,81 @@
                 }
             }
         },
-        "/api/v1/payments/intent": {
+        "/api/v1/payments": {
+            "get": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "List payments",
+                "operationId": "e8d0c8549aa2ea8bba8769dd1925862f",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "completed",
+                                "failed",
+                                "refunded"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "payment_method",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "vnpay",
+                                "stripe",
+                                "card",
+                                "online"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/payments/vnpay/create": {
             "post": {
                 "tags": [
                     "Payments"
                 ],
-                "summary": "Create payment intent",
-                "operationId": "244df0a5fe6f025b0ca856191a233c28",
+                "summary": "Create VNPay payment URL",
+                "operationId": "d3379ab46f7c201dd7d0439d6ef71c6f",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2074,73 +1581,28 @@
                                 "properties": {
                                     "booking_id": {
                                         "type": "integer"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/payments/confirm": {
-            "post": {
-                "tags": [
-                    "Payments"
-                ],
-                "summary": "Confirm payment",
-                "operationId": "44fe27737fbdf48934f11b59ace7a4b9",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "booking_id",
-                                    "payment_intent_id",
-                                    "payment_method"
-                                ],
-                                "properties": {
-                                    "booking_id": {
-                                        "type": "integer"
                                     },
-                                    "payment_intent_id": {
-                                        "type": "string"
-                                    },
-                                    "payment_method": {
+                                    "bank_code": {
                                         "type": "string",
                                         "enum": [
-                                            "stripe",
-                                            "card",
-                                            "online"
+                                            "",
+                                            "VNPAYQR",
+                                            "VNBANK",
+                                            "INTCARD"
                                         ]
+                                    },
+                                    "language": {
+                                        "type": "string",
+                                        "enum": [
+                                            "vi",
+                                            "en"
+                                        ]
+                                    },
+                                    "guest_email": {
+                                        "type": "string"
+                                    },
+                                    "guest_phone": {
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -2158,9 +1620,20 @@
                                 }
                             }
                         }
-                    },
-                    "422": {
-                        "description": "Validation Error",
+                    }
+                }
+            }
+        },
+        "/api/v1/payments/vnpay/return": {
+            "get": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Handle VNPay return URL",
+                "operationId": "dce42ef5fe648211e4915e4ecb83f9c0",
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2169,39 +1642,51 @@
                             }
                         }
                     }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
+                }
             }
         },
-        "/api/v1/payments/webhook": {
+        "/api/v1/payments/vnpay/ipn": {
             "post": {
                 "tags": [
                     "Payments"
                 ],
-                "summary": "Handle Stripe webhook",
-                "operationId": "4ce4817727fef48fb4e50d0d0555595d",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "type": {
-                                        "type": "string"
-                                    },
-                                    "data": {
-                                        "type": "object"
-                                    }
-                                },
-                                "type": "object"
+                "summary": "Handle VNPay IPN",
+                "operationId": "18c446e1d722511575d4df57eca307f5",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/payments/vnpay/refund": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Refund VNPay transaction",
+                "operationId": "6ebd456bf5b696827161bbb8472f0bcc",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
                             }
                         }
                     }
-                },
+                }
+            }
+        },
+        "/api/v1/payments/vnpay/query": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Query VNPay transaction",
+                "operationId": "1c85d22aa4287c377a1a80b9431c50f2",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2258,13 +1743,6 @@
                         "schema": {
                             "type": "boolean"
                         }
-                    },
-                    {
-                        "name": "locale",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
                 "responses": {
@@ -2279,83 +1757,6 @@
                         }
                     }
                 }
-            },
-            "post": {
-                "tags": [
-                    "Posts"
-                ],
-                "summary": "Create post",
-                "operationId": "b996500c6caf55100cd024d3e3b49dd5",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "title",
-                                    "content"
-                                ],
-                                "properties": {
-                                    "title": {
-                                        "type": "string"
-                                    },
-                                    "content": {
-                                        "type": "string"
-                                    },
-                                    "excerpt": {
-                                        "type": "string"
-                                    },
-                                    "featured_image": {
-                                        "type": "string"
-                                    },
-                                    "category_id": {
-                                        "type": "integer"
-                                    },
-                                    "tags": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "is_published": {
-                                        "type": "boolean"
-                                    },
-                                    "locale": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/v1/posts/{id}": {
@@ -2363,22 +1764,15 @@
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Get post by id",
+                "summary": "Get post by id or slug",
                 "operationId": "db686e4ed73ae7ca2424e0a4f740c8b2",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The post ID",
                         "required": true,
                         "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "locale",
-                        "in": "query",
-                        "schema": {
+                            "description": "Post ID or slug",
                             "type": "string"
                         }
                     }
@@ -2405,63 +1799,25 @@
                         }
                     }
                 }
-            },
-            "put": {
+            }
+        },
+        "/api/v1/posts/featured": {
+            "get": {
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Update post",
-                "operationId": "98c3c32a86125c864caa21999f234493",
+                "summary": "Get featured posts",
+                "operationId": "1daca9de99f7d004362fc63951381ea4",
                 "parameters": [
                     {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The post ID",
-                        "required": true,
+                        "name": "limit",
+                        "in": "query",
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "default": 6
                         }
                     }
                 ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "title": {
-                                        "type": "string"
-                                    },
-                                    "content": {
-                                        "type": "string"
-                                    },
-                                    "excerpt": {
-                                        "type": "string"
-                                    },
-                                    "featured_image": {
-                                        "type": "string"
-                                    },
-                                    "category_id": {
-                                        "type": "integer"
-                                    },
-                                    "tags": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        }
-                                    },
-                                    "is_published": {
-                                        "type": "boolean"
-                                    },
-                                    "locale": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2472,57 +1828,20 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
                     }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
+                }
+            }
+        },
+        "/api/v1/post-categories": {
+            "get": {
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Delete post",
-                "operationId": "82927d2153173c1a7d6ab1e9d52ff56e",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The post ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
+                "summary": "List post categories",
+                "operationId": "016427c01156ec07adfd6b295ae5b9f6",
                 "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
+                    "200": {
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2531,12 +1850,28 @@
                             }
                         }
                     }
-                },
-                "security": [
-                    {
-                        "sanctum": []
+                }
+            }
+        },
+        "/api/v1/post-tags": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "List post tags",
+                "operationId": "b15059d0336cf2da18bce9b1d0456173",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
                     }
-                ]
+                }
             }
         },
         "/api/v1/profile": {
@@ -2926,6 +2261,32 @@
                 ]
             }
         },
+        "/api/v1/profile/promotions": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get user available promotions",
+                "operationId": "03ec180fc6ff2ea20405d592ede3ccee",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/reviews": {
             "get": {
                 "tags": [
@@ -3094,6 +2455,244 @@
                 }
             }
         },
+        "/api/v1/reviews/pending": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "List pending reviews (admin)",
+                "operationId": "3accfe913bb90196e97cf23a2c63b76b",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reviews/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Approve review (admin)",
+                "operationId": "aad331fb42b6d1e802926d94690aa8db",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reviews/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Reject review (admin)",
+                "operationId": "4d8039095f373253789180ad8f1bf97a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "reason": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reviews/{id}/respond": {
+            "post": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Respond to a review (admin)",
+                "operationId": "f28e80524ce7109302162577e22cd85d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "admin_response"
+                                ],
+                                "properties": {
+                                    "admin_response": {
+                                        "type": "string",
+                                        "maxLength": 1000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/services": {
             "get": {
                 "tags": [
@@ -3115,13 +2714,6 @@
                         "schema": {
                             "type": "integer"
                         }
-                    },
-                    {
-                        "name": "locale",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
                 "responses": {
@@ -3136,85 +2728,6 @@
                         }
                     }
                 }
-            },
-            "post": {
-                "tags": [
-                    "Services"
-                ],
-                "summary": "Create service",
-                "operationId": "b9fd7c793f65af72b2c4e91b4773220a",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name",
-                                    "price",
-                                    "duration",
-                                    "category_id"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "price": {
-                                        "type": "number"
-                                    },
-                                    "duration": {
-                                        "type": "integer"
-                                    },
-                                    "category_id": {
-                                        "type": "integer"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean"
-                                    },
-                                    "image": {
-                                        "type": "string"
-                                    },
-                                    "features": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/v1/services/{id}": {
@@ -3233,13 +2746,6 @@
                         "schema": {
                             "type": "integer"
                         }
-                    },
-                    {
-                        "name": "locale",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
                 "responses": {
@@ -3264,138 +2770,6 @@
                         }
                     }
                 }
-            },
-            "put": {
-                "tags": [
-                    "Services"
-                ],
-                "summary": "Update service",
-                "operationId": "ca0d914039198efb0d6a0a5242999a96",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The service ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "price": {
-                                        "type": "number"
-                                    },
-                                    "duration": {
-                                        "type": "integer"
-                                    },
-                                    "category_id": {
-                                        "type": "integer"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean"
-                                    },
-                                    "image": {
-                                        "type": "string"
-                                    },
-                                    "features": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Services"
-                ],
-                "summary": "Delete service",
-                "operationId": "284f2fc04534a4a5d77b970203f4e892",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The service ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
             }
         },
         "/api/v1/service-categories": {
@@ -3405,15 +2779,6 @@
                 ],
                 "summary": "Get service categories",
                 "operationId": "8b99866de0c2b55a0039067c33613f24",
-                "parameters": [
-                    {
-                        "name": "locale",
-                        "in": "query",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3428,13 +2793,13 @@
                 }
             }
         },
-        "/api/v1/users": {
+        "/api/v1/staff": {
             "get": {
                 "tags": [
-                    "Users"
+                    "Staff"
                 ],
-                "summary": "List users",
-                "operationId": "12e989554c281d650dff75443acabf54",
+                "summary": "List staff (public)",
+                "operationId": "49eec1fde10366bcb2415cd52bf5c702",
                 "parameters": [
                     {
                         "name": "page",
@@ -3449,6 +2814,42 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sortable fields: id,rating,years_of_experience",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "asc|desc",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "include",
+                        "in": "query",
+                        "description": "Comma-separated relations: user,branch,services",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "position",
+                        "in": "query",
+                        "description": "Filter by position (LIKE)",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -3461,39 +2862,74 @@
                                 }
                             }
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
                     }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
+                }
             }
         },
-        "/api/v1/users/{id}": {
+        "/api/v1/branches/{branch}/staff": {
             "get": {
                 "tags": [
-                    "Users"
+                    "Staff"
                 ],
-                "summary": "Get user by id",
-                "operationId": "a9d321d5dc6bc2613c6cf5ba92b76c89",
+                "summary": "List staff by branch (public)",
+                "operationId": "554bf0c39bef172bb8ab8c510a84f993",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "branch",
                         "in": "path",
                         "required": true,
                         "schema": {
                             "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sortable fields: id,rating,years_of_experience",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "asc|desc",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "include",
+                        "in": "query",
+                        "description": "Comma-separated relations: user,branch,services",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "position",
+                        "in": "query",
+                        "description": "Filter by position (LIKE)",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -3507,163 +2943,8 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
                     }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "put": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Update user",
-                "operationId": "5bcda8371b3cb9f863a47620e636be9b",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Delete user",
-                "operationId": "0446b3779430bbd9ca0f106d9fd0a2ed",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
+                }
             }
         }
     },
@@ -3894,6 +3175,23 @@
                 }
             }
         },
+        "parameters": {
+            "AcceptLanguage": {
+                "name": "Accept-Language",
+                "in": "header",
+                "description": "Preferred language for localized fields (vi,en,ja,zh)",
+                "required": false,
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "vi",
+                        "en",
+                        "ja",
+                        "zh"
+                    ]
+                }
+            }
+        },
         "securitySchemes": {
             "sanctum": {
                 "type": "apiKey",
@@ -3909,48 +3207,48 @@
             "description": "Demo resources"
         },
         {
-            "name": "Users",
-            "description": "User resources"
-        },
-        {
             "name": "Auth",
-            "description": "Auth"
+            "description": "Authentication and authorization"
         },
         {
             "name": "Bookings",
-            "description": "Bookings"
+            "description": "Booking management"
         },
         {
             "name": "Branches",
-            "description": "Branches"
+            "description": "Branch management"
         },
         {
             "name": "Chatbot",
-            "description": "Chatbot"
+            "description": "Chatbot interactions"
         },
         {
             "name": "Contacts",
-            "description": "Contacts"
+            "description": "Contact management"
         },
         {
             "name": "Payments",
-            "description": "Payments"
+            "description": "Payment processing"
         },
         {
             "name": "Posts",
-            "description": "Posts"
+            "description": "Post management"
         },
         {
             "name": "Profile",
-            "description": "Profile"
+            "description": "User profile management"
         },
         {
             "name": "Reviews",
-            "description": "Reviews"
+            "description": "Review management"
         },
         {
             "name": "Services",
-            "description": "Services"
+            "description": "Service management"
+        },
+        {
+            "name": "Staff",
+            "description": "Staff directory and profiles"
         }
     ]
 }

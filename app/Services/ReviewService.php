@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Data\Review\ReviewData;
+use App\Exceptions\BusinessException;
 use App\Models\Review;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\ReviewRepositoryInterface;
 use App\Services\Contracts\ReviewServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -12,10 +14,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // added
 
+/**
+ * Service for handling review operations.
+ *
+ * Manages customer reviews, approvals, and responses.
+ */
 class ReviewService implements ReviewServiceInterface
 {
 	public function __construct(
-		private ReviewRepositoryInterface $reviewRepository
+		private ReviewRepositoryInterface $reviewRepository,
+		private BookingRepositoryInterface $bookingRepository
 	) {}
 
 	/**
@@ -40,19 +48,32 @@ class ReviewService implements ReviewServiceInterface
 	/**
 	 * Create a new review from booking.
 	 * Automatically extracts service_id, staff_id, branch_id from booking.
+	 * 
+	 * @throws BusinessException
 	 */
 	public function createFromBooking(array $reviewData, int $userId): Model
 	{
 		// Fetch booking to get service_id, staff_id, branch_id
-		$booking = \App\Models\Booking::findOrFail($reviewData['booking_id']);
+		$booking = $this->bookingRepository->getById($reviewData['booking_id']);
+		
+		if (!$booking) {
+			throw new BusinessException(
+				__('bookings.not_found'),
+				'Booking Not Found',
+				'BOOKING_NOT_FOUND',
+				404
+			);
+		}
 		
 		// Prevent duplicate review per booking by same user
-		$exists = Review::where('booking_id', $booking->id)
-			->where('user_id', $userId)
-			->exists();
-        if ($exists) {
-            throw new \Exception(__('reviews.duplicate_review'));
-        }
+		if ($this->reviewRepository->hasUserReviewedBooking($booking->id, $userId)) {
+			throw new BusinessException(
+				__('reviews.duplicate_review'),
+				'Duplicate Review',
+				'DUPLICATE_REVIEW',
+				422
+			);
+		}
 
 		// Merge user_id and booking-related fields
 		$data = array_merge($reviewData, [
@@ -141,10 +162,7 @@ class ReviewService implements ReviewServiceInterface
 	public function pending(Request $request): LengthAwarePaginator
 	{
 		$perPage = (int) $request->query('per_page', 15);
-		return Review::with(['user','service','staff','branch'])
-			->where('is_approved', false)
-			->latest('id')
-			->paginate($perPage);
+		return $this->reviewRepository->getPending($perPage);
 	}
 
 	public function respondToReview(Review $review, string $message): Review

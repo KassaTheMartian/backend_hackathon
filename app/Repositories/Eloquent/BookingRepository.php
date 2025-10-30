@@ -10,18 +10,37 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Class BookingRepository
+ */
 class BookingRepository extends BaseRepository implements BookingRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param Booking $model
+     */
     public function __construct(Booking $model)
     {
         parent::__construct($model);
     }
 
+    /**
+     * Paginate with filters.
+     *
+     * @param Request $request
+     * @return mixed
+     */
     public function paginateWithFilters(Request $request)
     {
         return $this->paginateWithRequest($request, sortable: ['id', 'booking_date', 'created_at'], filterable: ['status', 'branch_id', 'service_id', 'user_id']);
     }
 
+    /**
+     * Get allowed includes for eager loading.
+     *
+     * @return array
+     */
     protected function allowedIncludes(): array
     {
         // Whitelist relations that can be eager loaded via ?include=rel1,rel2

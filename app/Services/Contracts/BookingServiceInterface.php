@@ -10,16 +10,54 @@ use Illuminate\Http\Request;
 
 interface BookingServiceInterface
 {
+    /**
+     * List bookings with pagination.
+     *
+     * @param Request $request The HTTP request.
+     * @return LengthAwarePaginator
+     */
     public function list(Request $request): LengthAwarePaginator;
 
+    /**
+     * Create a new booking.
+     *
+     * @param BookingData $data The booking data.
+     * @return Model
+     */
     public function create(BookingData $data): Model;
 
+    /**
+     * Find a booking by ID.
+     *
+     * @param int $id The booking ID.
+     * @return Model|null
+     */
     public function find(int $id): ?Model;
 
+    /**
+     * Update a booking.
+     *
+     * @param int $id The booking ID.
+     * @param UpdateBookingData $data The updated booking data.
+     * @return Model|null
+     */
     public function update(int $id, UpdateBookingData $data): ?Model;
 
+    /**
+     * Cancel a booking.
+     *
+     * @param int $id The booking ID.
+     * @param string $reason The cancellation reason.
+     * @return Model|null
+     */
     public function cancel(int $id, string $reason): ?Model;
 
+    /**
+     * Get user's bookings.
+     *
+     * @param Request $request The HTTP request.
+     * @return LengthAwarePaginator
+     */
     public function myBookings(Request $request): LengthAwarePaginator;
 
     /**

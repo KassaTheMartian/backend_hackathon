@@ -8,18 +8,37 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
+/**
+ * Class ServiceRepository
+ */
 class ServiceRepository extends BaseRepository implements ServiceRepositoryInterface
 {
+    /**
+     * Create a new repository instance.
+     *
+     * @param Service $model
+     */
     public function __construct(Service $model)
     {
         parent::__construct($model);
     }
 
+    /**
+     * Paginate with filters.
+     *
+     * @param Request $request
+     * @return mixed
+     */
     public function paginateWithFilters(Request $request)
     {
         return $this->paginateWithRequest($request, sortable: ['id', 'name', 'price', 'display_order', 'created_at'], filterable: ['category_id', 'is_active', 'is_featured']);
     }
 
+    /**
+     * Get allowed includes for eager loading.
+     *
+     * @return array
+     */
     protected function allowedIncludes(): array
     {
         // Whitelist relations that can be eager loaded via ?include=rel1,rel2
