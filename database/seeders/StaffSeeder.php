@@ -34,6 +34,8 @@ class StaffSeeder extends Seeder
                     'bio' => [
                         'vi' => 'Chuyên gia chăm sóc da với 10 năm kinh nghiệm. Đã được đào tạo về các công nghệ làm đẹp tiên tiến.',
                         'en' => 'Skin care expert with 10 years of experience. Trained in advanced beauty technologies.',
+                        'ja' => '10年の経験を持つスキンケア専門家。先進的な美容技術を習得。',
+                        'zh' => '拥有10年经验的皮肤护理专家，受过先进美容技术培训。',
                     ],
                     'years_of_experience' => 10,
                     'certifications' => ['Advanced Facial Care', 'Laser Treatment', 'Acne Specialist'],
@@ -50,6 +52,8 @@ class StaffSeeder extends Seeder
                     'bio' => [
                         'vi' => 'Chuyên gia chống lão hóa với kinh nghiệm lâu năm trong việc điều trị các vấn đề về da.',
                         'en' => 'Anti-aging specialist with years of experience in treating skin problems.',
+                        'ja' => '豊富な経験を持つアンチエイジングのスペシャリスト。',
+                        'zh' => '拥有多年经验的抗衰老专家。',
                     ],
                     'years_of_experience' => 8,
                     'certifications' => ['Anti-Aging Specialist', 'Collagen Therapy'],
@@ -66,6 +70,8 @@ class StaffSeeder extends Seeder
                     'bio' => [
                         'vi' => 'Nhân viên chăm sóc da trẻ trung, nhiệt tình với khách hàng.',
                         'en' => 'Young and enthusiastic skin care staff, dedicated to customer service.',
+                        'ja' => '若くて情熱的なスキンケアスタッフ。',
+                        'zh' => '年轻且充满热情的皮肤护理员工。',
                     ],
                     'years_of_experience' => 2,
                     'certifications' => ['Basic Facial Care'],
@@ -82,6 +88,8 @@ class StaffSeeder extends Seeder
                     'bio' => [
                         'vi' => 'Quản lý chi nhánh với 15 năm kinh nghiệm trong ngành làm đẹp.',
                         'en' => 'Branch manager with 15 years of experience in the beauty industry.',
+                        'ja' => '美容業界で15年の経験を持つ支店マネージャー。',
+                        'zh' => '拥有15年美容行业经验的分店经理。',
                     ],
                     'years_of_experience' => 15,
                     'certifications' => ['Beauty Management', 'Advanced Skin Care', 'Business Administration'],
@@ -98,6 +106,8 @@ class StaffSeeder extends Seeder
                     'bio' => [
                         'vi' => 'Thiên thần phục vụ khách hàng, luôn niềm nở và chuyên nghiệp.',
                         'en' => 'Customer service angel, always friendly and professional.',
+                        'ja' => 'お客様対応に優れ、いつも親切でプロフェッショナル。',
+                        'zh' => '客户服务天使，始终友好且专业。',
                     ],
                     'years_of_experience' => 5,
                     'certifications' => ['Customer Service Excellence'],

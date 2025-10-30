@@ -28,8 +28,10 @@ class BranchServiceSeeder extends Seeder
                 $attachData = [];
                 foreach ($selected as $sid) {
                     $attachData[$sid] = [
-                        'is_available' => (bool) random_int(0, 1),
-                        'custom_price' => random_int(0, 1) ? fake()->randomFloat(2, 10, 200) : null,
+                        // Mark all services as available
+                        'is_available' => true,
+                        // Set custom price in VND (100,000 – 2,000,000)
+                        'custom_price' => random_int(0, 1) ? (float) random_int(100000, 2000000) : null,
                     ];
                 }
 

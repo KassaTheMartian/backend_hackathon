@@ -17,8 +17,18 @@ class PromotionSeeder extends Seeder
         $promotions = [
             [
                 'code' => 'WELCOME10',
-                'name' => ['vi' => 'Giảm 10% cho khách mới', 'en' => '10% off for new customers'],
-                'description' => ['vi' => 'Áp dụng cho đơn đầu tiên'],
+                'name' => [
+                    'vi' => 'Giảm 10% cho khách mới',
+                    'en' => '10% off for new customers',
+                    'ja' => '新規顧客に10%割引',
+                    'zh' => '新客户享受9折优惠',
+                ],
+                'description' => [
+                    'vi' => 'Áp dụng cho đơn đầu tiên',
+                    'en' => 'Applicable for first order',
+                    'ja' => '初回注文に適用',
+                    'zh' => '适用于首单',
+                ],
                 'discount_type' => 'percentage',
                 'discount_value' => 10,
                 'min_amount' => 0,
@@ -32,8 +42,18 @@ class PromotionSeeder extends Seeder
             ],
             [
                 'code' => 'COMBO50K',
-                'name' => ['vi' => 'Giảm 50,000 cho combo dịch vụ', 'en' => '50,000 off combo'],
-                'description' => ['vi' => 'Áp dụng cho một số dịch vụ'],
+                'name' => [
+                    'vi' => 'Giảm 50,000 cho combo dịch vụ',
+                    'en' => '50,000 off combo',
+                    'ja' => 'コンボで50,000ドン割引',
+                    'zh' => '组合套餐立减50,000越南盾',
+                ],
+                'description' => [
+                    'vi' => 'Áp dụng cho một số dịch vụ',
+                    'en' => 'Applicable for selected services',
+                    'ja' => '対象サービスに適用',
+                    'zh' => '适用于部分服务',
+                ],
                 'discount_type' => 'fixed_amount',
                 'discount_value' => 50000,
                 'min_amount' => 300000,

@@ -13,69 +13,85 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Tạo Admin User
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'phone' => '0123456789',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'phone_verified_at' => now(),
-            'language_preference' => 'vi',
-            'avatar' => 'https://ui-avatars.com/api/?name=Admin+User&background=random',
-            'date_of_birth' => '1990-01-01',
-            'gender' => 'male',
-            'address' => '123 Admin Street, Hanoi',
-            'is_active' => true,
-            'is_admin' => true,
-            'last_login_at' => now(),
-        ]);
+        $faker = fake('vi_VN');
 
-        // Tạo Test User
-        User::create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '0987654321',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'phone_verified_at' => now(),
-            'language_preference' => 'vi',
-            'avatar' => 'https://ui-avatars.com/api/?name=Test+User&background=random',
-            'date_of_birth' => '1995-05-15',
-            'gender' => 'female',
-            'address' => '456 Test Street, Ho Chi Minh City',
-            'is_active' => true,
-            'is_admin' => false,
-            'last_login_at' => now(),
-        ]);
+        // Predefined important accounts (idempotent)
+        $predefined = [
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'phone' => '0123456789',
+                'language_preference' => 'vi',
+                'is_admin' => true,
+            ],
+            [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'phone' => '0987654321',
+                'language_preference' => 'vi',
+                'is_admin' => false,
+            ],
+            [
+                'name' => 'Manager 1',
+                'email' => 'manager1@example.com',
+                'phone' => '0111222333',
+                'language_preference' => 'vi',
+                'is_admin' => true,
+            ],
+            [
+                'name' => 'Manager 2',
+                'email' => 'manager2@example.com',
+                'phone' => '0444555666',
+                'language_preference' => 'en',
+                'is_admin' => true,
+            ],
+        ];
 
-        // Tạo thêm 10 users thường
-        User::factory()->count(10)->create([
-            'is_admin' => false,
-        ]);
+        foreach ($predefined as $acc) {
+            User::updateOrCreate(
+                ['email' => $acc['email']],
+                [
+                    'name' => $acc['name'],
+                    'phone' => $acc['phone'],
+                    'password' => Hash::make('password'),
+                    'email_verified_at' => now(),
+                    'phone_verified_at' => now(),
+                    'language_preference' => $acc['language_preference'],
+                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($acc['name']) . '&background=random',
+                    'date_of_birth' => $faker->dateTimeBetween('-50 years', '-20 years')->format('Y-m-d'),
+                    'gender' => $faker->randomElement(['male','female']),
+                    'address' => $faker->address(),
+                    'is_active' => true,
+                    'is_admin' => $acc['is_admin'],
+                    'last_login_at' => now(),
+                ]
+            );
+        }
 
-        // Tạo thêm 2 admin users
-        User::create([
-            'name' => 'Manager 1',
-            'email' => 'manager1@example.com',
-            'phone' => '0111222333',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'language_preference' => 'vi',
-            'is_active' => true,
-            'is_admin' => true,
-        ]);
+        // Generate additional realistic users with diverse locales
+        $locales = ['vi_VN','en_US','ja_JP'];
+        foreach (range(1, 20) as $i) {
+            $f = fake($locales[array_rand($locales)]);
+            $name = $f->name();
+            $email = $f->unique()->safeEmail();
 
-        User::create([
-            'name' => 'Manager 2',
-            'email' => 'manager2@example.com',
-            'phone' => '0444555666',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'language_preference' => 'en',
-            'is_active' => true,
-            'is_admin' => true,
-        ]);
+            User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'phone' => $f->unique()->numerify('0#########'),
+                    'password' => Hash::make('password'),
+                    'email_verified_at' => now(),
+                    'language_preference' => in_array($f->locale(), ['vi_VN','en_US','ja_JP']) ? substr($f->locale(), 0, 2) : 'vi',
+                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=random',
+                    'date_of_birth' => $f->dateTimeBetween('-55 years', '-18 years')->format('Y-m-d'),
+                    'gender' => $f->randomElement(['male','female']),
+                    'address' => $f->address(),
+                    'is_active' => true,
+                    'is_admin' => false,
+                ]
+            );
+        }
     }
 }
 

@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\V1\ContactController as V1ContactController;
 use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
 use App\Http\Controllers\Api\V1\ChatRealTimeController as V1ChatRealTimeController;
 use App\Http\Controllers\Api\V1\ProfileController as V1ProfileController;
-use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
 use App\Http\Controllers\Api\V1\StaffController as V1StaffController;
 
 // Apply locale + rate limiting middleware to all API routes
