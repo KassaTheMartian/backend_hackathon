@@ -29,6 +29,7 @@ class BookingResource extends JsonResource
             'guest_phone' => $this->guest_phone,
             'guest_email' => $this->guest_email,
             'notes' => $this->notes,
+            'payment_status' => $this->payment_status,
             'service' => $this->whenLoaded('service', function () use ($locale) {
                 return [
                     'id' => $this->service->id,
