@@ -65,13 +65,11 @@ class PostFactory extends Factory
                 '/storage/posts/p2.jpg',
                 '/storage/posts/p3.jpg',
             ]),
-            'images' => $this->faker->boolean(30)
-                ? array_slice($this->faker->shuffleArray([
-                    '/storage/posts/p1.jpg',
-                    '/storage/posts/p2.jpg',
-                    '/storage/posts/p3.jpg',
-                ]), 0, $this->faker->numberBetween(1, 3))
-                : null,
+            'images' => array_slice($this->faker->shuffleArray([
+                '/storage/posts/p1.jpg',
+                '/storage/posts/p2.jpg',
+                '/storage/posts/p3.jpg',
+            ]), 0, $this->faker->numberBetween(1, 3)),
             'status' => $status,
             'published_at' => $publishedAt,
             'views_count' => $this->faker->numberBetween(0, 5000),
