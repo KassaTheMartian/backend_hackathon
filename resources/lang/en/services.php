@@ -12,3 +12,4 @@ return [
     'invalid_category' => 'Invalid service category',
 ];
 
+

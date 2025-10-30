@@ -72,11 +72,11 @@ class Staff extends Model
     }
 
     /**
-     * Get the reviews for this staff member.
+     * Get the chat sessions assigned to this staff member.
      */
-    public function reviews(): HasMany
+    public function chatSessions(): HasMany
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(ChatSession::class, 'assigned_to');
     }
 
     /**

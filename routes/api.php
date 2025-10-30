@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\ReviewController as V1ReviewController;
 use App\Http\Controllers\Api\V1\PostController as V1PostController;
 use App\Http\Controllers\Api\V1\ContactController as V1ContactController;
 use App\Http\Controllers\Api\V1\ChatbotController as V1ChatbotController;
+use App\Http\Controllers\Api\V1\ChatRealTimeController as V1ChatRealTimeController;
 use App\Http\Controllers\Api\V1\ProfileController as V1ProfileController;
 
 // Apply locale + rate limiting middleware to all API routes
@@ -53,6 +54,13 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
 
         Route::post('/contact', [V1ContactController::class, 'store']);
 
+        // Chat Real-time routes (guest and user)
+        Route::post('/chat/guest/session', [V1ChatRealTimeController::class, 'createGuestSession']);
+        Route::get('/chat/guest/{sessionId}/history', [V1ChatRealTimeController::class, 'getGuestHistory']);
+        Route::post('/chat/guest/{sessionId}/message', [V1ChatRealTimeController::class, 'guestSendMessage']);
+        Route::post('/chat/guest/{sessionId}/transfer-human', [V1ChatRealTimeController::class, 'transferToHuman']);
+        Route::get('/chat/guest/{sessionId}/messages', [V1ChatRealTimeController::class, 'getNewMessages']);
+
         Route::post('/chatbot/message', [V1ChatbotController::class, 'sendMessage']);
         Route::get('/chatbot/sessions', [V1ChatbotController::class, 'sessions']);
         Route::post('/chatbot/sessions', [V1ChatbotController::class, 'createSession']);
@@ -79,6 +87,11 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
 
         // Authenticated routes
         Route::middleware('auth:sanctum')->group(function () {
+            // Chat Real-time staff routes
+            Route::post('/chat/sessions/{id}/staff-message', [V1ChatRealTimeController::class, 'staffSendMessage']);
+            Route::get('/chat/sessions/{id}/messages', [V1ChatRealTimeController::class, 'getSessionMessages']);
+            Route::get('/chat/staff/sessions', [V1ChatRealTimeController::class, 'getStaffSessions']);
+            
             // Bookings
             Route::post('/bookings', [V1BookingController::class, 'store']);
             Route::put('/bookings/{id}', [V1BookingController::class, 'update']);
