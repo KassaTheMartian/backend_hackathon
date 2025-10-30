@@ -44,7 +44,7 @@ class PostRepository extends BaseRepository implements PostRepositoryInterface
 
     public function getWithFilters(array $filters = []): LengthAwarePaginator
     {
-        $query = $this->query();
+        $query = $this->query()->with('category');
 
         if (isset($filters['category_id'])) {
             $query->where('category_id', $filters['category_id']);
