@@ -104,6 +104,17 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
     }
 
     /**
+     * Find service by slug.
+     *
+     * @param string $slug
+     * @return Service|null
+     */
+    public function findBySlug(string $slug): ?Service
+    {
+        return $this->model->where('slug', $slug)->first();
+    }
+
+    /**
      * Get featured services.
      */
     public function getFeatured(int $limit): Collection

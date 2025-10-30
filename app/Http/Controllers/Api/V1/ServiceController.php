@@ -47,25 +47,26 @@ class ServiceController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v1/services/{id}",
-     *     summary="Get service by id",
+     *     summary="Get service by id or slug",
      *     tags={"Services"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
      *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
-     * 
-     * Display the specified service.
      *
-     * @param int $id The service ID
+     * Display the specified service by id or slug.
+     *
+     * @param string $id The service ID or slug
      * @return JsonResponse The service response
      */
-    public function show(int $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $service = $this->service->find($id);
+        $service = is_numeric($id)
+            ? $this->service->find((int)$id)
+            : $this->service->findBySlug($id);
         if (!$service) {
-            $this->notFound(__('services.not_found'));
+            return $this->notFound(__('services.not_found'));
         }
-        
         return $this->ok(ServiceResource::make($service), __('services.retrieved'));
     }
 

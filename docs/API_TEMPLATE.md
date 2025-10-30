@@ -151,6 +151,7 @@ return 200 with resource
  Diagram (optional): link to BPMN/sequence diagram if available.
 
 Mermaid Flow (Business Chart):
+This section is mandatory for all API specs.
 ```mermaid
 flowchart TD
   A[Client Request] --> B{Auth/Z Required?}

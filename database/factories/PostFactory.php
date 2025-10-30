@@ -60,12 +60,18 @@ class PostFactory extends Factory
             'slug' => $slug,
             'excerpt' => $excerpt,
             'content' => $content,
-            'featured_image' => 'posts/' . $this->faker->numberBetween(1, 10) . '.jpg',
-            'images' => $this->faker->boolean(30) ? [
-                'posts/gallery1.jpg',
-                'posts/gallery2.jpg',
-                'posts/gallery3.jpg',
-            ] : null,
+            'featured_image' => $this->faker->randomElement([
+                '/storage/posts/p1.jpg',
+                '/storage/posts/p2.jpg',
+                '/storage/posts/p3.jpg',
+            ]),
+            'images' => $this->faker->boolean(30)
+                ? array_slice($this->faker->shuffleArray([
+                    '/storage/posts/p1.jpg',
+                    '/storage/posts/p2.jpg',
+                    '/storage/posts/p3.jpg',
+                ]), 0, $this->faker->numberBetween(1, 3))
+                : null,
             'status' => $status,
             'published_at' => $publishedAt,
             'views_count' => $this->faker->numberBetween(0, 5000),

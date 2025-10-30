@@ -35,7 +35,7 @@ class ServiceResource extends JsonResource
             'final_price' => $this->final_price,
             'discount_percentage' => $this->discount_percentage,
             'duration' => $this->duration,
-            'image' => $this->image,
+            'image' => $this->image ? (filter_var($this->image, FILTER_VALIDATE_URL) ? $this->image : url($this->image)) : null,
             'gallery' => $this->gallery ?? [],
             'is_featured' => $this->is_featured,
             'rating' => $this->whenLoaded('reviews', function () {
