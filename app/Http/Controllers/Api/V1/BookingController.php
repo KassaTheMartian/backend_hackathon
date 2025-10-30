@@ -67,7 +67,26 @@ class BookingController extends Controller
         return $this->created(BookingResource::make($booking), __('bookings.created'));
     }
 
-    // Removed show() endpoint
+    /**
+     * @OA\Get(
+     *     path="/api/v1/bookings/by-code/{code}",
+     *     summary="Get booking detail by booking code (of current user)",
+     *     tags={"Bookings"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="code", in="path", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     * )
+     */
+    public function showByCode(Request $request, string $code): JsonResponse
+    {
+        $userId = $request->user()->id;
+        $booking = $this->service->getBookingDetailByCode($code, $userId);
+        if (!$booking) {
+            return $this->notFound('Booking');
+        }
+        return $this->ok(BookingResource::make($booking), __('bookings.detail_retrieved'));
+    }
 
     /**
      * @OA\Put(

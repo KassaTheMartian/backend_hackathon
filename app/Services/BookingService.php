@@ -362,4 +362,13 @@ class BookingService implements BookingServiceInterface
         Mail::to($payload['guest_email'])->send(new BookingConfirmationMail($booking));
         return $booking;
     }
+
+    public function getBookingDetailByCode(string $code, int $userId): ?Model
+    {
+        $booking = $this->bookings->getByCode($code);
+        if ($booking && $booking->user_id === $userId) {
+            return $booking;
+        }
+        return null;
+    }
 }

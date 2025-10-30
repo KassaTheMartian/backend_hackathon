@@ -5,8 +5,8 @@ namespace App;
 /**
  * @OA\Info(
  *   version="1.0.0",
- *   title="Portfolio API",
- *   description="Backend API for the portfolio project."
+ *   title="AI Hackathon API",
+ *   description="Backend API for the AI Hackathon project."
  * )
  *
  * @OA\Server(

@@ -87,4 +87,13 @@ interface BookingServiceInterface
      * Get guest bookings by email after OTP verification.
      */
     public function guestBookings(string $email, string $otp, int $perPage = 15): LengthAwarePaginator;
+
+    /**
+     * Get booking by booking code (must belong to current user).
+     *
+     * @param string $code
+     * @param int $userId
+     * @return Model|null
+     */
+    public function getBookingDetailByCode(string $code, int $userId): ?Model;
 }

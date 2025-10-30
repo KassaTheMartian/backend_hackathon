@@ -496,6 +496,52 @@
                 ]
             }
         },
+        "/api/v1/bookings/by-code/{code}": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get booking detail by booking code (of current user)",
+                "operationId": "91661fa5da1c143ce18bddbba66c9751",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/bookings/{id}": {
             "put": {
                 "tags": [
@@ -923,6 +969,90 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/create-guest-bookings": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Create booking for guest",
+                "operationId": "e16c713ea4071b5308c775de6dd45db3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "branch_id",
+                                    "service_id",
+                                    "booking_date",
+                                    "booking_time",
+                                    "staff_id",
+                                    "guest_name",
+                                    "guest_email",
+                                    "guest_phone",
+                                    "guest_email_otp"
+                                ],
+                                "properties": {
+                                    "branch_id": {
+                                        "type": "integer"
+                                    },
+                                    "service_id": {
+                                        "type": "integer"
+                                    },
+                                    "booking_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "booking_time": {
+                                        "type": "string",
+                                        "format": "time"
+                                    },
+                                    "staff_id": {
+                                        "type": "integer"
+                                    },
+                                    "guest_name": {
+                                        "type": "string"
+                                    },
+                                    "guest_email": {
+                                        "type": "string"
+                                    },
+                                    "guest_phone": {
+                                        "type": "string"
+                                    },
+                                    "guest_email_otp": {
+                                        "type": "string",
+                                        "format": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1676,10 +1806,14 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "booking_id"
+                                    "booking_id",
+                                    "amount"
                                 ],
                                 "properties": {
                                     "booking_id": {
+                                        "type": "integer"
+                                    },
+                                    "amount": {
                                         "type": "integer"
                                     },
                                     "bank_code": {
@@ -1713,6 +1847,16 @@
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation Error",
                         "content": {
                             "application/json": {
                                 "schema": {

@@ -90,6 +90,7 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
             Route::post('/bookings', [V1BookingController::class, 'store']);
             Route::put('/bookings/{id}', [V1BookingController::class, 'update']);
             Route::get('/my-bookings', [V1BookingController::class, 'myBookings']);
+            Route::get('/bookings/by-code/{code}', [V1BookingController::class, 'showByCode']);
             
             // Reviews
             Route::post('/reviews', [V1ReviewController::class, 'store']);

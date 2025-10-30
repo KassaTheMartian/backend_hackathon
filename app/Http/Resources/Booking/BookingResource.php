@@ -2,13 +2,17 @@
 
 namespace App\Http\Resources\Booking;
 
+use App\Traits\HasLocalization;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class BookingResource extends JsonResource
 {
+    use HasLocalization;
+
     public function toArray(Request $request): array
     {
+        $locale = $this->getLocale($request);
         return [
             'id' => $this->id,
             'booking_code' => $this->booking_code,
@@ -25,24 +29,32 @@ class BookingResource extends JsonResource
             'guest_phone' => $this->guest_phone,
             'guest_email' => $this->guest_email,
             'notes' => $this->notes,
-            'service' => $this->whenLoaded('service', function () {
+            'service' => $this->whenLoaded('service', function () use ($locale) {
                 return [
                     'id' => $this->service->id,
-                    'name' => $this->service->name,
+                    'name' => is_array($this->service->name)
+                        ? $this->getLocalizedValue($this->service->name, $locale)
+                        : $this->service->name,
                     'price' => $this->service->price,
                 ];
             }),
-            'branch' => $this->whenLoaded('branch', function () {
+            'branch' => $this->whenLoaded('branch', function () use ($locale) {
                 return [
                     'id' => $this->branch->id,
-                    'name' => $this->branch->name,
-                    'address' => $this->branch->address,
+                    'name' => is_array($this->branch->name)
+                        ? $this->getLocalizedValue($this->branch->name, $locale)
+                        : $this->branch->name,
+                    'address' => is_array($this->branch->address)
+                        ? $this->getLocalizedValue($this->branch->address, $locale)
+                        : $this->branch->address,
                 ];
             }),
-            'staff' => $this->whenLoaded('staff.user', function () {
+            'staff' => $this->whenLoaded('staff.user', function () use ($locale) {
                 return [
                     'id' => $this->staff->id,
-                    'name' => $this->staff->name,
+                    'name' => is_array($this->staff->name)
+                        ? $this->getLocalizedValue($this->staff->name, $locale)
+                        : $this->staff->name,
                 ];
             }),
             'payment' => $this->whenLoaded('payment', function () {
