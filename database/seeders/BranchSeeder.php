@@ -41,8 +41,8 @@ class BranchSeeder extends Seeder
                     'sunday' => ['08:00', '21:00'],
                 ],
                 'images' => [
-                    'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=800&h=600',
-                    'https://images.unsplash.com/photo-1600335895229-6e75511892c8?w=800&h=600',
+                    '/storage/branches/b1.jpg',
+                    '/storage/branches/b2.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh chính tại trung tâm thành phố với không gian sang trọng, hiện đại. Cung cấp đầy đủ các dịch vụ chăm sóc da mặt và làm đẹp.',
@@ -82,8 +82,8 @@ class BranchSeeder extends Seeder
                     'sunday' => ['10:00', '18:00'],
                 ],
                 'images' => [
-                    'https://images.unsplash.com/photo-1598816284472-0e5e8f7fe0af?w=800&h=600',
-                    'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600',
+                    '/storage/branches/b2.jpg',
+                    '/storage/branches/b3.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh tại khu vực cao cấp Thảo Điền với không gian yên tĩnh, sang trọng. Chuyên về các liệu pháp chăm sóc da cao cấp.',
@@ -123,8 +123,8 @@ class BranchSeeder extends Seeder
                     'sunday' => ['09:00', '19:00'],
                 ],
                 'images' => [
-                    'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=600',
-                    'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&h=600',
+                    '/storage/branches/b3.jpg',
+                    '/storage/branches/b2.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh hiện đại tại khu Nam Sài Gòn với giá cả hợp lý, phục vụ tốt cho cộng đồng địa phương.',
@@ -135,6 +135,120 @@ class BranchSeeder extends Seeder
                 'amenities' => ['WiFi', 'Parking', 'Air Conditioning', 'Cash Payment', 'Credit Card', 'Momo', 'ZaloPay'],
                 'is_active' => true,
                 'display_order' => 3,
+            ],
+            [
+                'name' => [
+                    'vi' => 'Spa & Beauty Center - Chi nhánh Hoàn Kiếm',
+                    'en' => 'Spa & Beauty Center - Hoan Kiem Branch',
+                    'ja' => 'スパ＆ビューティーセンター - ホアンキエム支店',
+                    'zh' => '水疗美容中心 - 还剑区分店',
+                ],
+                'slug' => 'spa-beauty-center-hoan-kiem',
+                'address' => [
+                    'vi' => '12 Lý Thái Tổ, Phường Tràng Tiền, Quận Hoàn Kiếm, Hà Nội',
+                    'en' => '12 Ly Thai To, Trang Tien Ward, Hoan Kiem District, Hanoi',
+                    'ja' => 'ハノイ市ホアンキエム区チャンティエン12番地',
+                    'zh' => '河内市还剑区长前坊李太祖街12号',
+                ],
+                'phone' => '024 3825 1234',
+                'email' => 'branch-hk@example.com',
+                'latitude' => 21.0255,
+                'longitude' => 105.8562,
+                'opening_hours' => [
+                    'monday' => ['09:00', '20:00'],
+                    'tuesday' => ['09:00', '20:00'],
+                    'wednesday' => ['09:00', '20:00'],
+                    'thursday' => ['09:00', '20:00'],
+                    'friday' => ['09:00', '20:00'],
+                    'saturday' => ['08:00', '21:00'],
+                    'sunday' => ['08:00', '21:00'],
+                ],
+                'images' => [
+                    '/storage/branches/hn1.jpg',
+                ],
+                'description' => [
+                    'vi' => 'Chi nhánh trung tâm Hà Nội, không gian yên tĩnh, gần Hồ Gươm.',
+                    'en' => 'Central Hanoi branch, quiet space, near Hoan Kiem Lake.',
+                ],
+                'amenities' => ['WiFi', 'Parking', 'Credit Card'],
+                'is_active' => true,
+                'display_order' => 4,
+            ],
+            [
+                'name' => [
+                    'vi' => 'Spa & Beauty Center - Chi nhánh Cầu Giấy',
+                    'en' => 'Spa & Beauty Center - Cau Giay Branch',
+                    'ja' => 'スパ＆ビューティーセンター - カウザイ支店',
+                    'zh' => '水疗美容中心 - 纸桥区分店',
+                ],
+                'slug' => 'spa-beauty-center-cau-giay',
+                'address' => [
+                    'vi' => '88 Trần Duy Hưng, Phường Trung Hòa, Quận Cầu Giấy, Hà Nội',
+                    'en' => '88 Tran Duy Hung, Trung Hoa Ward, Cau Giay District, Hanoi',
+                    'ja' => 'ハノイ市カウザイ区チュンホア88番地',
+                    'zh' => '河内市纸桥区中和坊陈维兴街88号',
+                ],
+                'phone' => '024 3232 8888',
+                'email' => 'branch-cg@example.com',
+                'latitude' => 21.0146,
+                'longitude' => 105.8009,
+                'opening_hours' => [
+                    'monday' => ['09:00', '20:00'],
+                    'tuesday' => ['09:00', '20:00'],
+                    'wednesday' => ['09:00', '20:00'],
+                    'thursday' => ['09:00', '20:00'],
+                    'friday' => ['09:00', '20:00'],
+                    'saturday' => ['09:00', '21:00'],
+                    'sunday' => ['09:00', '21:00'],
+                ],
+                'images' => [
+                    '/storage/branches/hn2.jpg',
+                ],
+                'description' => [
+                    'vi' => 'Chi nhánh nằm tại khu đô thị sôi động Cầu Giấy.',
+                    'en' => 'Located in bustling Cau Giay district.',
+                ],
+                'amenities' => ['WiFi', 'Parking', 'Credit Card', 'Momo'],
+                'is_active' => true,
+                'display_order' => 5,
+            ],
+            [
+                'name' => [
+                    'vi' => 'Spa & Beauty Center - Chi nhánh Thanh Xuân',
+                    'en' => 'Spa & Beauty Center - Thanh Xuan Branch',
+                    'ja' => 'スパ＆ビューティーセンター - タンシュアン支店',
+                    'zh' => '水疗美容中心 - 青春区分店',
+                ],
+                'slug' => 'spa-beauty-center-thanh-xuan',
+                'address' => [
+                    'vi' => '22 Nguyễn Trãi, Phường Thượng Đình, Quận Thanh Xuân, Hà Nội',
+                    'en' => '22 Nguyen Trai, Thuong Dinh Ward, Thanh Xuan District, Hanoi',
+                    'ja' => 'ハノイ市タンシュアン区トゥオンディン22番地',
+                    'zh' => '河内市青春区上亭坊阮廌街22号',
+                ],
+                'phone' => '024 3777 2222',
+                'email' => 'branch-tx@example.com',
+                'latitude' => 20.9939,
+                'longitude' => 105.8118,
+                'opening_hours' => [
+                    'monday' => ['09:00', '20:00'],
+                    'tuesday' => ['09:00', '20:00'],
+                    'wednesday' => ['09:00', '20:00'],
+                    'thursday' => ['09:00', '20:00'],
+                    'friday' => ['09:00', '20:00'],
+                    'saturday' => ['08:00', '20:00'],
+                    'sunday' => ['08:00', '20:00'],
+                ],
+                'images' => [
+                    '/storage/branches/hn3.jpg',
+                ],
+                'description' => [
+                    'vi' => 'Không gian hiện đại, thuận tiện di chuyển khu phía Nam Hà Nội.',
+                    'en' => 'Modern space, convenient for South Hanoi area.',
+                ],
+                'amenities' => ['WiFi', 'Parking', 'Credit Card', 'ZaloPay'],
+                'is_active' => true,
+                'display_order' => 6,
             ],
         ];
 

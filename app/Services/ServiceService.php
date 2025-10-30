@@ -72,6 +72,17 @@ class ServiceService implements ServiceServiceInterface
     }
 
     /**
+     * Find a service by slug.
+     *
+     * @param string $slug
+     * @return Model|null
+     */
+    public function findBySlug(string $slug): ?Model
+    {
+        return $this->services->findBySlug($slug);
+    }
+
+    /**
      * Update a service.
      *
      * @param int $id The service ID

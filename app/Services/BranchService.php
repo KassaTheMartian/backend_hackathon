@@ -55,6 +55,17 @@ class BranchService implements BranchServiceInterface
     }
 
     /**
+     * Find branch by slug.
+     *
+     * @param string $slug
+     * @return Model|null
+     */
+    public function findBySlug(string $slug): ?Model
+    {
+        return $this->branches->findBySlug($slug);
+    }
+
+    /**
      * Get available time slots for a branch.
      *
      * @param int $branchId The branch ID

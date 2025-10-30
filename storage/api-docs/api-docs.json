@@ -986,16 +986,16 @@
                 "tags": [
                     "Branches"
                 ],
-                "summary": "Get branch by id",
+                "summary": "Get branch by id or slug",
                 "operationId": "b873e3f2f9a31a633e4787bd967a7842",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The branch ID",
+                        "description": "The branch ID or slug",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1087,6 +1087,342 @@
                         }
                     }
                 }
+            }
+        },
+        "/api/v1/chat/guest/session": {
+            "post": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Create guest chat session",
+                "operationId": "faab42300ea67c1b1475628dcde8c507",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "session_id"
+                                ],
+                                "properties": {
+                                    "session_id": {
+                                        "type": "string"
+                                    },
+                                    "guest_name": {
+                                        "type": "string"
+                                    },
+                                    "guest_email": {
+                                        "type": "string"
+                                    },
+                                    "guest_phone": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/guest/{sessionId}/history": {
+            "get": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Get guest chat history",
+                "operationId": "e77d945fd7a8233c9439936412c36953",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "description": "The session ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/guest/{sessionId}/message": {
+            "post": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Send message as guest",
+                "operationId": "c2ee8742c9f76ea5ce872d924f2068b5",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "description": "The session ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "message"
+                                ],
+                                "properties": {
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/guest/{sessionId}/transfer-human": {
+            "post": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Transfer to human staff",
+                "operationId": "2a8886c06c6ff08e67ecd2b2ca9d1f8b",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "description": "The session ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/sessions/{id}/staff-message": {
+            "post": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Send message as staff",
+                "operationId": "acbd5634b6ca1e0f428c2a95e49e7c90",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The session ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "message"
+                                ],
+                                "properties": {
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/chat/guest/{sessionId}/messages": {
+            "get": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Get new messages",
+                "operationId": "4d62ebb14d9e957c9a5e48f23cd3faeb",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "path",
+                        "description": "The session ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "last_message_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/sessions/{id}/messages": {
+            "get": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Get session messages (staff)",
+                "operationId": "7143951e58f429138d539dd3b34ec899",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The session ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "last_message_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/chat/staff/sessions": {
+            "get": {
+                "tags": [
+                    "Chat Real-time"
+                ],
+                "summary": "Get staff assigned sessions",
+                "operationId": "3cce9472fd38e7f4f2dc446e6b88a3f2",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiEnvelope"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/v1/chatbot": {
@@ -1248,242 +1584,6 @@
                     },
                     "422": {
                         "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/demos": {
-            "get": {
-                "tags": [
-                    "Demos"
-                ],
-                "summary": "List demos",
-                "operationId": "1c122a24a6983e77f3df6fb45329280c",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Demos"
-                ],
-                "summary": "Create demo",
-                "operationId": "9f01bde74bea0f8ae2fb964846e29597",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "title"
-                                ],
-                                "properties": {
-                                    "title": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/demos/{id}": {
-            "get": {
-                "tags": [
-                    "Demos"
-                ],
-                "summary": "Get demo by id",
-                "operationId": "e4a877cc9c0086655fdb16d529761f7b",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The demo ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Demos"
-                ],
-                "summary": "Update demo",
-                "operationId": "cb156a6ac5a6bfd038a9d6d5f28d2a5b",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The demo ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "title": {
-                                        "type": "string"
-                                    },
-                                    "description": {
-                                        "type": "string"
-                                    },
-                                    "is_active": {
-                                        "type": "boolean"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiEnvelope"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Demos"
-                ],
-                "summary": "Delete demo",
-                "operationId": "9bdd9ecc2dfa930e7e17a6f6f1785007",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The demo ID",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2735,16 +2835,16 @@
                 "tags": [
                     "Services"
                 ],
-                "summary": "Get service by id",
+                "summary": "Get service by id or slug",
                 "operationId": "5460efdf46e38dba4e94cc1c62ce15a5",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The service ID",
+                        "description": "The service ID or slug",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -3203,10 +3303,6 @@
     },
     "tags": [
         {
-            "name": "Demos",
-            "description": "Demo resources"
-        },
-        {
             "name": "Auth",
             "description": "Authentication and authorization"
         },
@@ -3249,6 +3345,10 @@
         {
             "name": "Staff",
             "description": "Staff directory and profiles"
+        },
+        {
+            "name": "Chat Real-time",
+            "description": "Chat Real-time"
         }
     ]
 }

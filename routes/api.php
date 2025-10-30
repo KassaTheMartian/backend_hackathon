@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\DemoController as V1DemoController;
+// use App\Http\Controllers\Api\V1\DemoController as V1DemoController;
 use App\Http\Controllers\Api\V1\AuthController as V1AuthController;
 use App\Http\Controllers\Api\V1\ServiceController as V1ServiceController;
 use App\Http\Controllers\Api\V1\BranchController as V1BranchController;
@@ -43,8 +43,9 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::get('/branches', action: [V1BranchController::class, 'index']);
         Route::get('/branches/{id}', action: [V1BranchController::class, 'show']);
         Route::get('/branches/{id}/available-slots', action: [V1BranchController::class, 'availableSlots']);
-        Route::get('/staff', action: [V1StaffController::class, 'index']);
         Route::get('/branches/{branch}/staff', action: [V1StaffController::class, 'byBranch']);
+        
+        Route::get('/staff', action: [V1StaffController::class, 'index']);
 
         Route::get('/reviews', action: [V1ReviewController::class, 'index']);
         Route::get('/reviews/{id}', action: [V1ReviewController::class, 'show']);
@@ -76,8 +77,6 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         // Payments - list (scope to user)
         Route::middleware('auth:sanctum')->get('/payments', [V1PaymentController::class, 'index']);
 
-        // Removed Stripe payment routes (create-intent, confirm, webhook)
-
         // Payments - VNPay
         Route::post('/payments/vnpay/create', [V1PaymentController::class, 'vnpayCreate']);
         Route::get('/payments/vnpay/return', [V1PaymentController::class, 'vnpayReturn']);
@@ -99,6 +98,10 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
             Route::post('/reviews/{id}/reject', [V1ReviewController::class, 'reject']);
             Route::post('/reviews/{id}/respond', [V1ReviewController::class, 'respond']);
 
+            // Chat staff routes
+            Route::get('/chat/sessions/{id}/messages', [V1ChatRealTimeController::class, 'getSessionMessages']);
+            Route::post('/chat/sessions/{id}/staff-message', [V1ChatRealTimeController::class, 'staffSendMessage']);
+
             // Profile
             Route::get('/profile', [V1ProfileController::class, 'show']);
             Route::put('/profile', [V1ProfileController::class, 'update']);
@@ -111,14 +114,7 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
             Route::get('/profile/promotions', [V1ProfileController::class, 'promotions']);
         });
 
-        // Demos (existing)
-        Route::get('/demos', [V1DemoController::class, 'index']);
-        Route::get('/demos/{id}', [V1DemoController::class, 'show']);
-        Route::middleware('auth:sanctum')->group(function () {
-            Route::post('/demos', [V1DemoController::class, 'store']);
-            Route::put('/demos/{id}', [V1DemoController::class, 'update']);
-            Route::delete('/demos/{id}', [V1DemoController::class, 'destroy']);
-        });
+        // Demo routes removed
     });
 
 });

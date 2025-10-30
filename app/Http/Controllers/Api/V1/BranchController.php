@@ -47,25 +47,27 @@ class BranchController extends Controller
     /**
      * @OA\Get(
      *     path="/api/v1/branches/{id}",
-     *     summary="Get branch by id",
+     *     summary="Get branch by id or slug",
      *     tags={"Branches"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string")),
      *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
      *     @OA\Response(response=404, description="Not Found", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
-     * 
-     * Display the specified branch.
      *
-     * @param int $id The branch ID
+     * Display the specified branch by id or slug.
+     *
+     * @param string $id The branch ID or slug
      * @return JsonResponse The branch response
      */
-    public function show(int $id): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $branch = $this->service->find($id);
+        // Cho phép $id là số hoặc slug
+        $branch = is_numeric($id)
+            ? $this->service->find((int)$id)
+            : $this->service->findBySlug($id);
         if (!$branch) {
-            $this->notFound(__('branches.not_found'));
+            return $this->notFound(__('branches.not_found'));
         }
-        // Eager load services from branch_services pivot
         $branch->load(['services']);
         return $this->ok(BranchResource::make($branch), __('branches.retrieved'));
     }

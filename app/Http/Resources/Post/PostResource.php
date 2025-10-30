@@ -28,7 +28,10 @@ class PostResource extends JsonResource
             'slug' => $this->getLocalizedValue($this->slug, $locale),
             'content' => $this->getLocalizedValue($this->content, $locale),
             'excerpt' => $this->getLocalizedValue($this->excerpt, $locale),
-            'featured_image' => $this->featured_image,
+            'featured_image' => $this->featured_image ? (filter_var($this->featured_image, FILTER_VALIDATE_URL) ? $this->featured_image : url($this->featured_image)) : null,
+            'images' => $this->images ? collect($this->images)->map(function ($image) {
+                return filter_var($image, FILTER_VALIDATE_URL) ? $image : url($image);
+            })->toArray() : [],
             'meta_title' => $this->getLocalizedValue($this->meta_title, $locale),
             'meta_description' => $this->getLocalizedValue($this->meta_description, $locale),
             'meta_keywords' => $this->getLocalizedValue($this->meta_keywords, $locale),

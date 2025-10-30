@@ -27,7 +27,10 @@ class BranchResource extends JsonResource
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
             'opening_hours' => $this->opening_hours,
-            'images' => $this->images,
+            'images' => collect($this->images)->map(function ($img) {
+                if (filter_var($img, FILTER_VALIDATE_URL)) return $img;
+                return url($img);
+            })->toArray(),
             'description' => $this->getLocalizedValue($this->description, $locale),
             'amenities' => $this->amenities,
             'is_active' => $this->is_active,

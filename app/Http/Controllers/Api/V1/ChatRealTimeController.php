@@ -58,7 +58,7 @@ class ChatRealTimeController extends Controller
         $dto = ChatSessionData::fromRequest($request->validated());
         $session = $this->service->createGuestSession($dto);
         
-        $messages = $session->messages()->orderBy('created_at')->get();
+        $messages = $session->messages()->orderBy('id')->get();
         
         return $this->created([
             'session' => ChatSessionResource::make($session),
@@ -88,7 +88,7 @@ class ChatRealTimeController extends Controller
             return $this->ok([], __('chat_realtime.no_history'));
         }
         
-        $messages = $session->messages()->orderBy('created_at')->get();
+        $messages = $session->messages()->orderBy('id')->get();
         
         return $this->ok([
             'session' => ChatSessionResource::make($session),
@@ -120,13 +120,12 @@ class ChatRealTimeController extends Controller
      */
     public function guestSendMessage(SendMessageRequest $request, string $sessionId): JsonResponse
     {
-        $session = ChatSession::where('session_id', $sessionId)->firstOrFail();
+        $session = ChatSession::where('session_key', $sessionId)->firstOrFail();
         
         $dto = ChatMessageData::fromRequest(array_merge($request->validated(), [
             'session_id' => $session->id,
             'sender_type' => 'user',
             'sender_id' => null,
-            'is_bot' => false,
         ]));
         
         $message = $this->service->guestSendMessage($dto);
@@ -151,7 +150,7 @@ class ChatRealTimeController extends Controller
      */
     public function transferToHuman(Request $request, string $sessionId): JsonResponse
     {
-        $session = ChatSession::where('session_id', $sessionId)->firstOrFail();
+        $session = ChatSession::where('session_key', $sessionId)->firstOrFail();
         $result = $this->service->transferToHuman($session->id);
         
         if (!$result['success']) {
@@ -195,7 +194,6 @@ class ChatRealTimeController extends Controller
             'session_id' => $session->id,
             'sender_type' => 'staff',
             'sender_id' => $request->user()->id,
-            'is_bot' => false,
         ]));
         
         try {
@@ -224,7 +222,7 @@ class ChatRealTimeController extends Controller
      */
     public function getNewMessages(Request $request, string $sessionId): JsonResponse
     {
-        $session = ChatSession::where('session_id', $sessionId)->firstOrFail();
+        $session = ChatSession::where('session_key', $sessionId)->firstOrFail();
         $lastMessageId = $request->input('last_message_id', 0);
         
         $messages = $this->service->getNewMessages($session->id, $lastMessageId);

@@ -10,7 +10,7 @@ use App\Repositories\Contracts\AuthRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\BranchRepositoryInterface;
 use App\Repositories\Contracts\ContactRepositoryInterface;
-use App\Repositories\Contracts\DemoRepositoryInterface;
+// use App\Repositories\Contracts\DemoRepositoryInterface;
 use App\Repositories\Contracts\OtpRepositoryInterface;
 use App\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\PostRepositoryInterface;
@@ -25,7 +25,7 @@ use App\Repositories\Eloquent\AuthRepository as EloquentAuthRepository;
 use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\BranchRepository;
 use App\Repositories\Eloquent\ContactRepository;
-use App\Repositories\Eloquent\DemoRepository as EloquentDemoRepository;
+// use App\Repositories\Eloquent\DemoRepository as EloquentDemoRepository;
 use App\Repositories\Eloquent\OtpRepository;
 use App\Repositories\Eloquent\PaymentRepository;
 use App\Repositories\Eloquent\PostRepository;
@@ -71,7 +71,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Repository bindings
         $this->app->bind(AuthRepositoryInterface::class, EloquentAuthRepository::class);
-        $this->app->bind(DemoRepositoryInterface::class, EloquentDemoRepository::class);
+        // Demo bindings removed
         $this->app->bind(ServiceCategoryRepositoryInterface::class, ServiceCategoryRepository::class);
         $this->app->bind(ServiceRepositoryInterface::class, ServiceRepository::class);
         $this->app->bind(BranchRepositoryInterface::class, BranchRepository::class);
@@ -87,7 +87,7 @@ class AppServiceProvider extends ServiceProvider
         
         // Service bindings
         $this->app->bind(AuthServiceInterface::class, AuthService::class);
-        $this->app->bind(DemoServiceInterface::class, DemoService::class);
+        // Demo service binding removed
         $this->app->bind(BookingServiceInterface::class, BookingService::class);
         $this->app->bind(ServiceServiceInterface::class, ServiceService::class);
         $this->app->bind(StaffServiceInterface::class, StaffService::class);

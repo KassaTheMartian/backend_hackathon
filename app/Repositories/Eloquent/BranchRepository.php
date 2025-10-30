@@ -99,5 +99,16 @@ class BranchRepository extends BaseRepository implements BranchRepositoryInterfa
             })
             ->toArray();
     }
+
+    /**
+     * Find branch by slug.
+     *
+     * @param string $slug
+     * @return Branch|null
+     */
+    public function findBySlug(string $slug): ?Branch
+    {
+        return $this->model->where('slug', $slug)->first();
+    }
 }
 
