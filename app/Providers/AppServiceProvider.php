@@ -42,6 +42,7 @@ use App\Services\Contracts\BranchServiceInterface;
 use App\Services\Contracts\ChatbotServiceInterface;
 use App\Services\Contracts\ContactServiceInterface;
 use App\Services\Contracts\DemoServiceInterface;
+use App\Services\Contracts\PaymentServiceInterface;
 use App\Services\Contracts\PostServiceInterface;
 use App\Services\Contracts\ProfileServiceInterface;
 use App\Services\Contracts\ReviewServiceInterface;
@@ -54,6 +55,7 @@ use App\Services\BranchService;
 use App\Services\ChatbotService;
 use App\Services\ContactService;
 use App\Services\DemoService;
+use App\Services\PaymentService;
 use App\Services\PostService;
 use App\Services\ProfileService;
 use App\Services\ReviewService;
@@ -95,6 +97,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ContactServiceInterface::class, ContactService::class);
         $this->app->bind(ProfileServiceInterface::class, ProfileService::class);
         $this->app->bind(ChatbotServiceInterface::class, ChatbotService::class);
+        $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
         
         // Register custom exception handler
         $this->app->singleton(ExceptionHandler::class, Handler::class);

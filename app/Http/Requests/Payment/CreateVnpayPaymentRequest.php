@@ -15,6 +15,7 @@ class CreateVnpayPaymentRequest extends FormRequest
     {
         return [
             'booking_id' => ['required', 'integer', 'exists:bookings,id'],
+            'amount' => ['required', 'integer', 'min:1'],
             'bank_code' => ['nullable', 'string', 'in:,VNPAYQR,VNBANK,INTCARD'],
             'language' => ['nullable', 'string', 'in:' . implode(',', config('localization.supported', ['en','vi']))],
             'guest_email' => ['nullable', 'email'],

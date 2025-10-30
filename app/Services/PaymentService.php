@@ -104,43 +104,80 @@ class PaymentService implements PaymentServiceInterface
      * Create VNPay payment URL and record.
      *
      * @param int $bookingId The booking ID.
+     * @param int $amount The payment amount.
      * @param string|null $bankCode The bank code.
      * @param string|null $language The language.
      * @param string|null $guestEmail The guest email.
      * @param string|null $guestPhone The guest phone.
      * @return array
      */
-    public function vnpayCreate(int $bookingId, ?string $bankCode, ?string $language, ?string $guestEmail, ?string $guestPhone): array
+    public function vnpayCreate(int $bookingId, int $amount, ?string $bankCode, ?string $language, ?string $guestEmail, ?string $guestPhone): array
     {
+        // Check valid booking
         $booking = $this->bookingRepository->find($bookingId);
         if (!$booking) {
-            throw new \Illuminate\Database\Eloquent\ModelNotFoundException(__('payments.booking_not_found'));
+            return [
+                'success' => false,
+                'error' => __('payments.booking_not_found'),
+            ];
         }
+        // Check valid amount
+        if ((int)$amount <= 0) {
+            return [
+                'success' => false,
+                'error' => __('payments.invalid_amount'),
+            ];
+        }
+        $tmnCode = config('vnpay.tmn_code');
+        $vnpHashSecret = config('vnpay.hash_secret');
+        $vnpUrlBase = config('vnpay.url');
+        $returnUrl = config('vnpay.return_url');
+        $orderInfo = __('payments.order_info', ['txn_ref' => $bookingId]);
+        $txnRef = (string)$bookingId;
+        $locale = $language ?: 'vi';
+        $currDate = date('YmdHis');
+        $expireDate = date('YmdHis', strtotime('+15 minutes'));
+        $ipAddr = request()->ip() ?? '127.0.0.1';
+        $inputData = [
+            'vnp_Version'    => '2.1.0',
+            'vnp_TmnCode'    => $tmnCode,
+            'vnp_Amount'     => $amount * 100,
+            'vnp_Command'    => 'pay',
+            'vnp_CreateDate' => $currDate,
+            'vnp_CurrCode'   => 'VND',
+            'vnp_ExpireDate' => $expireDate,
+            'vnp_IpAddr'     => $ipAddr,
+            'vnp_Locale'     => $locale,
+            'vnp_OrderInfo'  => $orderInfo,
+            'vnp_OrderType'  => 'other',
+            'vnp_ReturnUrl'  => $returnUrl,
+            'vnp_TxnRef'     => $txnRef,
+        ];
+        if ($bankCode) {
+            $inputData['vnp_BankCode'] = $bankCode;
+        }
+        ksort($inputData);
         
-        $txnRef = 'BK' . $booking->id . '_' . now()->format('YmdHis');
-        $params = $this->vnpBaseParams($txnRef, (int)$booking->total_amount, $bankCode, $language);
-        $hash = $this->vnpHash($params);
-        $params['vnp_SecureHash'] = $hash;
-        $url = rtrim(config('vnpay.url'), '?') . '?' . http_build_query($params);
-
-        $payment = $this->paymentRepository->create([
-            'booking_id' => $booking->id,
-            'amount' => $booking->total_amount,
-            'currency' => 'VND',
-            'payment_method' => 'vnpay',
-            'status' => 'pending',
-            'transaction_id' => $txnRef,
-            'metadata' => [
-                'bank_code' => $bankCode,
-                'language' => $language,
-                'guest_email' => $guestEmail,
-                'guest_phone' => $guestPhone,
-            ],
-        ]);
-
+        $query = "";
+        $i = 0;
+        $hashData = "";
+        foreach ($inputData as $key => $value) {
+            if ($i == 1) {
+                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+            } else {
+                $hashData .= urlencode($key) . "=" . urlencode($value);
+                $i = 1;
+            }
+            $query .= urlencode($key) . "=" . urlencode($value) . '&';
+        }
+        $vnpUrl = $vnpUrlBase . "?" . $query;
+        if (isset($vnpHashSecret)) {
+            $vnpSecureHash = hash_hmac('sha512', $hashData, $vnpHashSecret);
+            $vnpUrl .= 'vnp_SecureHash=' . $vnpSecureHash;
+        }
         return [
-            'payment' => $payment,
-            'vnpay_url' => $url,
+            'success' => true,
+            'url' => $vnpUrl,
         ];
     }
 
