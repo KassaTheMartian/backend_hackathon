@@ -27,6 +27,14 @@ interface BookingServiceInterface
     public function create(BookingData $data): Model;
 
     /**
+     * Create a booking for guest (no authentication required).
+     *
+     * @param BookingData $data The guest booking data.
+     * @return Model
+     */
+    public function createGuest(BookingData $data): Model;
+
+    /**
      * Find a booking by ID.
      *
      * @param int $id The booking ID.

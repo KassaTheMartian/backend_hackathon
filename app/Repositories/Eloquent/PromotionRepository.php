@@ -61,11 +61,16 @@ class PromotionRepository extends BaseRepository implements PromotionRepositoryI
         return $this->model
             ->active()
             ->where(function ($query) use ($user) {
-                $query->where('max_uses_per_user', null)
-                      ->orWhereHas('usages', function ($q) use ($user) {
-                          $q->where('user_id', $user->id)
-                            ->havingRaw('COUNT(*) < max_uses_per_user');
-                      });
+                $query->whereNull('max_uses_per_user')
+                      ->orWhereRaw(
+                          '(max_uses_per_user > (
+                              select count(*) 
+                              from promotion_usages
+                              where promotion_usages.promotion_id = promotions.id
+                              and promotion_usages.user_id = ?
+                          ))',
+                          [$user->id]
+                      );
             })
             ->get();
     }

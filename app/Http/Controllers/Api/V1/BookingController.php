@@ -269,4 +269,40 @@ class BookingController extends Controller
         $items = $this->service->guestBookings($email, $otp, $perPage);
         return $this->paginated($items, __('bookings.guest_list'));
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/create-guest-bookings",
+     *     summary="Create booking for guest",
+     *     tags={"Bookings"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"branch_id","service_id","booking_date","booking_time","staff_id","guest_name","guest_email","guest_phone","guest_email_otp"},
+     *             @OA\Property(property="branch_id", type="integer"),
+     *             @OA\Property(property="service_id", type="integer"),
+     *             @OA\Property(property="booking_date", type="string", format="date"),
+     *             @OA\Property(property="booking_time", type="string", format="time"),
+     *             @OA\Property(property="staff_id", type="integer"),
+     *             @OA\Property(property="guest_name", type="string"),
+     *             @OA\Property(property="guest_email", type="string"),
+     *             @OA\Property(property="guest_phone", type="string"),
+     *             @OA\Property(property="guest_email_otp", type="string", format="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Created", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     *
+     * Create guest booking.
+     *
+     * @param StoreBookingRequest $request
+     * @return JsonResponse
+     */
+    public function createGuestBookings(StoreBookingRequest $request): JsonResponse
+    {
+        $data = BookingData::from($request->validated());
+        $booking = $this->service->createGuest($data);
+        return $this->created(BookingResource::make($booking), __('bookings.guest_created'));
+    }
 }

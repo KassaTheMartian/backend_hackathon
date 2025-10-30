@@ -73,7 +73,7 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::get('/availability', [V1BookingController::class, 'availability']);
         Route::post('/guest-booking/send-otp', [V1BookingController::class, 'sendGuestBookingOtp'])->middleware('throttle:otp');
         Route::get('/guest-bookings', [V1BookingController::class, 'guestBookings']);
-
+        Route::post('/create-guest-bookings', [V1BookingController::class, 'createGuestBookings']);
         // Payments - list (scope to user)
         Route::middleware('auth:sanctum')->get('/payments', [V1PaymentController::class, 'index']);
 

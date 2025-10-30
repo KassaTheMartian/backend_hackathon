@@ -317,4 +317,49 @@ class BookingService implements BookingServiceInterface
 		return $this->bookings->getGuestBookingsByEmail($email, $perPage)
 			->through(fn ($model) => \App\Http\Resources\Booking\BookingResource::make($model));
 	}
+
+    /**
+     * Create a booking for guest (no authentication required).
+     *
+     * @param BookingData $data
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function createGuest(BookingData $data): Model
+    {
+        $payload = $data->toArray();
+        // Verify OTP for guest email
+        $otpRecord = $this->otpRepository->findLatestValid($payload['guest_email'], 'guest_booking');
+        if (!$otpRecord || $otpRecord->isLockedOut() || ($otpRecord->otp !== $payload['guest_email_otp'])) {
+            if ($otpRecord) {
+                $this->otpRepository->incrementAttempts($otpRecord->id);
+            }
+            throw new \Exception(__('bookings.otp_invalid_or_expired'));
+        }
+        $this->otpRepository->markAsVerified($otpRecord->id);
+        // Get service info
+        $service = $this->services->find($data->service_id);
+        if ($service) {
+            $payload['duration'] = $service->duration;
+            $payload['service_price'] = $service->price;
+            $payload['total_amount'] = $service->price;
+            $payload['discount_amount'] = 0;
+        }
+        // Check availability
+        $available = $this->isTimeSlotAvailable(
+            $payload['branch_id'],
+            $payload['booking_date'],
+            $payload['booking_time'],
+            $payload['staff_id'] ?? null
+        );
+        if (!$available) {
+            throw new \Exception(__('bookings.time_slot_unavailable'));
+        }
+        // Set default status
+        $payload['status'] = 'pending';
+        $payload['payment_status'] = 'pending';
+        $booking = $this->bookings->create($payload);
+        // Send confirmation email to guest
+        Mail::to($payload['guest_email'])->send(new BookingConfirmationMail($booking));
+        return $booking;
+    }
 }
