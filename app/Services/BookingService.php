@@ -87,8 +87,9 @@ class BookingService implements BookingServiceInterface
 		$service = $this->services->find($data->service_id);
 		if ($service) {
 			$payload['duration'] = $service->duration;
-			$payload['service_price'] = $service->price;
-			$payload['total_amount'] = $service->price; // Initially same as service price
+			$effectivePrice = $service->discounted_price ?? $service->price;
+			$payload['service_price'] = $effectivePrice;
+			$payload['total_amount'] = $effectivePrice;
 			$payload['discount_amount'] = 0;
 		}
 
@@ -362,13 +363,14 @@ class BookingService implements BookingServiceInterface
             throw new \Exception(__('bookings.otp_invalid_or_expired'));
         }
         $this->otpRepository->markAsVerified($otpRecord->id);
-        // Get service info
+		// Get service info
         $service = $this->services->find($data->service_id);
         if ($service) {
-            $payload['duration'] = $service->duration;
-            $payload['service_price'] = $service->price;
-            $payload['total_amount'] = $service->price;
-            $payload['discount_amount'] = 0;
+			$payload['duration'] = $service->duration;
+			$effectivePrice = $service->discounted_price ?? $service->price;
+			$payload['service_price'] = $effectivePrice;
+			$payload['total_amount'] = $effectivePrice;
+			$payload['discount_amount'] = 0;
         }
 
         // Promotion codes are not supported for guest bookings
