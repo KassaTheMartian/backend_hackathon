@@ -8,6 +8,9 @@ use App\Http\Responses\ApiResponse;
 use App\Services\Contracts\ChatbotServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Models\ChatSession;
+use App\Http\Resources\Chat\ChatMessageResource;
 
 class ChatbotController extends Controller
 {
@@ -97,5 +100,42 @@ class ChatbotController extends Controller
                 500
             );
         }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/chatbot/history",
+     *     summary="Get AI chatbot conversation history",
+     *     description="Return messages for the current authenticated user or a guest identified by session_key.",
+     *     tags={"Chatbot"},
+     *     @OA\Parameter(name="session_key", in="query", required=false, @OA\Schema(type="string"), description="Guest session key (if not authenticated)"),
+     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     * )
+     *
+     * Get chatbot conversation history.
+     */
+    public function history(Request $request): JsonResponse
+    {
+        $user = $this->user();
+        $session = null;
+
+        if ($user) {
+            $session = ChatSession::where('user_id', $user->id)->first();
+        } else {
+            $sessionKey = $request->query('session_key') ?? $request->header('X-Chat-Session');
+            if ($sessionKey) {
+                $session = ChatSession::where('session_key', $sessionKey)->first();
+            }
+        }
+
+        if (!$session) {
+            return $this->ok(['messages' => []], __('chatbot.response_success'));
+        }
+
+        $messages = $session->messages()->orderBy('id')->get();
+        return $this->ok([
+            'session_key' => $session->session_key,
+            'messages' => ChatMessageResource::collection($messages),
+        ], __('chatbot.response_success'));
     }
 }

@@ -67,6 +67,7 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
 
         // Chatbot - available for both guests and authenticated users
         Route::post('/chatbot', [V1ChatbotController::class, 'chat']);
+        Route::get('/chatbot/history', [V1ChatbotController::class, 'history']);
 
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
         Route::post('/bookings/{id}/reschedule', [V1BookingController::class, 'reschedule']);
