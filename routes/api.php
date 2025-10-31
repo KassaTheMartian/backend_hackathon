@@ -62,7 +62,7 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::post('/chat/guest/session', [V1ChatRealTimeController::class, 'createGuestSession']);
         Route::get('/chat/guest/{sessionId}/history', [V1ChatRealTimeController::class, 'getGuestHistory']);
         Route::post('/chat/guest/{sessionId}/message', [V1ChatRealTimeController::class, 'guestSendMessage']);
-        Route::post('/chat/guest/{sessionId}/transfer-human', [V1ChatRealTimeController::class, 'transferToHuman']);
+        // Removed transfer-human (not supported by current schema)
         Route::get('/chat/guest/{sessionId}/messages', [V1ChatRealTimeController::class, 'getNewMessages']);
 
         // Chatbot - available for both guests and authenticated users
@@ -100,9 +100,11 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
             Route::post('/reviews/{id}/reject', [V1ReviewController::class, 'reject'])->whereNumber('id');
             Route::post('/reviews/{id}/respond', [V1ReviewController::class, 'respond'])->whereNumber('id');
 
-            // Chat staff routes
-            Route::get('/chat/sessions/{id}/messages', [V1ChatRealTimeController::class, 'getSessionMessages']);
-            Route::post('/chat/sessions/{id}/staff-message', [V1ChatRealTimeController::class, 'staffSendMessage']);
+            // Chat admin routes
+            Route::get('/chat/admin/sessions', [V1ChatRealTimeController::class, 'adminSessions']);
+            Route::post('/chat/admin/{sessionKey}/assign', [V1ChatRealTimeController::class, 'adminAssign']);
+            Route::post('/chat/admin/{sessionKey}/message', [V1ChatRealTimeController::class, 'adminSendMessage']);
+            Route::get('/chat/admin/{sessionKey}/messages', [V1ChatRealTimeController::class, 'adminSessionMessages']);
 
             // Profile
             Route::get('/profile', [V1ProfileController::class, 'show']);

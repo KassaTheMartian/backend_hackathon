@@ -5,29 +5,20 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Chat\SendMessageRequest;
 use App\Http\Requests\Chat\CreateGuestSessionRequest;
-use App\Http\Requests\Chat\UpdateChatSessionRequest;
 use App\Http\Resources\Chat\ChatSessionResource;
 use App\Http\Resources\Chat\ChatMessageResource;
 use App\Services\Contracts\ChatRealTimeServiceInterface;
 use App\Data\Chat\ChatSessionData;
 use App\Data\Chat\ChatMessageData;
-use App\Models\ChatSession;
-use App\Models\ChatMessage;
-use App\Models\Staff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ChatRealTimeController extends Controller
 {
-    /**
-     * Create a new ChatRealTimeController instance.
-     *
-     * @param ChatRealTimeServiceInterface $service The chat real-time service
-     */
     public function __construct(private readonly ChatRealTimeServiceInterface $service)
     {
-        //
     }
+    // Controller delegates to service; keep controller thin and declarative
 
     /**
      * @OA\Post(
@@ -37,14 +28,38 @@ class ChatRealTimeController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"session_id"},
-     *             @OA\Property(property="session_id", type="string"),
+     *             required={"session_key"},
+     *             @OA\Property(property="session_key", type="string"),
      *             @OA\Property(property="guest_name", type="string"),
      *             @OA\Property(property="guest_email", type="string"),
      *             @OA\Property(property="guest_phone", type="string")
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Created", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope")),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Created",
+     *         @OA\JsonContent(
+     *             example={
+     *                 "success": true,
+     *                 "message": "Chat session created",
+     *                 "data": {
+     *                     "session": {
+     *                         "id": 1,
+     *                         "user_id": null,
+     *                         "session_key": "guest-session-123",
+     *                         "meta": {"guest_name": "Guest A", "guest_email": "guest@example.com"},
+     *                         "last_activity": "2025-10-31T11:20:00Z",
+     *                         "is_active": true,
+     *                         "created_at": "2025-10-31T11:20:00Z",
+     *                         "updated_at": "2025-10-31T11:20:00Z"
+     *                     },
+     *                     "messages": {}
+     *                 },
+     *                 "trace_id": "abc123",
+     *                 "timestamp": "2025-10-31T11:20:00Z"
+     *             }
+     *         )
+     *     ),
      *     @OA\Response(response=422, description="Validation Error", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
      * )
      * 
@@ -57,9 +72,9 @@ class ChatRealTimeController extends Controller
     {
         $dto = ChatSessionData::fromRequest($request->validated());
         $session = $this->service->createGuestSession($dto);
-        
+
         $messages = $session->messages()->orderBy('id')->get();
-        
+
         return $this->created([
             'session' => ChatSessionResource::make($session),
             'messages' => ChatMessageResource::collection($messages)
@@ -72,7 +87,22 @@ class ChatRealTimeController extends Controller
      *     summary="Get guest chat history",
      *     tags={"Chat Real-time"},
      *     @OA\Parameter(name="sessionId", in="path", required=true, @OA\Schema(type="string")),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     *     @OA\Response(
+     *         response=200,
+     *         description="OK",
+     *         @OA\JsonContent(
+     *             example={
+     *                 "success": true,
+     *                 "message": "History retrieved",
+     *                 "data": {
+     *                     "session": {"id": 1, "session_key": "guest-session-123"},
+     *                     "messages": {{"id": 10, "message": "Hello", "role": "user"}}
+     *                 },
+     *                 "trace_id": "abc123",
+     *                 "timestamp": "2025-10-31T11:21:02Z"
+     *             }
+     *         )
+     *     )
      * )
      * 
      * Get guest chat history.
@@ -109,7 +139,19 @@ class ChatRealTimeController extends Controller
      *             @OA\Property(property="message", type="string")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     *     @OA\Response(
+     *         response=200,
+     *         description="OK",
+     *         @OA\JsonContent(
+     *             example={
+     *                 "success": true,
+     *                 "message": "Message sent",
+     *                 "data": {"id": 10, "chat_session_id": 1, "role": "user", "message": "Hello"},
+     *                 "trace_id": "abc123",
+     *                 "timestamp": "2025-10-31T11:21:00Z"
+     *             }
+     *         )
+     *     )
      * )
      * 
      * Send message as guest.
@@ -120,88 +162,17 @@ class ChatRealTimeController extends Controller
      */
     public function guestSendMessage(SendMessageRequest $request, string $sessionId): JsonResponse
     {
-        $session = ChatSession::where('session_key', $sessionId)->firstOrFail();
-        
-        $dto = ChatMessageData::fromRequest(array_merge($request->validated(), [
-            'session_id' => $session->id,
-            'sender_type' => 'user',
-            'sender_id' => null,
-        ]));
-        
+        $dto = ChatMessageData::fromRequest([
+            'session_key' => $sessionId,
+            'user_id' => null,
+            'role' => 'user',
+            'message' => $request->validated()['message'],
+            'meta' => null,
+        ]);
+
         $message = $this->service->guestSendMessage($dto);
-        
+
         return $this->ok(ChatMessageResource::make($message), __('chat_realtime.message_sent'));
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/chat/guest/{sessionId}/transfer-human",
-     *     summary="Transfer to human staff",
-     *     tags={"Chat Real-time"},
-     *     @OA\Parameter(name="sessionId", in="path", required=true, @OA\Schema(type="string")),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Transfer chat to human staff.
-     *
-     * @param Request $request The HTTP request
-     * @param string $sessionId The session ID
-     * @return JsonResponse The transfer response
-     */
-    public function transferToHuman(Request $request, string $sessionId): JsonResponse
-    {
-        $session = ChatSession::where('session_key', $sessionId)->firstOrFail();
-        $result = $this->service->transferToHuman($session->id);
-        
-        if (!$result['success']) {
-            return $this->ok(null, $result['message']);
-        }
-        
-        return $this->ok([
-            'staff' => $result['staff'],
-            'message' => $result['message']
-        ], __('chat_realtime.transfer_success'));
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/chat/sessions/{id}/staff-message",
-     *     summary="Send message as staff",
-     *     tags={"Chat Real-time"},
-     *     security={{"sanctum": {}}},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"message"},
-     *             @OA\Property(property="message", type="string")
-     *         )
-     *     ),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
-     * )
-     * 
-     * Send message as staff.
-     *
-     * @param SendMessageRequest $request The send message request
-     * @param int $id The session ID
-     * @return JsonResponse The message response
-     */
-    public function staffSendMessage(SendMessageRequest $request, int $id): JsonResponse
-    {
-        $session = ChatSession::findOrFail($id);
-        
-        $dto = ChatMessageData::fromRequest(array_merge($request->validated(), [
-            'session_id' => $session->id,
-            'sender_type' => 'staff',
-            'sender_id' => $request->user()->id,
-        ]));
-        
-        try {
-            $message = $this->service->staffSendMessage($dto, $request->user()->id);
-            return $this->ok(ChatMessageResource::make($message), __('chat_realtime.message_sent'));
-        } catch (\Exception $e) {
-            return $this->forbidden($e->getMessage());
-        }
     }
 
     /**
@@ -211,7 +182,19 @@ class ChatRealTimeController extends Controller
      *     tags={"Chat Real-time"},
      *     @OA\Parameter(name="sessionId", in="path", required=true, @OA\Schema(type="string")),
      *     @OA\Parameter(name="last_message_id", in="query", @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="OK", @OA\JsonContent(ref="#/components/schemas/ApiEnvelope"))
+     *     @OA\Response(
+     *         response=200,
+     *         description="OK",
+     *         @OA\JsonContent(
+     *             example={
+     *                 "success": true,
+     *                 "message": "Messages retrieved",
+     *                 "data": {{"id": 11, "role": "assistant", "message": "Hi there!"}},
+     *                 "trace_id": "abc123",
+     *                 "timestamp": "2025-10-31T11:21:02Z"
+     *             }
+     *         )
+     *     )
      * )
      * 
      * Get new messages for polling.
@@ -222,11 +205,89 @@ class ChatRealTimeController extends Controller
      */
     public function getNewMessages(Request $request, string $sessionId): JsonResponse
     {
-        $session = ChatSession::where('session_key', $sessionId)->firstOrFail();
-        $lastMessageId = $request->input('last_message_id', 0);
+        $lastMessageId = (int) $request->input('last_message_id', 0);
+
+        $messages = $this->service->getNewMessages($sessionId, $lastMessageId);
         
-        $messages = $this->service->getNewMessages($session->id, $lastMessageId);
-        
+        return $this->ok(ChatMessageResource::collection($messages), __('chat_realtime.messages_retrieved'));
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/chat/admin/sessions",
+     *     summary="List chat sessions for admin",
+     *     tags={"Chat Real-time"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="filter", in="query", @OA\Schema(type="string", enum={"unassigned","mine","all"})),
+     *     @OA\Response(response=200, description="OK")
+     * )
+     */
+    public function adminSessions(Request $request): JsonResponse
+    {
+        $filter = $request->query('filter', 'unassigned');
+        $sessions = $this->service->getAdminSessions($request->user()->id, $filter);
+        return $this->ok(ChatSessionResource::collection($sessions), __('chat_realtime.sessions_retrieved'));
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/chat/admin/{sessionKey}/assign",
+     *     summary="Assign a session to current admin",
+     *     tags={"Chat Real-time"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="sessionKey", in="path", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="OK")
+     * )
+     */
+    public function adminAssign(Request $request, string $sessionKey): JsonResponse
+    {
+        $session = $this->service->assignSession($sessionKey, $request->user()->id);
+        return $this->ok(ChatSessionResource::make($session), __('chat_realtime.session_assigned'));
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/chat/admin/{sessionKey}/message",
+     *     summary="Send message as admin",
+     *     tags={"Chat Real-time"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="sessionKey", in="path", required=true, @OA\Schema(type="string")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(required={"message"}, @OA\Property(property="message", type="string"))),
+     *     @OA\Response(response=200, description="OK")
+     * )
+     */
+    public function adminSendMessage(SendMessageRequest $request, string $sessionKey): JsonResponse
+    {
+        $dto = ChatMessageData::fromRequest([
+            'session_key' => $sessionKey,
+            'user_id' => $request->user()->id,
+            'role' => 'assistant',
+            'message' => $request->validated()['message'],
+            'meta' => null,
+        ]);
+        try {
+            $message = $this->service->adminSendMessage($dto, $request->user()->id);
+        } catch (\Exception $e) {
+            return $this->forbidden($e->getMessage());
+        }
+        return $this->ok(ChatMessageResource::make($message), __('chat_realtime.message_sent'));
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/chat/admin/{sessionKey}/messages",
+     *     summary="Get session messages for admin",
+     *     tags={"Chat Real-time"},
+     *     security={{"sanctum": {}}},
+     *     @OA\Parameter(name="sessionKey", in="path", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="last_message_id", in="query", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="OK")
+     * )
+     */
+    public function adminSessionMessages(Request $request, string $sessionKey): JsonResponse
+    {
+        $lastMessageId = (int) $request->input('last_message_id', 0);
+        $messages = $this->service->getAdminSessionMessages($sessionKey, $lastMessageId);
         return $this->ok(ChatMessageResource::collection($messages), __('chat_realtime.messages_retrieved'));
     }
 
@@ -247,21 +308,7 @@ class ChatRealTimeController extends Controller
      * @param int $id The session ID
      * @return JsonResponse The messages response
      */
-    public function getSessionMessages(Request $request, int $id): JsonResponse
-    {
-        $session = ChatSession::findOrFail($id);
-        $staff = Staff::where('user_id', $request->user()->id)->firstOrFail();
-        
-        // Check permission
-        if ($session->assigned_to !== $staff->id) {
-            return $this->forbidden(__('chat_realtime.not_assigned'));
-        }
-        
-        $lastMessageId = $request->input('last_message_id', 0);
-        $messages = $this->service->getNewMessages($id, $lastMessageId);
-        
-        return $this->ok(ChatMessageResource::collection($messages), __('chat_realtime.messages_retrieved'));
-    }
+    // getSessionMessages removed (not supported by current schema)
 
     /**
      * @OA\Get(
@@ -277,10 +324,5 @@ class ChatRealTimeController extends Controller
      * @param Request $request The HTTP request
      * @return JsonResponse The sessions response
      */
-    public function getStaffSessions(Request $request): JsonResponse
-    {
-        $sessions = $this->service->getStaffSessions($request->user()->id);
-        
-        return $this->ok(ChatSessionResource::collection($sessions), __('chat_realtime.sessions_retrieved'));
-    }
+    // getStaffSessions removed (not supported by current schema)
 }

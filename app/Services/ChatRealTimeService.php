@@ -6,151 +6,147 @@ use App\Data\Chat\ChatSessionData;
 use App\Data\Chat\ChatMessageData;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
-use App\Models\Staff;
 use App\Services\Contracts\ChatRealTimeServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 
 class ChatRealTimeService implements ChatRealTimeServiceInterface
 {
-    /**
-     * Create a guest chat session.
-     */
+    /** Create or get a guest chat session by session_key. */
     public function createGuestSession(ChatSessionData $data): ChatSession
     {
-        // Check if session already exists
-        $session = ChatSession::where('session_id', $data->session_id)->first();
-        
-        if (!$session) {
-            $session = ChatSession::create([
-                'session_id' => $data->session_id,
+        $session = ChatSession::firstOrCreate(
+            ['session_key' => $data->session_key],
+            [
                 'user_id' => $data->user_id,
-                'guest_name' => $data->guest_name,
-                'guest_email' => $data->guest_email,
-                'status' => $data->status,
-                'assigned_to' => $data->assigned_to,
-                'started_at' => now(),
-                'metadata' => $data->metadata,
-            ]);
+                'meta' => [
+                    'guest_name' => $data->guest_name,
+                    'guest_email' => $data->guest_email,
+                    'guest_phone' => $data->guest_phone,
+                ],
+                'is_active' => true,
+            ],
+        );
+
+        // Merge new guest info if provided and bump activity
+        $newMeta = array_filter([
+            'guest_name' => $data->guest_name,
+            'guest_email' => $data->guest_email,
+            'guest_phone' => $data->guest_phone,
+        ], fn($v) => !is_null($v));
+        if (!empty($newMeta)) {
+            $session->meta = array_merge($session->meta ?? [], $newMeta);
         }
-        
+        $session->last_activity = now();
+        $session->save();
+
         return $session;
     }
 
-    /**
-     * Get guest chat history.
-     */
-    public function getGuestHistory(string $sessionId): ?ChatSession
+    /** Get guest chat history by session_key. */
+    public function getGuestHistory(string $sessionKey): ?ChatSession
     {
-        return ChatSession::where('session_id', $sessionId)->first();
+        return ChatSession::where('session_key', $sessionKey)->first();
     }
 
-    /**
-     * Send message as guest.
-     */
+    /** Persist a guest message using session_key in DTO. */
     public function guestSendMessage(ChatMessageData $data): ChatMessage
     {
-        return ChatMessage::create([
-            'session_id' => $data->session_id,
-            'sender_type' => $data->sender_type,
-            'sender_id' => $data->sender_id,
+        $session = ChatSession::where('session_key', $data->session_key)->firstOrFail();
+
+        $message = ChatMessage::create([
+            'chat_session_id' => $session->id,
+            'user_id' => $data->user_id,
+            'role' => $data->role,
             'message' => $data->message,
-            'message_type' => $data->message_type,
-            'is_bot' => $data->is_bot,
-            'bot_confidence' => $data->bot_confidence,
-            'metadata' => $data->metadata,
+            'meta' => $data->meta,
         ]);
+
+        $session->last_activity = now();
+        $session->save();
+
+        return $message;
     }
 
-    /**
-     * Transfer chat to human staff.
-     */
-    public function transferToHuman(int $sessionId): array
-    {
-        $session = ChatSession::findOrFail($sessionId);
-        
-        // Find available staff (simple random selection)
-        $availableStaff = Staff::active()
-            ->whereDoesntHave('chatSessions', function($q) {
-                $q->where('status', 'active');
-            })
-            ->inRandomOrder()
-            ->first();
-        
-        if (!$availableStaff) {
-            return ['success' => false, 'message' => __('chat_realtime.no_staff_available')];
-        }
-        
-        // Update session
-        $session->update([
-            'assigned_to' => $availableStaff->id,
-            'status' => 'transferred'
-        ]);
-        
-        // Create notification message
-        ChatMessage::create([
-            'session_id' => $session->id,
-            'sender_type' => 'staff',
-            'sender_id' => $availableStaff->user_id,
-            'message' => __('chat_realtime.staff_joined', ['name' => $availableStaff->name]),
-            'is_bot' => false,
-        ]);
-        
-        return [
-            'success' => true,
-            'staff' => $availableStaff,
-            'message' => __('chat_realtime.transferred_to_staff')
-        ];
-    }
+    // Staff/transfer features removed in this schema
 
-    /**
-     * Send message as staff.
-     */
-    public function staffSendMessage(ChatMessageData $data, int $staffUserId): ChatMessage
-    {
-        $session = ChatSession::findOrFail($data->session_id);
-        $staff = Staff::where('user_id', $staffUserId)->firstOrFail();
-        
-        // Check permission
-        if ($session->assigned_to !== $staff->id) {
-            throw new \Exception(__('chat_realtime.not_assigned'));
-        }
-        
-        return ChatMessage::create([
-            'session_id' => $data->session_id,
-            'sender_type' => $data->sender_type,
-            'sender_id' => $data->sender_id,
-            'message' => $data->message,
-            'message_type' => $data->message_type,
-            'is_bot' => $data->is_bot,
-            'bot_confidence' => $data->bot_confidence,
-            'metadata' => $data->metadata,
-        ]);
-    }
+    // Staff messaging removed
 
-    /**
-     * Get new messages for polling.
-     */
-    public function getNewMessages(int $sessionId, int $lastMessageId = 0): Collection
+    /** Get new messages by session_key for polling. */
+    public function getNewMessages(string $sessionKey, int $lastMessageId = 0): Collection
     {
-        return ChatMessage::where('session_id', $sessionId)
-            ->where('id', '>', $lastMessageId)
-            ->orderBy('created_at')
+        $session = ChatSession::where('session_key', $sessionKey)->firstOrFail();
+        return ChatMessage::where('chat_session_id', $session->id)
+            ->when($lastMessageId > 0, fn($q) => $q->where('id', '>', $lastMessageId))
+            ->orderBy('id')
             ->get();
     }
 
-    /**
-     * Get sessions assigned to staff.
-     */
-    public function getStaffSessions(int $staffUserId): Collection
+    // Admin functions
+
+    public function getAdminSessions(int $adminUserId, string $filter = 'unassigned'): Collection
     {
-        $staff = Staff::where('user_id', $staffUserId)->firstOrFail();
-        
-        return ChatSession::where('assigned_to', $staff->id)
-            ->whereIn('status', ['active', 'transferred']) // Include both active and transferred
-            ->with(['messages' => function($q) {
-                $q->orderBy('created_at', 'desc')->limit(1);
-            }])
-            ->orderBy('started_at', 'desc')
+        $query = ChatSession::query()
+            ->where('is_active', true)
+            ->orderByDesc('last_activity');
+
+        if ($filter === 'mine') {
+            $query->where('assigned_user_id', $adminUserId);
+        } elseif ($filter === 'unassigned') {
+            $query->whereNull('assigned_user_id');
+        }
+
+        return $query->get();
+    }
+
+    public function assignSession(string $sessionKey, int $adminUserId): ChatSession
+    {
+        $session = ChatSession::where('session_key', $sessionKey)->firstOrFail();
+        if ($session->assigned_user_id && $session->assigned_user_id !== $adminUserId) {
+            // Already assigned to someone else; keep it as-is but still return
+            return $session;
+        }
+        $session->assigned_user_id = $adminUserId;
+        $session->assigned_at = now();
+        $session->last_activity = now();
+        $session->save();
+        return $session;
+    }
+
+    public function adminSendMessage(ChatMessageData $data, int $adminUserId): ChatMessage
+    {
+        $session = ChatSession::where('session_key', $data->session_key)->firstOrFail();
+
+        // Auto-assign if unassigned
+        if (!$session->assigned_user_id) {
+            $session->assigned_user_id = $adminUserId;
+            $session->assigned_at = now();
+        }
+
+        // Only allow sender if assigned to this admin
+        if ($session->assigned_user_id !== $adminUserId) {
+            throw new \Exception(__('chat_realtime.not_assigned'));
+        }
+
+        $message = ChatMessage::create([
+            'chat_session_id' => $session->id,
+            'user_id' => $adminUserId,
+            'role' => 'assistant',
+            'message' => $data->message,
+            'meta' => $data->meta,
+        ]);
+
+        $session->last_activity = now();
+        $session->save();
+
+        return $message;
+    }
+
+    public function getAdminSessionMessages(string $sessionKey, int $lastMessageId = 0): Collection
+    {
+        $session = ChatSession::where('session_key', $sessionKey)->firstOrFail();
+        return ChatMessage::where('chat_session_id', $session->id)
+            ->when($lastMessageId > 0, fn($q) => $q->where('id', '>', $lastMessageId))
+            ->orderBy('id')
             ->get();
     }
 }

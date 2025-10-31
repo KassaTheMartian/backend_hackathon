@@ -40,6 +40,7 @@ use App\Services\Contracts\AuthServiceInterface;
 use App\Services\Contracts\BookingServiceInterface;
 use App\Services\Contracts\BranchServiceInterface;
 use App\Services\Contracts\ChatbotServiceInterface;
+use App\Services\Contracts\ChatRealTimeServiceInterface;
 use App\Services\Contracts\ContactServiceInterface;
 use App\Services\Contracts\DemoServiceInterface;
 use App\Services\Contracts\PaymentServiceInterface;
@@ -53,6 +54,7 @@ use App\Services\AuthService;
 use App\Services\BookingService;
 use App\Services\BranchService;
 use App\Services\ChatbotService;
+use App\Services\ChatRealTimeService;
 use App\Services\ContactService;
 use App\Services\DemoService;
 use App\Services\PaymentService;
@@ -97,6 +99,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ContactServiceInterface::class, ContactService::class);
         $this->app->bind(ProfileServiceInterface::class, ProfileService::class);
         $this->app->bind(ChatbotServiceInterface::class, ChatbotService::class);
+        $this->app->bind(ChatRealTimeServiceInterface::class, ChatRealTimeService::class);
         $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
         
         // Register custom exception handler
