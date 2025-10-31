@@ -76,11 +76,13 @@ DB_PASSWORD=your_password
 ```bash
 php artisan migrate --force
 php artisan db:seed --force
+php artisan storage:link
 ```
 
 Notes:
 - Cache store default is `database`; the `cache` table migration exists and runs with `migrate`.
 - Seeders populate demo data (branches, services, posts, staff, etc.).
+- `storage:link` creates a symbolic link from `public/storage` to `storage/app/public` for file uploads. This is crucial for displaying images and uploaded files in the frontend.
 
 ### 5) Run the App
 
