@@ -58,16 +58,19 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
 
         Route::post('/contact', [V1ContactController::class, 'store']);
 
-        // Chat Real-time routes (guest and user)
-        Route::post('/chat/guest/session', [V1ChatRealTimeController::class, 'createGuestSession']);
-        Route::get('/chat/guest/{sessionId}/history', [V1ChatRealTimeController::class, 'getGuestHistory']);
-        Route::post('/chat/guest/{sessionId}/message', [V1ChatRealTimeController::class, 'guestSendMessage']);
-        // Removed transfer-human (not supported by current schema)
-        Route::get('/chat/guest/{sessionId}/messages', [V1ChatRealTimeController::class, 'getNewMessages']);
+        // Chat Real-time and Chatbot routes (guest and user) - no rate limiting
+        Route::withoutMiddleware(['throttle:api', 'throttle:60,1'])->group(function () {
+            // Chat Real-time routes (guest and user)
+            Route::post('/chat/guest/session', [V1ChatRealTimeController::class, 'createGuestSession']);
+            Route::get('/chat/guest/{sessionId}/history', [V1ChatRealTimeController::class, 'getGuestHistory']);
+            Route::post('/chat/guest/{sessionId}/message', [V1ChatRealTimeController::class, 'guestSendMessage']);
+            // Removed transfer-human (not supported by current schema)
+            Route::get('/chat/guest/{sessionId}/messages', [V1ChatRealTimeController::class, 'getNewMessages']);
 
-        // Chatbot - available for both guests and authenticated users
-        Route::post('/chatbot', [V1ChatbotController::class, 'chat']);
-        Route::get('/chatbot/history', [V1ChatbotController::class, 'history']);
+            // Chatbot - available for both guests and authenticated users
+            Route::post('/chatbot', [V1ChatbotController::class, 'chat']);
+            Route::get('/chatbot/history', [V1ChatbotController::class, 'history']);
+        });
 
         Route::post('/bookings/{id}/cancel', [V1BookingController::class, 'cancel']);
         Route::post('/bookings/{id}/reschedule', [V1BookingController::class, 'reschedule']);
@@ -100,11 +103,13 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
             Route::post('/reviews/{id}/reject', [V1ReviewController::class, 'reject'])->whereNumber('id');
             Route::post('/reviews/{id}/respond', [V1ReviewController::class, 'respond'])->whereNumber('id');
 
-            // Chat admin routes
-            Route::get('/chat/admin/sessions', [V1ChatRealTimeController::class, 'adminSessions']);
-            Route::post('/chat/admin/{sessionKey}/assign', [V1ChatRealTimeController::class, 'adminAssign']);
-            Route::post('/chat/admin/{sessionKey}/message', [V1ChatRealTimeController::class, 'adminSendMessage']);
-            Route::get('/chat/admin/{sessionKey}/messages', [V1ChatRealTimeController::class, 'adminSessionMessages']);
+            // Chat admin routes - no rate limiting
+            Route::withoutMiddleware(['throttle:api', 'throttle:60,1'])->group(function () {
+                Route::get('/chat/admin/sessions', [V1ChatRealTimeController::class, 'adminSessions']);
+                Route::post('/chat/admin/{sessionKey}/assign', [V1ChatRealTimeController::class, 'adminAssign']);
+                Route::post('/chat/admin/{sessionKey}/message', [V1ChatRealTimeController::class, 'adminSendMessage']);
+                Route::get('/chat/admin/{sessionKey}/messages', [V1ChatRealTimeController::class, 'adminSessionMessages']);
+            });
 
             // Profile
             Route::get('/profile', [V1ProfileController::class, 'show']);
