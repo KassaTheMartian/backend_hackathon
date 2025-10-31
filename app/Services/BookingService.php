@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Services\PromotionService;
 
 /**
  * Service for handling booking operations.
@@ -29,11 +30,13 @@ class BookingService implements BookingServiceInterface
 	 * @param BookingRepositoryInterface $bookings The booking repository
 	 * @param OtpRepositoryInterface $otpRepository The OTP repository
 	 * @param ServiceRepositoryInterface $services The service repository
+	 * @param PromotionService $promotionService The promotion service
 	 */
 	public function __construct(
 		private readonly BookingRepositoryInterface $bookings,
 		private readonly OtpRepositoryInterface $otpRepository,
-		private readonly ServiceRepositoryInterface $services
+		private readonly ServiceRepositoryInterface $services,
+		private readonly PromotionService $promotionService
 	) {
 	}
 
@@ -89,6 +92,21 @@ class BookingService implements BookingServiceInterface
 			$payload['discount_amount'] = 0;
 		}
 
+		// Handle promotion code if provided
+		if (!empty($data->promotion_code)) {
+			try {
+				$user = Auth::user();
+				$validation = $this->promotionService->validatePromotionCode($data->promotion_code, $user, $payload['service_price']);
+				$discountAmount = $validation['discount_amount'];
+				$payload['discount_amount'] = $discountAmount;
+				$payload['total_amount'] = $payload['service_price'] - $discountAmount;
+			} catch (\Exception $e) {
+				// If promotion code is invalid, skip it and continue with no discount
+				$payload['discount_amount'] = 0;
+				$payload['total_amount'] = $payload['service_price'];
+			}
+		}
+
 		// Check availability
 		$available = $this->isTimeSlotAvailable(
 			$payload['branch_id'],
@@ -100,11 +118,19 @@ class BookingService implements BookingServiceInterface
             throw new \Exception(__('bookings.time_slot_unavailable'));
 		}
 
-		// Set default status
-		$payload['status'] = 'pending';
-		$payload['payment_status'] = 'pending';
-		
         $booking = $this->bookings->create($payload);
+
+        // Apply promotion if used and valid
+        if (!empty($data->promotion_code)) {
+            try {
+                $user = Auth::user();
+                $validation = $this->promotionService->validatePromotionCode($data->promotion_code, $user, $payload['service_price']);
+                $promotion = $validation['promotion'];
+                $this->promotionService->applyPromotion($promotion, $booking->id, $user, $payload['service_price']);
+            } catch (\Exception $e) {
+                // Skip if invalid
+            }
+        }
 
         // Send confirmation email to user
         $recipient = Auth::user()?->email;
@@ -343,6 +369,11 @@ class BookingService implements BookingServiceInterface
             $payload['service_price'] = $service->price;
             $payload['total_amount'] = $service->price;
             $payload['discount_amount'] = 0;
+        }
+
+        // Promotion codes are not supported for guest bookings
+        if (!empty($data->promotion_code)) {
+            throw new \Exception(__('promotions.not_supported_for_guests'));
         }
         // Check availability
         $available = $this->isTimeSlotAvailable(

@@ -40,7 +40,7 @@ class StoreBookingRequest extends FormRequest
             'notes' => 'nullable|string|max:1000',
             
             // Promotion
-            'promotion_code' => 'nullable|string|exists:promotions,code',
+            'promotion_code' => 'nullable|string',
         ];
     }
 
