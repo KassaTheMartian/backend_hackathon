@@ -16,21 +16,15 @@ class ChatSessionResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'session_id' => $this->session_id,
             'user_id' => $this->user_id,
-            'guest_name' => $this->guest_name,
-            'guest_email' => $this->guest_email,
-            'status' => $this->status,
-            'assigned_to' => $this->assigned_to,
-            'started_at' => $this->started_at,
-            'ended_at' => $this->ended_at,
-            'metadata' => $this->metadata,
-            'user' => $this->whenLoaded('user'),
-            'assigned_staff' => $this->whenLoaded('assignedTo'),
-            'messages_count' => $this->when(isset($this->messages_count), $this->messages_count),
-            'last_message' => $this->whenLoaded('messages', function () {
-                return $this->messages->first();
-            }),
+            'session_key' => $this->session_key,
+            'meta' => $this->meta,
+            'last_activity' => $this->last_activity,
+            'is_active' => $this->is_active,
+            'assigned_user_id' => $this->assigned_user_id,
+            'assigned_at' => $this->assigned_at,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

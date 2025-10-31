@@ -6,44 +6,31 @@ use App\Data\Chat\ChatSessionData;
 use App\Data\Chat\ChatMessageData;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\Request;
 
 interface ChatRealTimeServiceInterface
 {
-    /**
-     * Create a guest chat session.
-     */
+    /** Create or get a guest chat session by session_key. */
     public function createGuestSession(ChatSessionData $data): ChatSession;
 
-    /**
-     * Get guest chat history.
-     */
-    public function getGuestHistory(string $sessionId): ?ChatSession;
+    /** Get guest chat history by session_key. */
+    public function getGuestHistory(string $sessionKey): ?ChatSession;
 
-    /**
-     * Send message as guest.
-     */
+    /** Persist a guest message using session_key in DTO. */
     public function guestSendMessage(ChatMessageData $data): ChatMessage;
 
-    /**
-     * Transfer chat to human staff.
-     */
-    public function transferToHuman(int $sessionId): array;
+    /** Get new messages by session_key for polling. */
+    public function getNewMessages(string $sessionKey, int $lastMessageId = 0): Collection;
 
-    /**
-     * Send message as staff.
-     */
-    public function staffSendMessage(ChatMessageData $data, int $staffUserId): ChatMessage;
+    /** Admin: list sessions with filters (mine|unassigned|all). */
+    public function getAdminSessions(int $adminUserId, string $filter = 'unassigned'): Collection;
 
-    /**
-     * Get new messages for polling.
-     */
-    public function getNewMessages(int $sessionId, int $lastMessageId = 0): Collection;
+    /** Admin: assign a session to self by session_key. */
+    public function assignSession(string $sessionKey, int $adminUserId): ChatSession;
 
-    /**
-     * Get sessions assigned to staff.
-     */
-    public function getStaffSessions(int $staffUserId): Collection;
+    /** Admin: send message (will auto-assign if unassigned). */
+    public function adminSendMessage(ChatMessageData $data, int $adminUserId): ChatMessage;
+
+    /** Admin: get session messages by session_key. */
+    public function getAdminSessionMessages(string $sessionKey, int $lastMessageId = 0): Collection;
 }

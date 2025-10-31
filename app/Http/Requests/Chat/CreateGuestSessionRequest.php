@@ -22,7 +22,7 @@ class CreateGuestSessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'session_id' => 'required|string|max:100',
+            'session_key' => 'required|string|max:100',
             'guest_name' => 'nullable|string|max:255',
             'guest_email' => 'nullable|email|max:255',
             'guest_phone' => 'nullable|string|max:20',
@@ -37,9 +37,9 @@ class CreateGuestSessionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'session_id.required' => __('chat_realtime.session_id_required'),
-            'session_id.string' => __('chat_realtime.session_id_string'),
-            'session_id.max' => __('chat_realtime.session_id_max'),
+            'session_key.required' => __('chat_realtime.session_key_required'),
+            'session_key.string' => __('chat_realtime.session_key_string'),
+            'session_key.max' => __('chat_realtime.session_key_max'),
             'guest_name.string' => __('chat_realtime.guest_name_string'),
             'guest_name.max' => __('chat_realtime.guest_name_max'),
             'guest_email.email' => __('chat_realtime.guest_email_email'),

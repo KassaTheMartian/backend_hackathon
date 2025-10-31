@@ -16,12 +16,15 @@ class ChatSession extends Model
         'meta',
         'last_activity',
         'is_active',
+        'assigned_user_id',
+        'assigned_at',
     ];
 
     protected $casts = [
         'meta' => 'array',
         'last_activity' => 'datetime',
         'is_active' => 'boolean',
+        'assigned_at' => 'datetime',
     ];
 
     public function messages(): HasMany
