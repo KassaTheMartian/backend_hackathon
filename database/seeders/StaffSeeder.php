@@ -132,9 +132,6 @@ class StaffSeeder extends Seeder
                 'branch_id' => $branches->random()->id,
             ]));
         }
-
-        // Tạo thêm 5 staffs với factory
-        Staff::factory()->count(5)->create();
     }
 }
 

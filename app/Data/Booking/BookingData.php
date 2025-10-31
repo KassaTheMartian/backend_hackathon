@@ -44,6 +44,7 @@ class BookingData extends Data
         public ?string $guest_name,
         public ?string $guest_email,
         public ?string $guest_phone,
+        public ?string $guest_email_otp,
     ) {
     }
 }

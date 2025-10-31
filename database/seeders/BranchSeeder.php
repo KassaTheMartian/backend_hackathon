@@ -164,7 +164,7 @@ class BranchSeeder extends Seeder
                     'sunday' => ['08:00', '21:00'],
                 ],
                 'images' => [
-                    '/storage/branches/hn1.jpg',
+                    '/storage/branches/b1.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh trung tâm Hà Nội, không gian yên tĩnh, gần Hồ Gươm.',
@@ -202,7 +202,7 @@ class BranchSeeder extends Seeder
                     'sunday' => ['09:00', '21:00'],
                 ],
                 'images' => [
-                    '/storage/branches/hn2.jpg',
+                    '/storage/branches/b2.jpg',
                 ],
                 'description' => [
                     'vi' => 'Chi nhánh nằm tại khu đô thị sôi động Cầu Giấy.',
@@ -240,7 +240,7 @@ class BranchSeeder extends Seeder
                     'sunday' => ['08:00', '20:00'],
                 ],
                 'images' => [
-                    '/storage/branches/hn3.jpg',
+                    '/storage/branches/b3.jpg',
                 ],
                 'description' => [
                     'vi' => 'Không gian hiện đại, thuận tiện di chuyển khu phía Nam Hà Nội.',

@@ -65,6 +65,9 @@ class BookingResource extends JsonResource
                     'amount' => $this->payment->amount,
                 ];
             }),
+            'is_reviewed' => $this->relationLoaded('reviews')
+                ? ($this->reviews->count() > 0)
+                : (bool) $this->reviews()->exists(),
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
         ];

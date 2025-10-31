@@ -20,23 +20,17 @@ class PaymentSeeder extends Seeder
             if (Payment::where('booking_id', $booking->id)->exists()) {
                 continue;
             }
-            $status = fake()->randomElement(['completed','pending','failed']);
+            $status = fake()->randomElement(['completed', 'pending', 'failed']);
             $transactionId = 'BK' . $booking->id . '_' . now()->format('YmdHis') . '_' . fake()->randomNumber(3);
             Payment::create([
                 'booking_id' => $booking->id,
-                'payment_code' => 'PM' . strtoupper(bin2hex(random_bytes(4))),
-                'amount' => $booking->total_amount,
+                'payment_code' => Payment::generatePaymentCode(),
+                'amount' => $booking->total_amount ?? 0,
                 'currency' => 'VND',
-                'payment_method' => fake()->randomElement(['cash','card','stripe','bank_transfer']),
-                'stripe_payment_intent_id' => null,
-                'stripe_charge_id' => null,
-                'gateway_response' => null,
+                'payment_method' => fake()->randomElement(['cash','vnpay']),
                 'status' => $status,
                 'paid_at' => $status === 'completed' ? now()->subDays(rand(0,10)) : null,
                 'transaction_id' => $transactionId,
-                'metadata' => [
-                    'note' => 'seeded payment'
-                ],
             ]);
         }
 

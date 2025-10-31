@@ -26,7 +26,8 @@ class BookingSeeder extends Seeder
         $branches = Branch::all();
         
         if ($branches->isEmpty()) {
-            $branches = Branch::factory()->count(3)->create();
+            $this->command->error('No branches found. Please run BranchSeeder first.');
+            return;
         }
         
         $staff = Staff::all();
