@@ -112,18 +112,7 @@ return new class extends Migration
             $table->index('booking_code');
         });
 
-        // Booking Status History table
-        Schema::create('booking_status_history', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('booking_id')->constrained()->onDelete('cascade');
-            $table->string('old_status', 50)->nullable();
-            $table->string('new_status', 50);
-            $table->foreignId('changed_by')->nullable()->constrained('users')->onDelete('set null');
-            $table->text('notes')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-
-            $table->index('booking_id');
-        });
+        // Booking Status History table is created by dedicated migration 2025_10_31_000000_create_booking_status_histories_table
 
         // Payments table
         Schema::create('payments', function (Blueprint $table) {
