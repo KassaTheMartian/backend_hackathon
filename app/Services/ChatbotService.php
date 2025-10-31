@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\Contracts\BranchRepositoryInterface;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
+use App\Repositories\Contracts\StaffRepositoryInterface;
 use App\Services\Contracts\ChatbotServiceInterface;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
@@ -27,7 +28,8 @@ class ChatbotService implements ChatbotServiceInterface
      */
     public function __construct(
         private readonly BranchRepositoryInterface $branchRepository,
-        private readonly ServiceRepositoryInterface $serviceRepository
+        private readonly ServiceRepositoryInterface $serviceRepository,
+        private readonly StaffRepositoryInterface $staffRepository,
     ) {
     }
 
@@ -154,6 +156,24 @@ class ChatbotService implements ChatbotServiceInterface
                 $session->update(['last_activity' => Carbon::now()]);
             } catch (\Exception $e) {
                 Log::warning('Failed to persist chat messages', ['error' => $e->getMessage()]);
+            }
+
+            // Enrich with staff for identified branches
+            if (!empty($structuredPayload['branch'])) {
+                $branchIds = array_values(array_filter(array_map(fn ($b) => $b['id'] ?? null, $structuredPayload['branch'])));
+                if (!empty($branchIds)) {
+                    $staff = collect();
+                    foreach ($branchIds as $bid) {
+                        $this->staffRepository->getForBranch((int) $bid)->each(function ($s) use ($staff) {
+                            $staff->put($s->id, $s->toArray());
+                        });
+                    }
+                    $structuredPayload['staff'] = array_values($staff->all());
+                } else {
+                    $structuredPayload['staff'] = [];
+                }
+            } else {
+                $structuredPayload['staff'] = [];
             }
 
             return [

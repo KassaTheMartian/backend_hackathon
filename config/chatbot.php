@@ -95,6 +95,12 @@ return [
         - Each service/branch object MUST include these keys: "id", "name", "slug". If the name is multilingual in DB, set "name" to the detected user language variant.
         - If you cannot confidently match a real entity, leave the corresponding array empty instead of fabricating IDs.
 
+        7. Entity mentions in message (inline IDs):
+        - When mentioning entities in the natural-language message, append the correct inline ID right after the name using these labels:
+          a) For services: [id_service: <ID>]
+          b) For branches: [id_branch: <ID>]
+          Examples: Deep Acne Treatment [id_service: 1], Spa & Beauty Center - Thanh Xuân [id_branch: 10].
+
         Below is detailed business information:',
         'vi' => 'Bạn là trợ lý ảo cho Beauty Clinic Medical Spa. Nhiệm vụ của bạn:
         1. Trả lời về:
@@ -129,6 +135,12 @@ return [
         - Giữ nguyên hình dạng đối tượng dịch vụ/chi nhánh như trong DB/API. Dùng null khi không có giá trị; không bịa dữ liệu.
         - Mỗi đối tượng dịch vụ/chi nhánh BẮT BUỘC có các khóa: "id", "name", "slug". Nếu tên là đa ngôn ngữ trong DB, đặt "name" theo ngôn ngữ người dùng.
         - Nếu không thể khớp tự tin với thực thể thật, để mảng tương ứng rỗng, KHÔNG bịa id.
+
+        7. Chèn ID trong phần câu chữ:
+        - Khi nhắc tới thực thể, thêm ID đúng nhãn ngay sau tên trong ngoặc vuông:
+          a) Dịch vụ: [id_service: <ID>]
+          b) Chi nhánh: [id_branch: <ID>]
+          Ví dụ: Điều trị mụn chuyên sâu [id_service: 1], Spa & Beauty Center - Thanh Xuân [id_branch: 10].
 
         Bên dưới là thông tin doanh nghiệp chi tiết:',
     ],
