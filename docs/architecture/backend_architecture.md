@@ -197,10 +197,10 @@ Envelope helpers ensure consistency and reduce frontend parsing complexity.
 ```mermaid
 flowchart TD
   A[Request: GET /resource] --> B{Cache key exists?}
-  B -- Yes --> C[Return cached payload]
-  B -- No --> D[Service fetch via Repository]
+  B -->|Yes| C[Return cached payload]
+  B -->|No| D[Service fetch via Repository]
   D --> E[Build Resource JSON]
-  E --> F[Store in Cache (TTL)]
+  E --> F[Store in Cache TTL]
   F --> C
 ```
 

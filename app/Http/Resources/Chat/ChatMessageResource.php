@@ -16,18 +16,14 @@ class ChatMessageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'session_id' => $this->session_id,
-            'sender_id' => $this->sender_id,
-            'sender_type' => $this->sender_type,
+            'chat_session_id' => $this->chat_session_id,
+            'user_id' => $this->user_id,
+            'role' => $this->role, // 'user' | 'assistant' | 'staff'
             'message' => $this->message,
-            'message_type' => $this->message_type,
-            'is_bot' => $this->is_bot,
-            'bot_confidence' => $this->bot_confidence,
-            'metadata' => $this->metadata,
-            'read_at' => $this->read_at,
+            'meta' => $this->meta,
+            'is_bot' => $this->role === 'assistant',
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'sender' => $this->whenLoaded('sender'),
         ];
     }
 }
