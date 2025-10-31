@@ -6,6 +6,7 @@ use App\Repositories\Contracts\BranchRepositoryInterface;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
 use App\Repositories\Contracts\StaffRepositoryInterface;
 use App\Services\Contracts\ChatbotServiceInterface;
+use App\Models\Branch;
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
 use Illuminate\Support\Facades\Http;
@@ -131,9 +132,6 @@ class ChatbotService implements ChatbotServiceInterface
                 throw new \Exception(__('chatbot.no_response'));
             }
 
-            // Extract structured JSON (service/branch) and clean message text
-            [$cleanMessageText, $structuredPayload] = $this->extractStructuredJson($responseText);
-
             // Persist the user message and assistant reply to DB
             try {
                 // Save user message
@@ -149,7 +147,7 @@ class ChatbotService implements ChatbotServiceInterface
                     'chat_session_id' => $session->id,
                     'user_id' => $userId,
                     'role' => 'assistant',
-                    'message' => trim($cleanMessageText),
+                    'message' => trim($responseText),
                 ]);
 
                 // Update session activity
@@ -158,30 +156,16 @@ class ChatbotService implements ChatbotServiceInterface
                 Log::warning('Failed to persist chat messages', ['error' => $e->getMessage()]);
             }
 
-            // Enrich with staff for identified branches
-            if (!empty($structuredPayload['branch'])) {
-                $branchIds = array_values(array_filter(array_map(fn ($b) => $b['id'] ?? null, $structuredPayload['branch'])));
-                if (!empty($branchIds)) {
-                    $staff = collect();
-                    foreach ($branchIds as $bid) {
-                        $this->staffRepository->getForBranch((int) $bid)->each(function ($s) use ($staff) {
-                            $staff->put($s->id, $s->toArray());
-                        });
-                    }
-                    $structuredPayload['staff'] = array_values($staff->all());
-                } else {
-                    $structuredPayload['staff'] = [];
-                }
-            } else {
-                $structuredPayload['staff'] = [];
-            }
+            // Extract inline IDs from assistant message and resolve entity details
+            $ids = $this->extractInlineEntityIds($responseText);
+            $entities = $this->resolveEntitiesForIds($ids['service_ids'], $ids['branch_ids']);
 
             return [
-                'message' => trim($cleanMessageText),
+                'message' => trim($responseText),
                 'user_id' => $userId,
                 'locale' => $locale,
                 'session_key' => $session->session_key,
-                'structured' => $structuredPayload,
+                'entities' => $entities,
             ];
 
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
@@ -344,77 +328,152 @@ class ChatbotService implements ChatbotServiceInterface
     }
 
     /**
-     * Extract a minimal JSON block containing service/branch arrays from model text.
-     * Returns [cleanText, structuredPayload].
+     * Extract inline entity IDs like [service_id: 1] and [branch_id: 10] from a text.
+     * Returns [service_ids => int[], branch_ids => int[]].
      */
-    private function extractStructuredJson(string $text): array
+    public function extractInlineEntityIds(string $text): array
     {
-        $cleanText = $text;
-        $structured = [
-            'service' => [],
-            'branch' => [],
+        $serviceIds = [];
+        $branchIds = [];
+
+        if (preg_match_all('/\[\s*service_id\s*:\s*(\d+)\s*\]/i', $text, $m1)) {
+            $serviceIds = array_map('intval', $m1[1]);
+        }
+        if (preg_match_all('/\[\s*branch_id\s*:\s*(\d+)\s*\]/i', $text, $m2)) {
+            $branchIds = array_map('intval', $m2[1]);
+        }
+
+        // De-duplicate
+        $serviceIds = array_values(array_unique($serviceIds));
+        $branchIds = array_values(array_unique($branchIds));
+
+        return [
+            'service_ids' => $serviceIds,
+            'branch_ids' => $branchIds,
         ];
-
-        // 1) Try fenced ```json code block
-        if (preg_match('/```json\s*([\s\S]*?)\s*```/i', $text, $m)) {
-            $jsonStr = trim($m[1]);
-            $decoded = json_decode($jsonStr, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                $structured = $this->normalizeStructured($decoded);
-                // remove code block from message
-                $cleanText = trim(str_replace($m[0], '', $text));
-                return [$cleanText, $structured];
-            }
-        }
-
-        // 2) Try to find trailing JSON object
-        if (preg_match('/(\{[\s\S]*\})\s*$/', $text, $m2)) {
-            $jsonStr = trim($m2[1]);
-            $decoded = json_decode($jsonStr, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                $structured = $this->normalizeStructured($decoded);
-                $cleanText = trim(str_replace($m2[1], '', $text));
-                return [$cleanText, $structured];
-            }
-        }
-
-        // 3) Nothing parsed; return text as-is
-        return [$cleanText, $structured];
     }
 
     /**
-     * Ensure structure contains service[] and branch[] arrays with required id/slug keys if present.
+     * Resolve entities for given IDs using repositories. Optionally compute available slots
+     * when both $date (YYYY-MM-DD) and $time (HH:MM) are provided.
+     * Returns array with keys: services, branches, staff, available_slots.
      */
-    private function normalizeStructured(array $input): array
+    public function resolveEntitiesForIds(array $serviceIds, array $branchIds, ?string $date = null, ?string $time = null): array
     {
-        $out = [
-            'service' => [],
-            'branch' => [],
+        // Fetch services
+        $services = [];
+        if (!empty($serviceIds)) {
+            $services = $this->serviceRepository->all()
+                ->whereIn('id', $serviceIds)
+                ->values()
+                ->map(fn ($s) => $s->toArray())
+                ->all();
+        }
+
+        // Fetch branches
+        $branches = [];
+        if (!empty($branchIds)) {
+            $branches = $this->branchRepository->all()
+                ->whereIn('id', $branchIds)
+                ->values()
+                ->map(fn ($b) => $b->toArray())
+                ->all();
+        }
+
+        // Fetch staff only when exactly one branch is specified
+        $staff = [];
+        if (count($branchIds) === 1) {
+            $bid = (int) $branchIds[0];
+            $this->staffRepository->getForBranch($bid)->each(function ($s) use (&$staff) {
+                $staff[$s->id] = $s->toArray();
+            });
+            $staff = array_values($staff);
+        }
+
+        // Available slots per (branch_id, service_id) if date & time provided
+        $availableSlots = [];
+        if (!empty($date) && !empty($time)) {
+            foreach ($branchIds as $bid) {
+                foreach ($serviceIds as $sid) {
+                    $availableStaff = $this->staffRepository->getAvailableForBooking((int) $bid, (int) $sid, $date, $time);
+                    $availableSlots[] = [
+                        'branch_id' => (int) $bid,
+                        'service_id' => (int) $sid,
+                        'date' => $date,
+                        'time' => $time,
+                        'staff_ids' => $availableStaff->pluck('id')->values()->all(),
+                    ];
+                }
+            }
+        } else {
+            // If no explicit date/time: compute for today and tomorrow based on branch opening hours.
+            $dates = [
+                Carbon::today(),
+                Carbon::today()->copy()->addDay(),
+            ];
+            // Collect unique times per date (no IDs in output)
+            $timesPerDate = [];
+            foreach ($dates as $cDate) {
+                $timesPerDate[$cDate->toDateString()] = collect();
+            }
+
+            foreach ($branchIds as $bid) {
+                $branch = Branch::find((int) $bid);
+                if (!$branch || empty($branch->opening_hours) || !is_array($branch->opening_hours)) {
+                    continue;
+                }
+                foreach ($dates as $cDate) {
+                    $weekday = strtolower($cDate->englishDayOfWeek); // monday ... sunday
+                    if (!isset($branch->opening_hours[$weekday]) || !is_array($branch->opening_hours[$weekday]) || count($branch->opening_hours[$weekday]) !== 2) {
+                        continue;
+                    }
+                    [$open, $close] = $branch->opening_hours[$weekday];
+                    // Build time slots at 60-minute intervals
+                    $start = Carbon::parse($cDate->toDateString() . ' ' . $open);
+                    $end = Carbon::parse($cDate->toDateString() . ' ' . $close);
+                    for ($t = $start->copy(); $t->lt($end); $t->addMinutes(60)) {
+                        $tStr = $t->format('H:i');
+                        // If any service/branch has available staff at this time, include it
+                        foreach ($serviceIds as $sid) {
+                            $availableStaff = $this->staffRepository->getAvailableForBooking((int) $bid, (int) $sid, $cDate->toDateString(), $tStr);
+                            if ($availableStaff->isNotEmpty()) {
+                                $timesPerDate[$cDate->toDateString()]->push($tStr);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Normalize: unique and sort times, cap to 6 per day
+            $availableSlots = [];
+            foreach ($timesPerDate as $dateKey => $times) {
+                $uniqueTimes = collect($times)->unique()->sort()->values()->take(6)->all();
+                $availableSlots[] = [
+                    'date' => $dateKey,
+                    'times' => $uniqueTimes,
+                ];
+            }
+        }
+
+        return [
+            'service' => $services,
+            'branch' => $branches,
+            'staff' => $staff,
+            'available_slots' => $availableSlots,
         ];
-
-        $services = $input['service'] ?? [];
-        $branches = $input['branch'] ?? [];
-        if (!is_array($services)) { $services = []; }
-        if (!is_array($branches)) { $branches = []; }
-
-        // Coerce single objects to arrays
-        if ($services && array_keys($services) !== range(0, count($services) - 1)) {
-            $services = [$services];
-        }
-        if ($branches && array_keys($branches) !== range(0, count($branches) - 1)) {
-            $branches = [$branches];
-        }
-
-        // Filter invalid entries without id
-        $services = array_values(array_filter($services, function ($s) {
-            return is_array($s) && array_key_exists('id', $s) && $s['id'] !== null;
-        }));
-        $branches = array_values(array_filter($branches, function ($b) {
-            return is_array($b) && array_key_exists('id', $b) && $b['id'] !== null;
-        }));
-
-        $out['service'] = $services;
-        $out['branch'] = $branches;
-        return $out;
     }
+
+    /**
+     * Convenience method: parse inline IDs from a message and resolve details via repositories.
+     * - Extracts [service_id: X] and [branch_id: Y] from $message
+     * - Returns services, branches, staff (for branches), and available_slots (if date & time provided)
+     */
+    public function getEntityDetailsFromMessage(string $message, ?string $date = null, ?string $time = null): array
+    {
+        $ids = $this->extractInlineEntityIds($message);
+        return $this->resolveEntitiesForIds($ids['service_ids'], $ids['branch_ids'], $date, $time);
+    }
+
+    
 }
