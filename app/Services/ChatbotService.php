@@ -52,7 +52,7 @@ class ChatbotService implements ChatbotServiceInterface
     $session = $this->resolveSession($userId, $sessionKey);
 
     // Get last conversation messages (5 pairs = 10 messages)
-    $lastMessages = $session->messages()->take(10)->get()->reverse()->values();
+    $lastMessages = $session->messages()->take(14)->get()->reverse()->values();
 
     // Build conversation history string
     $conversationHistory = $this->buildConversationContents($lastMessages, $locale);
@@ -129,6 +129,9 @@ class ChatbotService implements ChatbotServiceInterface
                 throw new \Exception(__('chatbot.no_response'));
             }
 
+            // Extract structured JSON (service/branch) and clean message text
+            [$cleanMessageText, $structuredPayload] = $this->extractStructuredJson($responseText);
+
             // Persist the user message and assistant reply to DB
             try {
                 // Save user message
@@ -144,7 +147,7 @@ class ChatbotService implements ChatbotServiceInterface
                     'chat_session_id' => $session->id,
                     'user_id' => $userId,
                     'role' => 'assistant',
-                    'message' => trim($responseText),
+                    'message' => trim($cleanMessageText),
                 ]);
 
                 // Update session activity
@@ -154,10 +157,11 @@ class ChatbotService implements ChatbotServiceInterface
             }
 
             return [
-                'message' => trim($responseText),
+                'message' => trim($cleanMessageText),
                 'user_id' => $userId,
                 'locale' => $locale,
                 'session_key' => $session->session_key,
+                'structured' => $structuredPayload,
             ];
 
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
@@ -197,7 +201,7 @@ class ChatbotService implements ChatbotServiceInterface
         $context .= __('chatbot.context.phone', [], $locale) . ': ' . $businessInfo['phone'] . "\n";
         $context .= "Hotline: " . $businessInfo['hotline'] . "\n\n";
 
-        // Branches with their specific working hours
+        // Branches with their specific working hours (include IDs and slugs to help entity resolution)
         $context .= "=== " . __('chatbot.context.branches', [], $locale) . " ===\n";
         foreach ($branches as $branch) {
             $branchName = is_array($branch->name) ? ($branch->name[$locale] ?? $branch->name['vi']) : $branch->name;
@@ -209,19 +213,19 @@ class ChatbotService implements ChatbotServiceInterface
                 $branchHours = $this->formatWorkingHours($branch->opening_hours, $locale);
             }
             
-            $context .= "- {$branchName}\n";
+            $context .= "- [id: {$branch->id}] {$branchName} (slug: {$branch->slug})\n";
             $context .= "  " . __('chatbot.context.address', [], $locale) . ': ' . $branchAddress . "\n";
             $context .= "  " . __('chatbot.context.phone', [], $locale) . ': ' . ($branch->phone ?? 'N/A') . "\n";
             $context .= "  " . __('chatbot.context.working_hours', [], $locale) . ":\n" . $branchHours . "\n";
         }
 
-        // Services
+        // Services (include IDs and slugs to help entity resolution)
         $context .= "=== " . __('chatbot.context.services', [], $locale) . " ===\n";
         foreach ($services as $service) {
             $serviceName = is_array($service->name) ? ($service->name[$locale] ?? $service->name['vi']) : $service->name;
             $serviceDesc = is_array($service->description) ? ($service->description[$locale] ?? $service->description['vi']) : $service->description;
             
-            $context .= "- {$serviceName}\n";
+            $context .= "- [id: {$service->id}] {$serviceName} (slug: {$service->slug})\n";
             if ($serviceDesc) {
                 $context .= "  " . __('chatbot.context.description', [], $locale) . ': ' . $serviceDesc . "\n";
             }
@@ -317,5 +321,80 @@ class ChatbotService implements ChatbotServiceInterface
         }
 
         return implode("\n", $parts);
+    }
+
+    /**
+     * Extract a minimal JSON block containing service/branch arrays from model text.
+     * Returns [cleanText, structuredPayload].
+     */
+    private function extractStructuredJson(string $text): array
+    {
+        $cleanText = $text;
+        $structured = [
+            'service' => [],
+            'branch' => [],
+        ];
+
+        // 1) Try fenced ```json code block
+        if (preg_match('/```json\s*([\s\S]*?)\s*```/i', $text, $m)) {
+            $jsonStr = trim($m[1]);
+            $decoded = json_decode($jsonStr, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $structured = $this->normalizeStructured($decoded);
+                // remove code block from message
+                $cleanText = trim(str_replace($m[0], '', $text));
+                return [$cleanText, $structured];
+            }
+        }
+
+        // 2) Try to find trailing JSON object
+        if (preg_match('/(\{[\s\S]*\})\s*$/', $text, $m2)) {
+            $jsonStr = trim($m2[1]);
+            $decoded = json_decode($jsonStr, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $structured = $this->normalizeStructured($decoded);
+                $cleanText = trim(str_replace($m2[1], '', $text));
+                return [$cleanText, $structured];
+            }
+        }
+
+        // 3) Nothing parsed; return text as-is
+        return [$cleanText, $structured];
+    }
+
+    /**
+     * Ensure structure contains service[] and branch[] arrays with required id/slug keys if present.
+     */
+    private function normalizeStructured(array $input): array
+    {
+        $out = [
+            'service' => [],
+            'branch' => [],
+        ];
+
+        $services = $input['service'] ?? [];
+        $branches = $input['branch'] ?? [];
+        if (!is_array($services)) { $services = []; }
+        if (!is_array($branches)) { $branches = []; }
+
+        // Coerce single objects to arrays
+        if ($services && array_keys($services) !== range(0, count($services) - 1)) {
+            $services = [$services];
+        }
+        if ($branches && array_keys($branches) !== range(0, count($branches) - 1)) {
+            $branches = [$branches];
+        }
+
+        // Filter invalid entries without id
+        $services = array_values(array_filter($services, function ($s) {
+            return is_array($s) && array_key_exists('id', $s) && $s['id'] !== null;
+        }));
+        $branches = array_values(array_filter($branches, function ($b) {
+            return is_array($b) && array_key_exists('id', $b) && $b['id'] !== null;
+        }));
+
+        $out['service'] = $services;
+        $out['branch'] = $branches;
+        return $out;
     }
 }

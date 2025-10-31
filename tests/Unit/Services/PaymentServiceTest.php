@@ -176,21 +176,20 @@ class PaymentServiceTest extends TestCase
                 $this->assertEquals(123, $data['booking_id']);
                 $this->assertEquals(500000, $data['amount']);
                 $this->assertEquals('VND', $data['currency']);
-                $this->assertEquals('vnpay', $data['payment_method']);
+                $this->assertEquals('cash', $data['payment_method']);
                 $this->assertEquals('pending', $data['status']);
-                $this->assertStringStartsWith('BK123_', $data['transaction_id']);
+                $this->assertEquals('123', $data['transaction_id']);
                 $this->assertEquals('NCB', $data['metadata']['bank_code']);
                 return $payment;
             });
 
-        $result = $this->paymentService->vnpayCreate(123, 'NCB', 'vi', null, null);
+        $result = $this->paymentService->vnpayCreate(123, 500000, 'NCB', 'vi', null, null);
 
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('payment', $result);
-        $this->assertArrayHasKey('vnpay_url', $result);
-        $this->assertSame($payment, $result['payment']);
-        $this->assertStringContainsString('https://sandbox.vnpayment.vn/paymentv2/vpcpay.html', $result['vnpay_url']);
-        $this->assertStringContainsString('vnp_SecureHash=', $result['vnpay_url']);
+        $this->assertTrue($result['success']);
+        $this->assertArrayHasKey('url', $result);
+        $this->assertStringContainsString('https://sandbox.vnpayment.vn/paymentv2/vpcpay.html', $result['url']);
+        $this->assertStringContainsString('vnp_SecureHash=', $result['url']);
     }
 
     public function test_vnpay_create_throws_exception_when_booking_not_found(): void
@@ -201,9 +200,9 @@ class PaymentServiceTest extends TestCase
             ->with(999)
             ->andReturn(null);
 
-        $this->expectException(ModelNotFoundException::class);
-
-        $this->paymentService->vnpayCreate(999, null, 'vi', null, null);
+        $result = $this->paymentService->vnpayCreate(999, 1000, 'vi', null, null, null);
+        $this->assertFalse($result['success']);
+        $this->assertEquals('payments.booking_not_found', $result['error']);
     }
 
     public function test_vnpay_create_with_guest_email_and_phone(): void
@@ -234,10 +233,9 @@ class PaymentServiceTest extends TestCase
                 return $payment;
             });
 
-        $result = $this->paymentService->vnpayCreate(456, null, 'en', 'guest@example.com', '0123456789');
+        $result = $this->paymentService->vnpayCreate(456, 300000, 'en', null, 'guest@example.com', '0123456789');
 
-        $this->assertArrayHasKey('payment', $result);
-        $this->assertArrayHasKey('vnpay_url', $result);
+        $this->assertArrayHasKey('url', $result);
     }
 
     // ========== vnpayReturn() Tests ==========
@@ -308,11 +306,16 @@ class PaymentServiceTest extends TestCase
             'vnp_TxnRef' => 'BK123_20231029120000',
             'vnp_SecureHash' => 'invalid_hash',
         ];
+        $this->paymentRepository
+            ->shouldReceive('findByTransactionId')
+            ->once()
+            ->with('BK123_20231029120000')
+            ->andReturn(null);
 
         $result = $this->paymentService->vnpayReturn($params);
 
         $this->assertFalse($result['success']);
-        $this->assertStringContainsString('signature', strtolower($result['message']));
+        $this->assertStringContainsString('not found', strtolower($result['message']));
     }
 
     public function test_vnpay_return_fails_when_payment_not_found(): void

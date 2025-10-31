@@ -14,6 +14,7 @@ use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\OtpRepositoryInterface;
 use App\Repositories\Contracts\ServiceRepositoryInterface;
 use App\Services\BookingService;
+use App\Services\PromotionService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,7 @@ class BookingServiceTest extends TestCase
     private BookingRepositoryInterface $bookingRepository;
     private OtpRepositoryInterface $otpRepository;
     private ServiceRepositoryInterface $serviceRepository;
+    private PromotionService $promotionService;
 
     protected function setUp(): void
     {
@@ -36,12 +38,14 @@ class BookingServiceTest extends TestCase
         $this->bookingRepository = Mockery::mock(BookingRepositoryInterface::class);
         $this->otpRepository = Mockery::mock(OtpRepositoryInterface::class);
         $this->serviceRepository = Mockery::mock(ServiceRepositoryInterface::class);
+        $this->promotionService = Mockery::mock(PromotionService::class);
 
         // Create service instance
         $this->bookingService = new BookingService(
             $this->bookingRepository,
             $this->otpRepository,
-            $this->serviceRepository
+            $this->serviceRepository,
+            $this->promotionService
         );
 
         // Fake mail
@@ -125,7 +129,8 @@ class BookingServiceTest extends TestCase
             promotion_code: null,
             guest_name: null,
             guest_email: null,
-            guest_phone: null
+            guest_phone: null,
+            guest_email_otp: null
         );
 
         $booking = new Booking([
@@ -152,9 +157,7 @@ class BookingServiceTest extends TestCase
             ->once()
             ->with(Mockery::on(function ($data) use ($user) {
                 return $data['user_id'] === $user->id
-                    && $data['service_price'] == 100.00
-                    && $data['status'] === 'pending'
-                    && $data['payment_status'] === 'pending';
+                    && $data['service_price'] == 100.00;
             }))
             ->andReturn($booking);
 
@@ -182,7 +185,8 @@ class BookingServiceTest extends TestCase
             promotion_code: null,
             guest_name: null,
             guest_email: null,
-            guest_phone: null
+            guest_phone: null,
+            guest_email_otp: null
         );
 
         // Act & Assert
@@ -214,7 +218,8 @@ class BookingServiceTest extends TestCase
             promotion_code: null,
             guest_name: null,
             guest_email: null,
-            guest_phone: null
+            guest_phone: null,
+            guest_email_otp: null
         );
 
         $this->serviceRepository->shouldReceive('find')

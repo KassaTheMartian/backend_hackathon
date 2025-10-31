@@ -111,8 +111,9 @@ class PaymentService implements PaymentServiceInterface
      * @param string|null $guestPhone The guest phone.
      * @return array
      */
-    public function vnpayCreate(int $bookingId, int $amount, ?string $bankCode, ?string $language, ?string $guestEmail, ?string $guestPhone): array
+    public function vnpayCreate(int $bookingId, int|string $amount, ?string $bankCode, ?string $language, ?string $guestEmail, ?string $guestPhone): array
     {
+        $amount = (int) $amount;
         // Check valid booking
         $booking = $this->bookingRepository->find($bookingId);
         if (!$booking) {

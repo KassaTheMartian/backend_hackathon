@@ -41,7 +41,7 @@ class BookingFactory extends Factory
             'duration' => $this->faker->numberBetween(30, 180),
             'status' => $this->faker->randomElement(['pending', 'confirmed', 'completed', 'cancelled']),
             'cancellation_reason' => $this->faker->optional(0.1)->sentence(),
-            'cancelled_by' => $this->faker->optional(0.1)->randomElement([1, 2, 3]), // User IDs
+            'cancelled_by' => null,
             'cancelled_at' => $this->faker->optional(0.1)->dateTimeBetween('-30 days', 'now'),
             'service_price' => $servicePrice,
             'discount_amount' => $discountAmount,
@@ -99,7 +99,7 @@ class BookingFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => 'cancelled',
             'cancellation_reason' => $this->faker->sentence(),
-            'cancelled_by' => $this->faker->randomElement([1, 2, 3]), // User IDs
+            'cancelled_by' => null,
             'cancelled_at' => $this->faker->dateTimeBetween('-30 days', 'now'),
         ]);
     }

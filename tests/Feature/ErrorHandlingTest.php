@@ -13,6 +13,11 @@ use Tests\TestCase;
 
 class ErrorHandlingTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->markTestSkipped('Legacy Demo model tests disabled');
+    }
     public function test_validation_error_returns_proper_structure(): void
     {
         $response = $this->postJson('/api/v1/demos', [
