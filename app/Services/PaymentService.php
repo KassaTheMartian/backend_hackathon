@@ -175,6 +175,22 @@ class PaymentService implements PaymentServiceInterface
             $vnpSecureHash = hash_hmac('sha512', $hashData, $vnpHashSecret);
             $vnpUrl .= 'vnp_SecureHash=' . $vnpSecureHash;
         }
+
+        $this->paymentRepository->create([
+            'booking_id' => $booking->id,
+            'amount' => $booking->total_amount,
+            'currency' => 'VND',
+            'payment_method' => 'cash',
+            'status' => 'pending',
+            'transaction_id' => $txnRef,
+            'metadata' => [
+                'bank_code' => $bankCode,
+                'language' => $language,
+                'guest_email' => $guestEmail,
+                'guest_phone' => $guestPhone,
+            ],
+        ]);
+
         return [
             'success' => true,
             'url' => $vnpUrl,
