@@ -41,5 +41,13 @@ interface BranchRepositoryInterface extends BaseRepositoryInterface
      * @return array
      */
     public function getAvailableStaff(int $branchId, int $serviceId, \Carbon\Carbon $timeSlot): array;
+
+    /**
+     * Find branch by slug.
+     *
+     * @param string $slug
+     * @return Branch|null
+     */
+    public function findBySlug(string $slug): ?Branch;
 }
 

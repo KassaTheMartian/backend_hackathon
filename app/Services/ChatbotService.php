@@ -31,8 +31,7 @@ class ChatbotService implements ChatbotServiceInterface
         private readonly BranchRepositoryInterface $branchRepository,
         private readonly ServiceRepositoryInterface $serviceRepository,
         private readonly StaffRepositoryInterface $staffRepository,
-    ) {
-    }
+    ) {}
 
     /**
      * Process chat message and generate response.
@@ -51,17 +50,17 @@ class ChatbotService implements ChatbotServiceInterface
             throw new \Exception(__('chatbot.api_key_missing'));
         }
 
-    // Resolve chat session (user or guest with sessionKey)
-    $session = $this->resolveSession($userId, $sessionKey);
+        // Resolve chat session (user or guest with sessionKey)
+        $session = $this->resolveSession($userId, $sessionKey);
 
-    // Get last conversation messages (5 pairs = 10 messages)
-    $lastMessages = $session->messages()->take(14)->get()->reverse()->values();
+        // Get last conversation messages (5 pairs = 10 messages)
+        $lastMessages = $session->messages()->take(14)->get()->reverse()->values();
 
-    // Build conversation history string
-    $conversationHistory = $this->buildConversationContents($lastMessages, $locale);
+        // Build conversation history string
+        $conversationHistory = $this->buildConversationContents($lastMessages, $locale);
 
-    // Get context for the chatbot
-    $context = $this->getContext($locale);
+        // Get context for the chatbot
+        $context = $this->getContext($locale);
 
         // Prepare system instruction
         $systemInstruction = $this->getSystemInstruction($locale);
@@ -167,7 +166,6 @@ class ChatbotService implements ChatbotServiceInterface
                 'session_key' => $session->session_key,
                 'entities' => $entities,
             ];
-
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error('Gemini API connection error', ['error' => $e->getMessage()]);
             throw new \Exception(__('chatbot.connection_error'));
@@ -187,10 +185,10 @@ class ChatbotService implements ChatbotServiceInterface
     {
         // Get business information from config
         $businessInfo = config('chatbot.business');
-        
+
         // Get branches using existing repository
         $branches = $this->branchRepository->getActive();
-        
+
         // Get services using existing repository
         $services = $this->serviceRepository->all()
             ->where('is_active', true)
@@ -210,13 +208,13 @@ class ChatbotService implements ChatbotServiceInterface
         foreach ($branches as $branch) {
             $branchName = is_array($branch->name) ? ($branch->name[$locale] ?? $branch->name['vi']) : $branch->name;
             $branchAddress = is_array($branch->address) ? ($branch->address[$locale] ?? $branch->address['vi']) : $branch->address;
-            
+
             // Format working hours from branch's opening_hours field
             $branchHours = 'N/A';
             if ($branch->opening_hours && is_array($branch->opening_hours)) {
                 $branchHours = $this->formatWorkingHours($branch->opening_hours, $locale);
             }
-            
+
             $context .= "- [id: {$branch->id}] {$branchName} (slug: {$branch->slug})\n";
             $context .= "  " . __('chatbot.context.address', [], $locale) . ': ' . $branchAddress . "\n";
             $context .= "  " . __('chatbot.context.phone', [], $locale) . ': ' . ($branch->phone ?? 'N/A') . "\n";
@@ -228,7 +226,7 @@ class ChatbotService implements ChatbotServiceInterface
         foreach ($services as $service) {
             $serviceName = is_array($service->name) ? ($service->name[$locale] ?? $service->name['vi']) : $service->name;
             $serviceDesc = is_array($service->description) ? ($service->description[$locale] ?? $service->description['vi']) : $service->description;
-            
+
             $context .= "- [id: {$service->id}] {$serviceName} (slug: {$service->slug})\n";
             if ($serviceDesc) {
                 $context .= "  " . __('chatbot.context.description', [], $locale) . ': ' . $serviceDesc . "\n";
@@ -366,7 +364,7 @@ class ChatbotService implements ChatbotServiceInterface
             $services = $this->serviceRepository->all()
                 ->whereIn('id', $serviceIds)
                 ->values()
-                ->map(fn ($s) => $s->toArray())
+                ->map(fn($s) => $s->toArray())
                 ->all();
         }
 
@@ -376,7 +374,7 @@ class ChatbotService implements ChatbotServiceInterface
             $branches = $this->branchRepository->all()
                 ->whereIn('id', $branchIds)
                 ->values()
-                ->map(fn ($b) => $b->toArray())
+                ->map(fn($b) => $b->toArray())
                 ->all();
         }
 
@@ -474,6 +472,4 @@ class ChatbotService implements ChatbotServiceInterface
         $ids = $this->extractInlineEntityIds($message);
         return $this->resolveEntitiesForIds($ids['service_ids'], $ids['branch_ids'], $date, $time);
     }
-
-    
 }

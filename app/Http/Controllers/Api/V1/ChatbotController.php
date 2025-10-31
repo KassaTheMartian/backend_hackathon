@@ -76,8 +76,8 @@ class ChatbotController extends Controller
             // Get locale from app (already set by SetLocale middleware)
             $locale = app()->getLocale();
 
-            // Get user ID if authenticated
-            $userId = $this->user()?->id;
+            // Get user ID if authenticated (avoid accessing property on Authenticatable)
+            $userId = Auth::id();
 
             // session_key: optional for guest clients (can be sent in body or header X-Chat-Session)
             $sessionKey = $request->input('session_key') ?? $request->header('X-Chat-Session');
@@ -116,11 +116,11 @@ class ChatbotController extends Controller
      */
     public function history(Request $request): JsonResponse
     {
-        $user = $this->user();
         $session = null;
 
-        if ($user) {
-            $session = ChatSession::where('user_id', $user->id)->first();
+        $userId = Auth::id();
+        if ($userId) {
+            $session = ChatSession::where('user_id', $userId)->first();
         } else {
             $sessionKey = $request->query('session_key') ?? $request->header('X-Chat-Session');
             if ($sessionKey) {

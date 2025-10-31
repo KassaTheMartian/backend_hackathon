@@ -111,7 +111,7 @@ class ProfileService implements ProfileServiceInterface
     public function getUserPromotions(int $userId): Collection
     {
         $user = $this->userRepository->getById($userId);
-        if (!$user) {
+        if (!$user instanceof User) {
             return new Collection();
         }
 

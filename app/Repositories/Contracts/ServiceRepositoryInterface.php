@@ -33,6 +33,14 @@ interface ServiceRepositoryInterface extends BaseRepositoryInterface
     public function getBySlug(string $slug): ?Service;
 
     /**
+     * Find service by slug.
+     *
+     * @param string $slug
+     * @return Service|null
+     */
+    public function findBySlug(string $slug): ?Service;
+
+    /**
      * Get featured services.
      *
      * @param int $limit

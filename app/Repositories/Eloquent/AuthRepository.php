@@ -79,8 +79,8 @@ class AuthRepository implements AuthRepositoryInterface
     public function revokeCurrentToken(User $user): bool
     {
         $token = $user->currentAccessToken();
-        if ($token) {
-            return $token->delete();
+        if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
+            return (bool) $token->delete();
         }
         return false;
     }
