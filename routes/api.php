@@ -48,7 +48,7 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
         Route::get('/staff', action: [V1StaffController::class, 'index']);
 
         Route::get('/reviews', action: [V1ReviewController::class, 'index']);
-        Route::get('/reviews/{id}', action: [V1ReviewController::class, 'show']);
+        Route::get('/reviews/{id}', action: [V1ReviewController::class, 'show'])->whereNumber('id');
 
         Route::get('/posts', [V1PostController::class, 'index']);
         Route::get('/posts/featured', [V1PostController::class, 'featured']);
@@ -95,9 +95,9 @@ Route::middleware([\App\Http\Middleware\SetLocale::class, 'throttle:api'])->grou
             // Reviews
             Route::post('/reviews', [V1ReviewController::class, 'store']);
             Route::get('/reviews/pending', [V1ReviewController::class, 'pending']);
-            Route::post('/reviews/{id}/approve', [V1ReviewController::class, 'approve']);
-            Route::post('/reviews/{id}/reject', [V1ReviewController::class, 'reject']);
-            Route::post('/reviews/{id}/respond', [V1ReviewController::class, 'respond']);
+            Route::post('/reviews/{id}/approve', [V1ReviewController::class, 'approve'])->whereNumber('id');
+            Route::post('/reviews/{id}/reject', [V1ReviewController::class, 'reject'])->whereNumber('id');
+            Route::post('/reviews/{id}/respond', [V1ReviewController::class, 'respond'])->whereNumber('id');
 
             // Chat staff routes
             Route::get('/chat/sessions/{id}/messages', [V1ChatRealTimeController::class, 'getSessionMessages']);

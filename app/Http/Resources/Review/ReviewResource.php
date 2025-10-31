@@ -21,7 +21,7 @@ class ReviewResource extends JsonResource
             'branch_id' => $this->branch_id,
             'rating' => $this->rating,
             'comment' => $this->comment,
-            'is_published' => $this->is_published,
+            'is_approved' => $this->is_approved,
             'user' => $this->whenLoaded('user', function () use ($locale) {
                 return [
                     'id' => $this->user->id,
@@ -46,8 +46,8 @@ class ReviewResource extends JsonResource
                         : $this->branch->name,
                 ];
             }),
-            'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }
