@@ -16,6 +16,7 @@ Purpose: Returns all available categories for posts (e.g. news, tips, reviews) f
 - **Path**: /api/v1/post-categories
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
+ - **Caching**: Server-side 60 minutes (per locale)
 
 #### Headers
 | Name         | Required | Example            | Description        |

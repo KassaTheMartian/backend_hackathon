@@ -16,6 +16,7 @@ Purpose: Lets an admin or moderator list reviews submitted by users but not yet 
 - **Path**: /api/v1/reviews/pending
 - **Auth**: Required (Bearer token / Sanctum, role: admin)
 - **Rate limiting**: 60 req/minute
+ - **Caching**: None (moderation queue changes frequently)
 
 #### Headers
 | Name           | Required | Example | Description         |

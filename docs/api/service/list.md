@@ -16,7 +16,7 @@ Purpose: Returns a paginated list of beauty/service items available (with option
 - **Path**: /api/v1/services
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
-- **Caching**: (Optional: ETag/Cache-Control)
+- **Caching**: Server-side 5 minutes (per locale + query); clients may use ETag/Cache-Control
 
 #### Headers
 | Name         | Required | Example            | Description        |

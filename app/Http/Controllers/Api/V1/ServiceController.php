@@ -8,6 +8,7 @@ use App\Services\Contracts\ServiceServiceInterface;
 use App\Traits\HasLocalization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ServiceController extends Controller
 {
@@ -40,7 +41,18 @@ class ServiceController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $items = $this->service->list($request)->through(fn ($model) => ServiceResource::make($model));
+        $request->validate([
+            'page' => 'sometimes|integer|min:1',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+        $cacheKey = sprintf('services.index:%s:%s', app()->getLocale(), md5(json_encode($request->query())));
+        $ttlSeconds = 300; // 5 minutes
+
+        $paginator = Cache::remember($cacheKey, $ttlSeconds, function () use ($request) {
+            return $this->service->list($request);
+        });
+
+        $items = $paginator->through(fn ($model) => ServiceResource::make($model));
         return $this->paginated($items, __('services.list_retrieved'));
     }
 
@@ -61,9 +73,14 @@ class ServiceController extends Controller
      */
     public function show(string $id): JsonResponse
     {
-        $service = is_numeric($id)
+        $cacheKey = sprintf('services.show:%s:%s', app()->getLocale(), $id);
+        $ttlSeconds = 900; // 15 minutes
+
+        $service = Cache::remember($cacheKey, $ttlSeconds, function () use ($id) {
+            return is_numeric($id)
             ? $this->service->find((int)$id)
             : $this->service->findBySlug($id);
+        });
         if (!$service) {
             return $this->notFound(__('services.not_found'));
         }
@@ -86,7 +103,10 @@ class ServiceController extends Controller
     public function categories(Request $request): JsonResponse
     {
         $locale = $this->getLocale($request);
-        $categories = $this->service->categories($locale);
+        $cacheKey = sprintf('services.categories:%s', $locale);
+        $ttlSeconds = 3600; // 60 minutes
+
+        $categories = Cache::remember($cacheKey, $ttlSeconds, fn () => $this->service->categories($locale));
         return $this->ok($categories, __('services.categories_retrieved'));
     }
 }

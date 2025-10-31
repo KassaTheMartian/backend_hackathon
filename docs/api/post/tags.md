@@ -16,6 +16,7 @@ Purpose: Returns the list of tags applied to posts (for search/filtering or tag 
 - **Path**: /api/v1/post-tags
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
+ - **Caching**: Server-side 60 minutes
 
 #### Headers
 | Name         | Required | Example            | Description        |

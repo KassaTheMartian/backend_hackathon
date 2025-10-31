@@ -16,6 +16,7 @@ Purpose: Admin approves a pending user review, making it public/active. Used for
 - **Path**: /api/v1/reviews/{id}/approve
 - **Auth**: Required (Bearer token / Sanctum, role: admin)
 - **Rate limiting**: 60 req/minute
+ - **Caching**: None (mutation endpoint)
 
 #### Headers
 | Name          | Required | Example | Description       |

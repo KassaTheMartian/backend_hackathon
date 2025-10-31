@@ -25,6 +25,14 @@ interface BranchServiceInterface
     public function find(int $id): ?Model;
 
     /**
+     * Find a branch by slug.
+     *
+     * @param string $slug The branch slug.
+     * @return Model|null
+     */
+    public function findBySlug(string $slug): ?Model;
+
+    /**
      * Get available slots for a branch.
      *
      * @param int $branchId The branch ID.

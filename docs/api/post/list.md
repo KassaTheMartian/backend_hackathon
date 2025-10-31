@@ -16,7 +16,7 @@ Purpose: Returns a paginated list of news, blog, or announcement posts. Supports
 - **Path**: /api/v1/posts
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
-- **Caching**: May cache per use-case
+- **Caching**: Server-side 5 minutes (per locale + query)
 
 #### Headers
 | Name         | Required | Example            | Description        |

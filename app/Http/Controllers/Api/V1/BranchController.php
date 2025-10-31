@@ -9,6 +9,7 @@ use App\Services\Contracts\BranchServiceInterface;
 use App\Traits\HasLocalization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class BranchController extends Controller
 {
@@ -40,7 +41,18 @@ class BranchController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $items = $this->service->list($request)->through(fn ($model) => BranchResource::make($model));
+        $request->validate([
+            'page' => 'sometimes|integer|min:1',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+        $cacheKey = sprintf('branches.index:%s:%s', app()->getLocale(), md5(json_encode($request->query())));
+        $ttlSeconds = 300; // 5 minutes
+
+        $paginator = Cache::remember($cacheKey, $ttlSeconds, function () use ($request) {
+            return $this->service->list($request);
+        });
+
+        $items = $paginator->through(fn ($model) => BranchResource::make($model));
         return $this->paginated($items, __('branches.list_retrieved'));
     }
 
@@ -61,10 +73,15 @@ class BranchController extends Controller
      */
     public function show(string $id): JsonResponse
     {
+        $cacheKey = sprintf('branches.show:%s:%s', app()->getLocale(), $id);
+        $ttlSeconds = 900; // 15 minutes
+
         // Cho phép $id là số hoặc slug
-        $branch = is_numeric($id)
+        $branch = Cache::remember($cacheKey, $ttlSeconds, function () use ($id) {
+            return is_numeric($id)
             ? $this->service->find((int)$id)
             : $this->service->findBySlug($id);
+        });
         if (!$branch) {
             return $this->notFound(__('branches.not_found'));
         }

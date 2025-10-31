@@ -14,6 +14,7 @@ Purpose: Admin can trigger/refund payments in edge, dispute or support cases. In
 - **Base URL**: https://api.example.com
 - **Path**: /api/v1/payments/vnpay/refund
 - **Auth**: Required (Bearer token, admin only)
+ - **Caching**: None (mutation endpoint)
 
 #### Headers
 | Name           | Required | Example              | Description          |

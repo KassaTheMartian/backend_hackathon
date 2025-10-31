@@ -16,7 +16,7 @@ Purpose: Returns the list of available service categories (e.g., facial, massage
 - **Path**: /api/v1/service-categories
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
-- **Caching**: May cache by client
+- **Caching**: Server-side 60 minutes (per locale); clients may additionally cache
 
 #### Headers
 | Name         | Required | Example            | Description        |

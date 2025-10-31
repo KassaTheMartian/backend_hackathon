@@ -12,6 +12,7 @@ use App\Models\PostTag;
 use App\Traits\HasLocalization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {
@@ -46,9 +47,22 @@ class PostController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        
-        $posts = $this->service->getPosts($request->all());
-        $items = $posts->through(fn($post) => PostResource::make($post));
+        $request->validate([
+            'page' => 'sometimes|integer|min:1',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+            'category_id' => 'sometimes|integer|min:1',
+            'tag_id' => 'sometimes|integer|min:1',
+            'featured' => 'sometimes|boolean',
+        ]);
+
+        $cacheKey = sprintf('posts.index:%s:%s', app()->getLocale(), md5(json_encode($request->query())));
+        $ttlSeconds = 300; // 5 minutes
+
+        $paginator = Cache::remember($cacheKey, $ttlSeconds, function () use ($request) {
+            return $this->service->getPosts($request->all());
+        });
+
+        $items = $paginator->through(fn($post) => PostResource::make($post));
         
         return $this->paginated($items, __('posts.list_retrieved'));
     }
@@ -71,12 +85,16 @@ class PostController extends Controller
      */
     public function show(Request $request, string $idOrSlug): JsonResponse
     {
+        $cacheKey = sprintf('posts.show:%s:%s', app()->getLocale(), $idOrSlug);
+        $ttlSeconds = 900; // 15 minutes
+
         // Try to get by ID first, then by slug
+        $post = Cache::remember($cacheKey, $ttlSeconds, function () use ($idOrSlug) {
         if (is_numeric($idOrSlug)) {
-            $post = $this->service->getPostById((int)$idOrSlug);
-        } else {
-            $post = $this->service->getPostBySlug($idOrSlug);
+                return $this->service->getPostById((int)$idOrSlug);
         }
+            return $this->service->getPostBySlug($idOrSlug);
+        });
         
         if (!$post) {
             $this->notFound(__('posts.resource_post'));
@@ -104,8 +122,17 @@ class PostController extends Controller
      */
     public function featured(Request $request): JsonResponse
     {
+        $request->validate([
+            'limit' => 'sometimes|integer|min:1|max:50',
+        ]);
         $limit = $request->input('limit', 6);
-        $posts = $this->service->getFeaturedPosts($limit);
+
+        $cacheKey = sprintf('posts.featured:%s:%d', app()->getLocale(), (int)$limit);
+        $ttlSeconds = 900; // 15 minutes
+
+        $posts = Cache::remember($cacheKey, $ttlSeconds, function () use ($limit) {
+            return $this->service->getFeaturedPosts($limit);
+        });
         
         return $this->ok(
             PostResource::collection($posts),
@@ -123,7 +150,11 @@ class PostController extends Controller
      */
     public function categories(): JsonResponse
     {
-        $items = PostCategory::query()->active()->orderBy('name')->get(['id','name','slug']);
+        $cacheKey = sprintf('posts.categories:%s', app()->getLocale());
+        $ttlSeconds = 3600; // 60 minutes
+        $items = Cache::remember($cacheKey, $ttlSeconds, function () {
+            return PostCategory::query()->active()->orderBy('name')->get(['id','name','slug']);
+        });
         return $this->ok($items, __('posts.categories_retrieved'));
     }
 
@@ -137,7 +168,11 @@ class PostController extends Controller
      */
     public function tags(): JsonResponse
     {
-        $items = PostTag::query()->orderBy('name')->get(['id','name','slug']);
+        $cacheKey = 'posts.tags';
+        $ttlSeconds = 3600; // 60 minutes
+        $items = Cache::remember($cacheKey, $ttlSeconds, function () {
+            return PostTag::query()->orderBy('name')->get(['id','name','slug']);
+        });
         return $this->ok($items, __('posts.tags_retrieved'));
     }
 }

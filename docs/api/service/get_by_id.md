@@ -16,7 +16,7 @@ Purpose: Retrieve full detail of a particular service by numeric ID or URL slug.
 - **Path**: /api/v1/services/{id}
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
-- **Caching**: Optional (ETag/Cache-Control)
+- **Caching**: Server-side 15 minutes (per locale + id/slug); clients may use ETag/Cache-Control
 
 #### Headers
 | Name         | Required | Example            | Description        |

@@ -18,7 +18,7 @@ Purpose: Returns detail info of a specific branch including services. Accepts nu
 - **Environment**: dev | staging | prod
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
-- **Caching**: [ETag if implemented]
+- **Caching**: Server-side 15 minutes (per locale + id/slug)
 
 #### Headers
 | Name         | Required | Example            | Description         |

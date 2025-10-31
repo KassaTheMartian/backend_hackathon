@@ -16,6 +16,7 @@ Purpose: Allows an admin to respond to a user's review — e.g. sending thanks, 
 - **Path**: /api/v1/reviews/{id}/respond
 - **Auth**: Required (Bearer token, admin)
 - **Rate limiting**: 60 req/minute
+ - **Caching**: None (mutation endpoint)
 
 #### Headers
 | Name          | Required | Example         | Description         |

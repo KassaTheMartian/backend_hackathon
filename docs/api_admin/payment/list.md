@@ -14,6 +14,7 @@ Purpose: Admin/staff can query all payment transactions in system, not just thei
 - **Base URL**: https://api.example.com
 - **Path**: /api/v1/payments
 - **Auth**: Bearer <admin_token> (admin only)
+ - **Caching**: None (admin data is dynamic and sensitive)
 
 #### Headers
 | Name           | Required | Example         | Description          |

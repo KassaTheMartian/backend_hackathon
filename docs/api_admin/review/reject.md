@@ -16,6 +16,7 @@ Purpose: Lets an admin reject a user review for policy, inappropriateness, or sp
 - **Path**: /api/v1/reviews/{id}/reject
 - **Auth**: Required (Bearer token / Sanctum, admin)
 - **Rate limiting**: 60 req/minute
+ - **Caching**: None (mutation endpoint)
 
 #### Headers
 | Name          | Required | Example         | Description         |

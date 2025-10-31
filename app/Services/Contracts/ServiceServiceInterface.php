@@ -35,6 +35,14 @@ interface ServiceServiceInterface
     public function find(int $id): ?Model;
 
     /**
+     * Find a service by slug.
+     *
+     * @param string $slug The service slug.
+     * @return Model|null
+     */
+    public function findBySlug(string $slug): ?Model;
+
+    /**
      * Update a service.
      *
      * @param int $id The service ID.

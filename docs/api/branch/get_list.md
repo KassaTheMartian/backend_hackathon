@@ -17,7 +17,7 @@ Purpose: Fetches a paginated list of all available branches. Supports paging, st
 - **Environment**: dev | staging | prod
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
-- **Caching**: [ETag, Cache-Control if implemented]
+- **Caching**: Server-side 5 minutes (per locale + query)
 
 #### Headers
 | Name         | Required | Example          | Description          |

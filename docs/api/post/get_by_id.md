@@ -16,7 +16,7 @@ Purpose: Fetches the detail for a post given either its numeric ID or friendly U
 - **Path**: /api/v1/posts/{id}
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
-- **Caching**: (Optionally on FE)
+- **Caching**: Server-side 15 minutes (per locale + id/slug)
 
 #### Headers
 | Name         | Required | Example            | Description        |

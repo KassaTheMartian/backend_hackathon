@@ -16,6 +16,7 @@ Purpose: Retrieve a list of posts marked as 'featured' for homepage section or h
 - **Path**: /api/v1/posts/featured
 - **Auth**: None
 - **Rate limiting**: 60 req/minute
+ - **Caching**: Server-side 15 minutes (per locale + limit)
 
 #### Query Params
 | Name  | Type | Required | Default | Example | Description                |
